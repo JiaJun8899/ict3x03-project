@@ -31,7 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+#User models
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'api'
 ]
+
+AUTH_USER_MODEL = 'api.GenericUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
