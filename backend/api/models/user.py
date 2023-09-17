@@ -12,6 +12,5 @@ class GenericUser(AbstractUser):
     auth = models.CharField(choices=USER_TYPE_CHOICES, max_length=20)
     phone = models.CharField(max_length=8, null=True, blank=True)
     nric = models.CharField(max_length=15, null=True, blank=True)
-    age = models.IntegerField(null=True, blank=True)
     class Meta:
         app_label = "api"
