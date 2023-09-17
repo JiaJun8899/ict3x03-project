@@ -114,7 +114,7 @@ def runfile():
         create_normal_users()
         create_organizers()
         create_events(5)
-        create_NOKs(1)
+        create_NOKs(10)
         create_emergency_contacts()
         create_event_organizer_mappings()
         create_event_participants()
