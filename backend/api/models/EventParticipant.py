@@ -8,3 +8,5 @@ class EventParticipant(models.Model):
     class Meta:
         unique_together = (('event', 'participant'),)
 
+    def __str__(self):
+        return str(event) + str(participant)
