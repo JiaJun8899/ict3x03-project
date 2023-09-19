@@ -9,11 +9,12 @@ class GenericUser(AbstractUser):
         ('admin', 'Admin'),
         ('org', 'Organizer'),
     )
-    auth = models.CharField(choices=USER_TYPE_CHOICES, max_length=20)
-    phone = models.CharField(max_length=8, null=True, blank=True)
-    nric = models.CharField(max_length=15, null=True, blank=True)
+    auth = models.CharField(choices=USER_TYPE_CHOICES, max_length=20,blank=False)
+    phone = models.CharField(max_length=8, null=False,blank=False)
+    nric = models.CharField(max_length=15, null=False, blank=False)
+
     class Meta:
         app_label = "api"
 
     def __str__(self):
-        return str(self.first_name) + str(self.last_name)
+        return (self.first_name) + str(self.last_name)

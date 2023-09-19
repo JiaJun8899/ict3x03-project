@@ -44,8 +44,8 @@ def create_events(num):
     for _ in range(num):
         Event.objects.create(
             name=fake.company(),
-            start_datetime=timezone.now(),
-            end_datetime=timezone.now() + timezone.timedelta(days=2),
+            startDatetime=timezone.now(),
+            endDatetime=timezone.now() + timezone.timedelta(days=2),
             status='open',
             participant_limit=random.randint(50, 200),
             numberOfVolunteers =random.randint(5, 50),
@@ -60,7 +60,7 @@ def create_NOKs(num):
         NOK.objects.create(
             fname=fake.first_name(),
             lname=fake.last_name(),
-            relationship=fake.random_element(['Father', 'Mother', 'Sibling', 'Spouse']),
+            relationship=fake.random_element(['Father', 'Child' , 'Mother', 'Sibling', 'Spouse']),
             phone=generate_8_digit_phone(),
             email=fake.email(),
             age=str(random.randint(20, 60))

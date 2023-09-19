@@ -8,15 +8,15 @@ class Event(models.Model):
         ('closed', 'Closed'),
         ('over', 'Over'),
     )
-    name = models.CharField(max_length=64)
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
+    name = models.CharField(max_length=64, blank=False)
+    startDatetime = models.DateTimeField(blank=False)
+    endDatetime = models.DateTimeField(blank=False)
     image = models.ImageField(upload_to='events/')
-    status = models.CharField(choices=STATUS_CHOICES, max_length=10)
-    participant_limit = models.IntegerField()
-    numberOfVolunteers = models.IntegerField(default=0, verbose_name="Number of Volunteers")
-    approval = models.BooleanField(default=False)
-    description = models.TextField()
+    status = models.CharField(choices=STATUS_CHOICES, max_length=10,blank=False)
+    participant_limit = models.IntegerField(blank=False)
+    numberOfVolunteers = models.IntegerField(default=0, verbose_name="Number of Volunteers",blank=False)
+    approval = models.BooleanField(default=False,blank=False)
+    description = models.TextField(blank=False)
     
     class Meta:
         app_label = 'api'
