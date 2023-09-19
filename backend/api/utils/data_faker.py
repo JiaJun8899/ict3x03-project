@@ -14,6 +14,15 @@ Faker.seed(12334)
 import django
 django.setup()
 
+def generate_8_digit_phone():
+    return str(random.randint(10000000, 99999999))
+
+def generate_singapore_nric():
+    first_letter = random.choice(["S", "T", "F", "G"])
+    digits = [random.randint(0, 9) for _ in range(7)]
+    last_letter = random.choice("ABCDEFGHIZJ")
+    nric = f"{first_letter}{''.join(map(str, digits))}{last_letter}"
+    return nric
 
 def create_generic_users(num):
     User = get_user_model()
@@ -21,7 +30,8 @@ def create_generic_users(num):
         random_choice = random.choice(['normal','organizer'])
         username = fake.user_name()
         if not User.objects.filter(username=username).exists():
-            user = User.objects.create(username=username, first_name=fake.first_name(), last_name=fake.last_name(), auth=random_choice)
+            user = User.objects.create(username=username, first_name=fake.first_name(), last_name=fake.last_name(),phone=generate_8_digit_phone(), 
+                                       nric=generate_singapore_nric(),auth=random_choice, email=username+"@gmail.com",)
             user.set_password("test_password")
             user.save()
 
@@ -52,8 +62,6 @@ def create_events(num):
             approval=True,
             description=fake.text()
         )
-def generate_8_digit_phone():
-    return str(random.randint(10000000, 99999999))
 
 def create_NOKs(num):
     for _ in range(num):
@@ -113,7 +121,7 @@ def runfile():
         create_admins()
         create_normal_users()
         create_organizers()
-        create_events(5)
+        create_events(10)
         create_NOKs(10)
         create_emergency_contacts()
         create_event_organizer_mappings()
