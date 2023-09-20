@@ -17,4 +17,3 @@ class NormalUser(models.Model):
                     raise ValueError(f"{field.name} : {value} must have more than 5 characters")
         super().save(*args, **kwargs)
 
-

@@ -1,5 +1,7 @@
 import uuid
 from django.db import models
+from .managers import EventManager
+
 
 class Event(models.Model):
     eid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -16,6 +18,7 @@ class Event(models.Model):
     noVol = models.IntegerField(default=0, verbose_name="Number of Volunteers",blank=False)
     eventDesc = models.TextField(blank=False)
     
+    eventManager = EventManager() 
     class Meta:
         app_label = 'api'
 
