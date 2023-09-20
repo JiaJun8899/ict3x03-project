@@ -100,8 +100,7 @@ def create_event_organizer_mappings():
                 existing_mapping = EventOrganizerMapping.objects.filter(event=event, organizer=organizer).exists()
 
                 if not existing_mapping:
-                    random_approval = random.choice([True, False])
-                    EventOrganizerMapping.objects.create(event=event, organizer=organizer, approval=random_approval)
+                    EventOrganizerMapping.objects.create(event=event, organizer=organizer)
 
     except Exception as e:
         print(f"An error occurred: {e}")

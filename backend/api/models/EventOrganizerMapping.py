@@ -3,10 +3,17 @@ import uuid
 
 
 class EventOrganizerMapping(models.Model):
+   
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event = models.ForeignKey("Event", on_delete=models.CASCADE)
     organizer = models.ForeignKey("Organizer", on_delete=models.CASCADE)
-    approval = models.BooleanField(default=False,blank=False)
+    ApprovalChoices= (
+        ('pending', 'Pending'),
+        ('reject', 'Rejected'),
+        ('accepted', 'Accepted'),
+    )
+    approval = models.CharField(max_length=12, default='pending',blank=False,choices=ApprovalChoices)
 
     def __str__(self):
         return f"{str(self.organizer)} - {str(self.event)}"

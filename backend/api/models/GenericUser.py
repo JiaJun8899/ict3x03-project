@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator
 import uuid
+""" from .managers import GenericUserManager """
+
 
 class GenericUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -10,15 +12,14 @@ class GenericUser(AbstractUser):
         ('admin', 'Admin'),
         ('org', 'Organizer'),
     )
-    phone_regex = RegexValidator(
-    regex=r'^\d{8}$', 
-    message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
-)
-
+    nricRegex =RegexValidator(
+        regex=r'^[A-Za-z]\d{8}[A-Za-z]$',
+        message="NRIC must start with an alphabet character, followed by 8 digits, and ending with an alphabet character."
+    ) 
     auth = models.CharField(choices=USER_TYPE_CHOICES, max_length=20,blank=False)
-    phone = models.CharField(max_length=8, null=False,blank=False,validators=[phone_regex])
-    nric = models.CharField(max_length=15, null=False, blank=False)
-
+    phone = models.IntegerField(max_length=8, null=False,blank=False,validators=[nricRegex])
+    nric = models.CharField(max_length=9, null=False, blank=False)
+    userManager = GenericUserManager()
     class Meta:
         app_label = "api"
 
@@ -30,6 +31,6 @@ class GenericUser(AbstractUser):
             if isinstance(field, (models.CharField, models.TextField)) and field.name != "password":
                 value = getattr(self, field.name, None)
                 if value != None and len(value) < 1: 
-                    return False
+                    raise ValueError(f"{field.name} : {value} must have more than 5 characters")
         super().save(*args, **kwargs)
-        return True
+
