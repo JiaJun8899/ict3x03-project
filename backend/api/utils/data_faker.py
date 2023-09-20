@@ -24,54 +24,49 @@ def generate_singapore_nric():
     nric = f"{first_letter}{''.join(map(str, digits))}{last_letter}"
     return nric
 
-def create_generic_users(num):
+def create_generic_users():
     User = get_user_model()
-    for _ in range(num):
-        random_choice = random.choice(['normal','organizer'])
-        username = fake.user_name()
-        if not User.objects.filter(username=username).exists():
-            user = User.objects.create(username=username, first_name=fake.first_name(), last_name=fake.last_name(),phone=generate_8_digit_phone(), 
-                                       nric=generate_singapore_nric(),auth=random_choice, email=username+"@gmail.com",)
-            user.set_password("test_password")
-            user.save()
+    username = fake.user_name()
+    if not User.objects.filter(username=username).exists():
+        user = User.objects.create(username=username, first_name=fake.first_name(), last_name=fake.last_name(),phone=generate_8_digit_phone(), 
+                                   nric=generate_singapore_nric(), email=username+"@gmail.com",)
+        user.set_password("test_password")
+        return user
+    return None
 
 def create_admins():
-    for user in GenericUser.objects.filter(auth='admin'):
-        Admin.objects.create(user=user)
+    user = create_generic_users()
+    Admin.objects.create(user=user)
 
 
-def create_normal_users():
-    for user in GenericUser.objects.filter(auth='normal'):
-        NormalUser.objects.create(user=user, birthday=timezone.now().date())
+def create_normal_users(num):
+    for _ in range(num):
+        user = create_generic_users()
+        NormalUser.objects.create(user=user,birthday=fake.date())
 
 
-def create_organizers():
-    for user in GenericUser.objects.filter(auth='organizer'):
-        Organizer.objects.create(user=user, isApproved=True)
-
+def create_organizers(num):
+    for _ in range(num):
+        user = create_generic_users()
+        Organizer.objects.create(user=user,validOrganisation =True)
 
 def create_events(num):
     for _ in range(num):
         Event.objects.create(
-            name=fake.company(),
-            startDatetime=timezone.now(),
-            endDatetime=timezone.now() + timezone.timedelta(days=2),
-            status='open',
-            participant_limit=random.randint(50, 200),
-            numberOfVolunteers =random.randint(5, 50),
-            approval=True,
-            description=fake.text()
+            eventName=fake.company(),
+            startDate=timezone.now(),
+            endDate=timezone.now() + timezone.timedelta(days=2),
+            eventStatus='open',
+            noVol=random.randint(10, 5000),
+            eventDesc =fake.text()
         )
 
 def create_NOKs(num):
     for _ in range(num):
         NOK.objects.create(
-            fname=fake.first_name(),
-            lname=fake.last_name(),
+            name=fake.first_name(),
             relationship=fake.random_element(['Father', 'Child' , 'Mother', 'Sibling', 'Spouse']),
-            phone=generate_8_digit_phone(),
-            email=fake.email(),
-            age=str(random.randint(20, 60))
+            phoneNum=generate_8_digit_phone(),
         )
 
 
@@ -116,12 +111,11 @@ def runfile():
         print("Creating fake data...")
         
         # Your data creation functions go here
-        create_generic_users(100)
         create_admins()
-        create_normal_users()
-        create_organizers()
+        create_normal_users(100)
+        create_organizers(100)
         create_events(10)
-        create_NOKs(10)
+        create_NOKs(30)
         create_emergency_contacts()
         create_event_organizer_mappings()
         create_event_participants()

@@ -7,19 +7,14 @@ import uuid
 
 class GenericUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    USER_TYPE_CHOICES = (
-        ('normal', 'Normal'),
-        ('admin', 'Admin'),
-        ('org', 'Organizer'),
-    )
     nricRegex =RegexValidator(
         regex=r'^[A-Za-z]\d{8}[A-Za-z]$',
         message="NRIC must start with an alphabet character, followed by 8 digits, and ending with an alphabet character."
     ) 
-    auth = models.CharField(choices=USER_TYPE_CHOICES, max_length=20,blank=False)
+
     phone = models.IntegerField(max_length=8, null=False,blank=False,validators=[nricRegex])
     nric = models.CharField(max_length=9, null=False, blank=False)
-    userManager = GenericUserManager()
+    """ userManager = GenericUserManager() """
     class Meta:
         app_label = "api"
 
