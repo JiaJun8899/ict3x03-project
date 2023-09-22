@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator
 import uuid
-""" from .managers import GenericUserManager """
+from .managers import GenericUserManager
 
 
 class GenericUser(AbstractUser):
@@ -14,7 +14,7 @@ class GenericUser(AbstractUser):
 
     phone = models.IntegerField(max_length=8, null=False,blank=False,validators=[nricRegex])
     nric = models.CharField(max_length=9, null=False, blank=False)
-    """ userManager = GenericUserManager() """
+    genericUserManager = GenericUserManager()
     class Meta:
         app_label = "api"
 

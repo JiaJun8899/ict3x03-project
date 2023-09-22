@@ -1,36 +1,37 @@
-# managers.py (can be in the same file as your models or a separate one)
 from django.db import models
 
 class GenericGetInformation(models.Manager):
-    def get_all(self):
+    def getAll(self):
         return self.all()
 
-    def get_by_uuid(self,uuid):
-        return self.filter(id=uuid).first()
+    def getByUuid(self, uuid):
+        return self.filter(pk=uuid).first()
 
+    def deleteById(self, uuid):
+        return self.filter(pk=uuid).delete()
 
-class GenericUserManager(models.Manager):
-    def get_admin_users(self):
-        return self.filter(auth='admin')
+class GenericUserManager(GenericGetInformation):
+    pass
 
-    def get_normal_users(self):
-        return self.filter(auth='normal')
+class NormalUserManager(GenericGetInformation):
+    pass
 
-    def get_org_users(self):
-        return self.filter(auth='org')
-
-    def get_all_users(self):
-        return self.all()
-    
-    def delete_by_id(self,uuid):
-        return self.filter(id=uuid).delete()
+class AdminManager(GenericGetInformation):
+    pass
 
 class EventManager(GenericGetInformation):
-    def setApproval(self,uuid,status):
+    def setApproval(self, uuid, status):
         try:
-            event = self.get_by_uuid(uuid)
+            event = self.getByUuid(uuid)
             event.approval = status
             event.save()
         except Exception as e:
             print(e)
+
+class OrganiserManager(GenericUserManager):
+    def updateOrganization(self, uuid, status):
+        organization = self.getByUuid(uuid)
+        organization.validOrganisation = status
+        organization.save()
+        return True
 
