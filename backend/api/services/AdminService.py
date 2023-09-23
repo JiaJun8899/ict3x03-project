@@ -5,9 +5,9 @@ class AdminService:
         pass
 
     @staticmethod
-    def update_organizer(organizer_uuid, status):
+    def updateOrganizer(organizer_uuid, status):
         try:
-            Organizer.organiserManager.updateOrganization(organizer_uuid, status)
+            Organizer.organizerManager.updateOrganization(organizer_uuid, status)
             return True
         except Exception as e:
             print(e)
@@ -16,7 +16,7 @@ class AdminService:
     @staticmethod
     def getAllOrganizers():
         try:
-            return Organizer.organiserManager.getAll()
+            return Organizer.organizerManager.getAllRecords()
         except Exception as e:
             print(e)
             return False
