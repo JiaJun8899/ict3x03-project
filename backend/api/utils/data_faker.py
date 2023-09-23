@@ -8,7 +8,8 @@ import os
 
 # Initialize the faker instance
 fake = Faker()
-Faker.seed(12334)
+Faker.seed(1234)
+
 
 # Configure Django settings to run the script standalone
 import django
@@ -28,7 +29,7 @@ def create_generic_users():
     User = get_user_model()
     username = fake.user_name()
     if not User.objects.filter(username=username).exists():
-        user = User(username=username, first_name=fake.first_name(), last_name=fake.last_name(),phone=generate_8_digit_phone(), 
+        user = User(username=username, first_name=fake.first_name(), last_name=fake.last_name(),phoneNum=generate_8_digit_phone(), 
                                    nric=generate_singapore_nric(), email=username+"@gmail.com",)
         user.set_password("test_password")
         user.save()
