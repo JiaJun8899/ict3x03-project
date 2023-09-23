@@ -1,6 +1,6 @@
 from api.models import Organizer
 
-class AdminService:
+class OrganizerAdminService:
     def __init__(self):
         pass
 
