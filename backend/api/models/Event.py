@@ -1,8 +1,10 @@
 import uuid
 from django.db import models
 from django.core.validators import MinLengthValidator
+from api.managers import EventManager
 
 class Event(models.Model):
+    eventManager = EventManager() 
     eid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     STATUS_CHOICES = (
         ('open', 'Open'),

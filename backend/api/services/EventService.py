@@ -7,31 +7,34 @@ class EventService:
     
     @staticmethod
     def getAllEvent():
-        events = EventOrganizerMapping.eventManager.getAllRecords()
+        events = EventOrganizerMapping.eventMapperManager.getAllRecords()
         serializer = EventOrganizerMappingSerializer(events, many=True)
         return serializer.data
     
     def createEvent(data:dict, organization_id):
         eventSerializer = EventSerializer(data=data)
-        print(eventSerializer)
         if eventSerializer.is_valid():
-            obj = eventSerializer.save()
+            newEvent = eventSerializer.save()
             organization = Organizer.organizerManager.getByUUID(organization_id)
-            print(organization.user_id)
-            mapperSerializer = EventOrganizerMappingCreate(data={'event':obj.eid, 'organizer':organization.user_id})
-            print(mapperSerializer)
+            mapperSerializer = EventOrganizerMappingCreate(data={'event':newEvent.eid, 'organizer':organization.user_id})
             if mapperSerializer.is_valid():
                 mapperSerializer.save()
                 return True
-            else:
-                print("nope")
-                return False
-        else:
-            print("nope here")
-            return False
+        return False
     
     def getEventByOrg(organizer_id):
-        events = EventOrganizerMapping.eventManager.getAllRecords().filter(organizer_id = organizer_id)
+        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(organizer_id = organizer_id)
         serializer = EventOrganizerMappingSerializer(events, many=True)
         return serializer.data
-            
+    
+    def checkValid(eid):
+        eventInstance = EventOrganizerMapping.eventMapperManager.getMapByEventUUID(eid)
+        return eventInstance
+    
+    def updateEvent(data, eid):
+        eventInstance = Event.eventManager.getByUUID(eid)
+        eventSerializer = EventSerializer(instance=eventInstance, data=data, partial = True)
+        if eventSerializer.is_valid():
+            eventSerializer.save()
+            return True
+        return False

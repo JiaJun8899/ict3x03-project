@@ -1,10 +1,10 @@
 from django.db import models
 import uuid
 from django.core.validators import MinLengthValidator
-from api.managers import EventManager
+from api.managers import EventMapperManager
 
 class EventOrganizerMapping(models.Model):
-    eventManager = EventManager() 
+    eventMapperManager = EventMapperManager() 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event = models.ForeignKey("Event", on_delete=models.CASCADE)
     organizer = models.ForeignKey("Organizer", on_delete=models.CASCADE)

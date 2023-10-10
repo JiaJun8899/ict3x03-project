@@ -55,3 +55,21 @@ class EventSingleAPI(APIView):
             return Response({"status": status.HTTP_200_OK})
         else:
             return Response({"status": status.HTTP_400_BAD_REQUEST})
+    
+    def put(self, request, organization_id):
+        '''Update event'''
+        checkValid = EventService.checkValid(request.data['eid'])
+        if checkValid:
+            data = {
+                'eventStatus': request.data['eventStatus'],
+                'eventName':request.data['eventName'],
+                'startDate':timezone.now(),
+                'endDate': timezone.now(),
+                'eventStatus': request.data['eventStatus'],
+                'noVol': request.data['noVol'],
+                'eventDesc': request.data['eventDesc']
+                }
+            success = EventService.updateEvent(data, request.data['eid'])
+            if (success):
+                return Response({"status": status.HTTP_200_OK})
+        return Response({"status": status.HTTP_400_BAD_REQUEST})
