@@ -24,8 +24,10 @@ class OrganizerAdminService:
     @staticmethod
     def getAllOrganizers():
         try:
-            return Organizer.organizerManager.getAllRecords()
+            organizers = Organizer.organizerManager.getAllRecords()
+            serializer = OrganizerSerializer(organizers, many=True)
+            return serializer.data
         except Exception as e:
             print(e)
-            return False
+            return None
 

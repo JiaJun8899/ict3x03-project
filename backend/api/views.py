@@ -18,10 +18,9 @@ class GetAllOrganizers(APIView):
     def get(self, request):
         organizers = OrganizerAdminService.getAllOrganizers()
 
-        if organizers is not False:
+        if organizers != None:
             # Assuming that the returned organizers is a QuerySet or list of Organizer instances
-            serializer = OrganizerSerializer(organizers, many=True)
-            return Response({"status": status.HTTP_200_OK, "data": serializer.data})
+            return Response({"status": status.HTTP_200_OK, "data": organizers})
         else:
             return Response({"status": "error", "message": "Failed to retrieve organizers."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
