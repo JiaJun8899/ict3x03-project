@@ -12,11 +12,6 @@ class EventService:
     def __init__(self):
         pass
 
-    def getAllEvent():
-        events = Event.eventManager.getAllRecords()
-        serializer = EventSerializer(events, many=True)
-        return serializer.data
-
     def createEvent(data, organization_id):
         eventSerializer = EventSerializer(data=data)
         if eventSerializer.is_valid():
