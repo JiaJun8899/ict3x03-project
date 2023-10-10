@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from api.services import OrganizerAdminService, EventService
-
+from django.utils import timezone
 
 class UpdateOrganizerStatus(APIView):
     def put(self, request):
@@ -16,7 +16,6 @@ class UpdateOrganizerStatus(APIView):
 class GetAllOrganizers(APIView):
     def get(self, request):
         organizers = OrganizerAdminService.getAllOrganizers()
-
         if organizers != None:
             # Assuming that the returned organizers is a QuerySet or list of Organizer instances
             return Response({"status": status.HTTP_200_OK, "data": organizers})
@@ -34,5 +33,20 @@ class EventAPI(APIView):
         '''Gets all the events'''
         allEvents = EventService.getAllEvent()
         return Response(allEvents, status=status.HTTP_200_OK)
-    def post(self, request):
-        pass
+    
+    def post(self,request):
+        '''Create Event'''
+        data = {
+            'eventStatus': request.data['eventStatus'],
+            'eventName':request.data['eventName'],
+            'startDate':timezone.now(),
+            'endDate': timezone.now(),
+            'eventStatus': request.data['eventStatus'],
+            'noVol': request.data['noVol'],
+            'eventDesc': request.data['eventDesc']
+        }
+        success = EventService.createEvent(data)
+        if success:
+            return Response({"status": status.HTTP_200_OK})
+        else:
+            return Response({"status": status.HTTP_400_BAD_REQUEST})

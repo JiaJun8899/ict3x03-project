@@ -10,3 +10,13 @@ class EventService:
         events = EventOrganizerMapping.eventManager.getAllRecords()
         serializer = EventOrganizerMappingSerializer(events, many=True)
         return serializer.data
+    
+    def createEvent(data:dict):
+        eventSerializer = EventSerializer(data=data)
+        print(eventSerializer)
+        if eventSerializer.is_valid():
+            obj = eventSerializer.save()
+            return True
+        else:
+            return False
+            
