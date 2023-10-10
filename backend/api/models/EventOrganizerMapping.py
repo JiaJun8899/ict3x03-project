@@ -13,11 +13,11 @@ class EventOrganizerMapping(models.Model):
         ('reject', 'Rejected'),
         ('accepted', 'Accepted'),
     )
-    approval = models.CharField(max_length=12, default='pending',blank=False,choices=ApprovalChoices, validators=[MinLengthValidator(2)])
+    approval = models.CharField(max_length=12, default='pending',choices=ApprovalChoices, validators=[MinLengthValidator(2)])
 
     def __str__(self):
         return f"{str(self.organizer)} - {str(self.event)}"
     
     class Meta:
-        unique_together = (('event', 'organizer'),)
+        unique_together = (('event', 'organizer'))
         app_label = 'api'

@@ -33,8 +33,13 @@ class EventAPI(APIView):
         '''Gets all the events'''
         allEvents = EventService.getAllEvent()
         return Response(allEvents, status=status.HTTP_200_OK)
+
+class EventSingleAPI(APIView):
+    def get(self, request, organization_id):
+        eventsByOrg = EventService.getEventByOrg(organization_id)
+        return Response(eventsByOrg, status=status.HTTP_200_OK)
     
-    def post(self,request):
+    def post(self,request, organization_id):
         '''Create Event'''
         data = {
             'eventStatus': request.data['eventStatus'],
@@ -45,7 +50,7 @@ class EventAPI(APIView):
             'noVol': request.data['noVol'],
             'eventDesc': request.data['eventDesc']
         }
-        success = EventService.createEvent(data)
+        success = EventService.createEvent(data, organization_id)
         if success:
             return Response({"status": status.HTTP_200_OK})
         else:
