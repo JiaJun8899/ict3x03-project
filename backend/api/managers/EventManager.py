@@ -8,4 +8,3 @@ class EventManager(GenericInfoManager):
             event.save()
         except Exception as e:
             print(e)
-

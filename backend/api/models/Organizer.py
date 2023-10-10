@@ -3,7 +3,7 @@ from .GenericUser import GenericUser
 from api.managers import OrganizerManager
 
 class Organizer(models.Model):
-    user = models.OneToOneField( GenericUser, on_delete=models.CASCADE, primary_key=True,null = False)
+    user = models.OneToOneField(GenericUser, on_delete=models.CASCADE, primary_key=True,null = False)
     validOrganisation = models.BooleanField(default=False,blank=False)
     organizerManager = OrganizerManager()
 

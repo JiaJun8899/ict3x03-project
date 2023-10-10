@@ -1,6 +1,5 @@
 import uuid
 from django.db import models
-from api.managers import EventManager
 from django.core.validators import MinLengthValidator
 
 class Event(models.Model):
@@ -18,7 +17,6 @@ class Event(models.Model):
     noVol = models.IntegerField(default=0, verbose_name="Number of Volunteers",blank=False)
     eventDesc = models.TextField(blank=False,validators=[MinLengthValidator(2)])
     
-    eventManager = EventManager() 
     class Meta:
         app_label = 'api'
 

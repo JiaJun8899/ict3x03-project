@@ -1,5 +1,4 @@
 # serializers.py
-
 from api.models import *
 from rest_framework import serializers
 
@@ -19,9 +18,11 @@ class EventSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EventOrganizerMappingSerializer(serializers.ModelSerializer):
+    event = EventSerializer()
+    organizer = serializers.StringRelatedField()
     class Meta:
         model = EventOrganizerMapping
-        fields = '__all__'
+        fields = ["event", "organizer"]
 
 class EventParticipantSerializer(serializers.ModelSerializer):
     class Meta:

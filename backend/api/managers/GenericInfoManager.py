@@ -9,4 +9,3 @@ class GenericInfoManager(models.Manager):
 
     def deleteByUUID(self, uuid):
         return self.filter(pk=uuid).delete()
-
