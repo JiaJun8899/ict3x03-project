@@ -1,2 +1,1 @@
-from .OrganizerService import *
-from .AdminService import AdminService
+from .OrganizerAdminService import *
