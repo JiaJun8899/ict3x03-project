@@ -28,8 +28,8 @@ class EventService:
         return serializer.data
     
     def checkValid(eid):
-        eventInstance = EventOrganizerMapping.eventMapperManager.getMapByEventUUID(eid)
-        return eventInstance
+        eventMapInstance = EventOrganizerMapping.eventMapperManager.getMapByEventUUID(eid)
+        return eventMapInstance
     
     def updateEvent(data, eid):
         eventInstance = Event.eventManager.getByUUID(eid)
@@ -38,3 +38,11 @@ class EventService:
             eventSerializer.save()
             return True
         return False
+    
+    def deleteEvent(eid):
+        try:
+            Event.eventManager.deleteByUUID(eid)
+            return True
+        except Exception:
+            return False
+        

@@ -58,7 +58,7 @@ class EventSingleAPI(APIView):
     
     def put(self, request, organization_id):
         '''Update event'''
-        checkValid = EventService.checkValid(request.data['eid'])
+        checkValid = EventService.checkValid(request.data['eid']) # Should be able to remove and just use under updateEvent
         if checkValid:
             data = {
                 'eventStatus': request.data['eventStatus'],
@@ -73,3 +73,11 @@ class EventSingleAPI(APIView):
             if (success):
                 return Response({"status": status.HTTP_200_OK})
         return Response({"status": status.HTTP_400_BAD_REQUEST})
+    
+    def delete(self, request, organization_id):
+        '''Delete Event and Mapping'''
+        success = EventService.deleteEvent(request.data['eid'])
+        if success:
+            return Response({"status": status.HTTP_200_OK})
+        else:
+            return Response({"status": status.HTTP_400_BAD_REQUEST})
