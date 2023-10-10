@@ -19,6 +19,15 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Email stuff
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get("EMAIL_HOST")# E.g., for Gmail, it's 'smtp.gmail.com'
+EMAIL_PORT = 587  # Port for TLS
+EMAIL_USE_TLS = True  # Use TLS security
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")# Your email address
+EMAIL_HOST_PASSWORD =  os.environ.get("EMAIL_HOST_PASSWORD") # Your email password
+
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
