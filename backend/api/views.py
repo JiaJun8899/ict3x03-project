@@ -34,7 +34,7 @@ class EventAPI(APIView):
         allEvents = EventService.getAllEvent()
         return Response(allEvents, status=status.HTTP_200_OK)
 
-class EventSingleAPI(APIView):
+class EventsByOrganizationAPI(APIView):
     def get(self, request, organization_id):
         eventsByOrg = EventService.getEventByOrg(organization_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
@@ -81,3 +81,8 @@ class EventSingleAPI(APIView):
             return Response({"status": status.HTTP_200_OK})
         else:
             return Response({"status": status.HTTP_400_BAD_REQUEST})
+
+class EventSingleByOrganizationAPI(APIView):
+    def get(self, request, organization_id, event_id):
+        eventsByOrg = EventService.getParticipantsByEvent(organization_id,event_id)
+        return Response(eventsByOrg, status=status.HTTP_200_OK)
