@@ -3,4 +3,3 @@ from .GenericInfoManager import GenericInfoManager
 
 class GenericUserManager(BaseUserManager, GenericInfoManager):
         pass
-

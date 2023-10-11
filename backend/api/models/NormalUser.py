@@ -10,4 +10,3 @@ class NormalUser(models.Model):
         return str(self.user)
     class Meta:
         app_label = 'api'
-
