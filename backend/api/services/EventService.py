@@ -1,5 +1,5 @@
-from api.models import EventOrganizerMapping, Organizer, Event
-from api.serializer import EventOrganizerMappingSerializer, EventSerializer, OrganizerSerializer, EventOrganizerMappingCreate
+from api.models import EventOrganizerMapping, Organizer, Event, EventParticipant
+from api.serializer import EventOrganizerMappingSerializer, EventSerializer, EventOrganizerMappingCreate, EventParticipantSerializer
 
 class EventService:
     def __init__(self):
@@ -45,4 +45,14 @@ class EventService:
             return True
         except Exception:
             return False
+    
+    def getParticipantsByEvent(organizer_id, eid):
+        # Check if org and event are linked
+        # If have, query the participants
+        eventInstance = EventOrganizerMapping.eventMapperManager.getMapByOrgEventUUID(organizer_id, eid)
+        if eventInstance is None:
+            return None
+        particpants = EventParticipant.eventParticipantManager.getParticipantsByEventUUID(eid)
+        serializer = EventParticipantSerializer(particpants, many=True)
+        return serializer.data
         
