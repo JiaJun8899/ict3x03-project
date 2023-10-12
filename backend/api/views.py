@@ -1,13 +1,19 @@
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from api.services import *
-from django.utils import timezone
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from datetime import datetime
-import json
-from api.services import EventService, OrganizerAdminService , AuthService
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
 
+def csrf(request):
+    return JsonResponse({'csrfToken': get_token(request)})
+
+def ping(request):
+    return JsonResponse({'result': 'OK'})
 
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 class UpdateOrganizerStatus(APIView):
@@ -22,6 +28,9 @@ class UpdateOrganizerStatus(APIView):
 
 
 class GetAllOrganizers(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         organizerAdminService = OrganizerAdminService()
         organizers = organizerAdminService.getAllOrganizers()

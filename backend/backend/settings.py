@@ -20,12 +20,12 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Email stuff
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get("EMAIL_HOST")# E.g., for Gmail, it's 'smtp.gmail.com'
-EMAIL_PORT = 587  # Port for TLS
-EMAIL_USE_TLS = True  # Use TLS security
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")# Your email address
-EMAIL_HOST_PASSWORD =  os.environ.get("EMAIL_HOST_PASSWORD") # Your email password
+""" EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' """
+""" EMAIL_HOST = os.environ.get("EMAIL_HOST")# E.g., for Gmail, it's 'smtp.gmail.com' """
+""" EMAIL_PORT = 587  # Port for TLS """
+""" EMAIL_USE_TLS = True  # Use TLS security """
+""" EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")# Your email address """
+""" EMAIL_HOST_PASSWORD =  os.environ.get("EMAIL_HOST_PASSWORD") # Your email password """
 
 
 
@@ -54,9 +54,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
-    'corsheaders',
+    'corsheaders'
 ]
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
 AUTH_USER_MODEL = 'api.GenericUser'
 
 MIDDLEWARE = [
@@ -68,6 +73,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -154,4 +162,9 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
+CSRF_TRUSTED_ORIGINS=[
+    'http://localhost:3000',
+]
