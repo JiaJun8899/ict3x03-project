@@ -60,6 +60,13 @@ class EventParticipantSerializer(serializers.ModelSerializer):
         model = EventParticipant
         fields = ['event','participant']
 
+class EventSignUpParticipantSerializer(serializers.ModelSerializer):
+    # event = EventSerializer()
+    # participant = NormalUserSerializer()
+    class Meta:
+        model = EventParticipant
+        fields = ['event','participant']
+
 class RegisterUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True,validators=[UniqueValidator(queryset=GenericUser.genericUserManager.getAllRecords())])
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])

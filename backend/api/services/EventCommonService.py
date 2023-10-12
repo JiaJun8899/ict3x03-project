@@ -16,6 +16,16 @@ class EventCommonService:
         except Exception as e:
             print(e)
             return None
+        
+    @staticmethod
+    def getEventByID(eid):
+        try:
+            events = Event.eventManager.getByUUID(eid)
+            serializer = EventSerializer(events)
+            return serializer.data
+        except Exception as e:
+            print(e)
+            return None
 
 
             

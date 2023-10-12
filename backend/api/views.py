@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from api.services import OrganizerAdminService, EventService, AccountService,UserService
+from api.services import OrganizerAdminService, EventService, AccountService,UserService,EventCommonService
 from django.utils import timezone
 from datetime import datetime
+import json
 
 
 class UpdateOrganizerStatus(APIView):
@@ -132,7 +133,6 @@ class UpdateUserAPIView(APIView):
     def put(self, request):
         # ['first_name', 'last_name', 'email', 'phoneNum', 'username']
         valid = UserService.UserService.validUser(request.data["eid"])
-        print(valid)
         if valid != None:
             data ={
                 "first_name": request.data["first_name"],
@@ -143,6 +143,23 @@ class UpdateUserAPIView(APIView):
             }
 
             success = UserService.UserService.updateUserProfile(data,request.data["eid"])
+            if success:
+                return Response({"status": status.HTTP_200_OK})
+        return Response({"status": status.HTTP_400_BAD_REQUEST})
+    
+class SignUpEventAPIView(APIView):
+    def post(self,request):
+
+        validUser = UserService.UserService.getUserById(request.data["eid"])
+        validEvent = EventCommonService.EventCommonService.getEventByID(request.data["eeid"])
+        if validUser != None and validEvent != None:
+            # print(validUser["user"])
+            # print(validEvent)
+            data={               
+                "event": request.data["eeid"],     
+                "participant":request.data["eid"]          
+            }
+            success = UserService.UserService.signUpEvent(data=data)
             if success:
                 return Response({"status": status.HTTP_200_OK})
         return Response({"status": status.HTTP_400_BAD_REQUEST})
