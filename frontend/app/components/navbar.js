@@ -17,7 +17,7 @@ import {
   useColorMode,
   Center,
 } from "../providers";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { MoonIcon, SunIcon } from "../providers";
 
 const NavLink = (props) => {
   const { children } = props;
