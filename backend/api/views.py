@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from api.services import OrganizerAdminService, EventService, AccountService,UserService,EventCommonService,EmergencyContactService,NokService
+from api.services import *
 from django.utils import timezone
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from datetime import datetime
@@ -31,9 +31,11 @@ class GetAllOrganizers(APIView):
             return Response({"data": organizers})
         else:
             return Response(
-                {"status": "error", "message": "Failed to retrieve organizers."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+                    {"status": "error", "message": "Failed to retrieve organizers."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+
+
 
 class EventAPI(APIView):
     """1. Create Event
@@ -201,6 +203,28 @@ class SearchEvents(APIView):
 class TestAPI(APIView):
     def get(self, request):
         return Response({'role': 'test'}, status=status.HTTP_200_OK)
+
+class GetAllEvent(APIView):
+    def get(self, request):
+        eventService = EventService()
+        events = eventService.getAllEvents()
+
+        if  events != None:
+            # Assuming that the returned organizers is a QuerySet or list of Organizer instances
+            return Response({"data":events})
+        else:
+            return Response({"Failed to retrieve organizers."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class Login(APIView):
+    def post(self,request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        authenticated = AuthService.authenticateUser(request, username, password)
+        if authenticated:
+            return Response({"detail": "Logged in successfully."}, status=200)
+        return Response({"detail": "Invalid credentials."}, status=401)
+
+
 
 class GetAllEvent(APIView):
     def get(self, request):

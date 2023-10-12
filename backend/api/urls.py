@@ -14,6 +14,6 @@ urlpatterns = [
     path('search-events/', views.SearchEvents.as_view()),
     path('test',views.TestAPI.as_view()),
     path('get-all-events/', views.GetAllEvent.as_view(), name='get_all_events'),
-
+    path('auth-login/', views.Login.as_view(), name='get_all_events'),
 ]
 
