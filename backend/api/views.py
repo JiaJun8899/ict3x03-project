@@ -18,8 +18,6 @@ RECAPTCHA_KEY = os.getenv('RECAPTCHA_KEY',os.environ.get('RECAPTCHA_KEY'))
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
-def ping(request):
-    return JsonResponse({"result": "OK"})
 
 class TestAPI(APIView):
     def get(self, request):

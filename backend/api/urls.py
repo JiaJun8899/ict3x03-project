@@ -21,5 +21,7 @@ urlpatterns = [
     path('ping/', views.ping),
     path('get-all-events/', views.GetAllEvent.as_view(), name='get_all_events'),
     path('auth-login/', views.Login.as_view(), name='get_all_events'),
+    path('csrf/', views.csrf),
+    path('ping/', views.ping),
 ]
 
