@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from api.services import OrganizerAdminService, EventService, AccountService
+from api.services import OrganizerAdminService, EventService, AccountService,UserService
 from django.utils import timezone
 from datetime import datetime
 
@@ -126,3 +126,23 @@ class RegisterUserAPIView(APIView):
             birthday = datetime.strptime(request.data["birthday"], "%d%m%Y").date()
             AccountService.createNormalUser(data, birthday)
         return Response(status=status.HTTP_200_OK)
+    
+
+class UpdateUserAPIView(APIView):
+    def put(self, request):
+        # ['first_name', 'last_name', 'email', 'phoneNum', 'username']
+        valid = UserService.UserService.validUser(request.data["eid"])
+        print(valid)
+        if valid != None:
+            data ={
+                "first_name": request.data["first_name"],
+                "last_name": request.data["last_name"],
+                "email": request.data["email"],
+                "phoneNum": request.data["phoneNum"],
+                "username": request.data["username"],
+            }
+
+            success = UserService.UserService.updateUserProfile(data,request.data["eid"])
+            if success:
+                return Response({"status": status.HTTP_200_OK})
+        return Response({"status": status.HTTP_400_BAD_REQUEST})
