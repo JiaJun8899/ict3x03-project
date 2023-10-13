@@ -4,8 +4,7 @@ from rest_framework import status
 from api.services import OrganizerAdminService, EventService, AccountService
 from django.utils import timezone
 from datetime import datetime
-
-
+from rest_framework.parsers import MultiPartParser, FormParser
 class UpdateOrganizerStatus(APIView):
     def put(self, request):
         success = OrganizerAdminService.updateOrganizer(
@@ -53,6 +52,8 @@ class EventAPI(APIView):
 
 
 class EventsByOrganizationAPI(APIView):
+    parser_classes = (MultiPartParser,FormParser)
+
     def get(self, request, organization_id):
         eventsByOrg = EventService.getEventByOrg(organization_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
@@ -60,13 +61,12 @@ class EventsByOrganizationAPI(APIView):
     def post(self, request, organization_id):
         """Create Event"""
         data = {
-            "eventStatus": request.data["eventStatus"],
-            "eventName": request.data["eventName"],
-            "startDate": timezone.now(),
-            "endDate": timezone.now(),
-            "eventStatus": request.data["eventStatus"],
-            "noVol": request.data["noVol"],
-            "eventDesc": request.data["eventDesc"],
+            "eventName": request.data['data[eventName]'],
+            "startDate": request.data['data[startDate]'],
+            "endDate": request.data['data[endDate]'],
+            "noVol": request.data['data[noVol]'],
+            "eventDesc": request.data['data[eventDesc]'],
+            "eventImage": request.data['data[eventImage]'],
         }
         success = EventService.createEvent(data, organization_id)
         if success:
@@ -126,3 +126,8 @@ class RegisterUserAPIView(APIView):
             birthday = datetime.strptime(request.data["birthday"], "%d%m%Y").date()
             AccountService.createNormalUser(data, birthday)
         return Response(status=status.HTTP_200_OK)
+
+
+class TestAPI(APIView):
+    def get(self, request):
+        return Response({'role': 'test'}, status=status.HTTP_200_OK)

@@ -11,7 +11,7 @@ class EventService:
         serializer = EventOrganizerMappingSerializer(events, many=True)
         return serializer.data
     
-    def createEvent(data:dict, organization_id):
+    def createEvent(data, organization_id):
         eventSerializer = EventSerializer(data=data)
         if eventSerializer.is_valid():
             newEvent = eventSerializer.save()
