@@ -21,6 +21,7 @@ export default function SimpleCard() {
   const toast = useToast();
     const API_HOST = `http://localhost:8000/api`;
 
+    let _csrfToken = null;
   const handleLogin = async () => {
     try {
       const response = await fetch(`${API_HOST}/auth-login/`, {
@@ -55,7 +56,6 @@ export default function SimpleCard() {
     }
   };
 
-    let _csrfToken = null;
 
     async function getCsrfToken() {
       if (_csrfToken === null) {
@@ -67,21 +67,6 @@ export default function SimpleCard() {
       }
       return _csrfToken;
     }
-
-    async function testRequest(method) {
-      const response = await fetch(`${API_HOST}/ping/`, {
-        method: method,
-        headers: (
-          method === 'POST'
-            ? {'X-CSRFToken': await getCsrfToken()}
-            : {}
-        ),
-        credentials: 'include',
-      });
-      const data = await response.json();
-      return data.result;
-    }
-
 
 
   return (
