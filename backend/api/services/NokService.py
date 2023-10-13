@@ -20,6 +20,19 @@ class NokService:
         except Exception as e:
             print(e)
             return False   
+        
+    @staticmethod
+    def updateNok(data,id):
+        try:
+            user = NOK.objects.get(id=id) 
+            serializer = NOKSerializer(instance=user, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return True
+            # print(serializer.errors)
+        except Exception as e:
+            print(e)
+            return False
 
 
             

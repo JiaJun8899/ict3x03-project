@@ -132,7 +132,19 @@ class RegisterUserAPIView(APIView):
 class UpdateUserAPIView(APIView):
     def put(self, request):
         # ['first_name', 'last_name', 'email', 'phoneNum', 'username']
-        valid = UserService.UserService.getUserById(request.data["id"])
+        # ["name", "relationship", "phoneNum"]
+        valid = UserService.UserService.getUserById(request.data["id"]) 
+        emergency = EmergencyContactService.EmergencyContactService.getContactById(request.data["id"])
+        if emergency:    
+            nokData = {
+                "name" : request.data["name"], 
+                "relationship" : request.data["relationship"],
+                "phoneNum": request.data["phoneNum"]
+            }
+            nokUpdateSuccess = NokService.NokService.updateNok(nokData,emergency["nok"]) 
+            print(nokUpdateSuccess)       
+            # nok = NokService.NokService.getNokById(emergency["nok"])
+        
         if valid != None:
             data ={
                 "first_name": request.data["first_name"],
