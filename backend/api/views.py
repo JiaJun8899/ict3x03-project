@@ -25,7 +25,6 @@ class UpdateOrganizerStatus(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-
 class GetAllOrganizers(APIView):
     def get(self, request):
         organizers = OrganizerAdminService.getAllOrganizers()
@@ -188,3 +187,12 @@ class SignUpEventAPIView(APIView):
             if success:
                 return Response({"status": status.HTTP_200_OK})
         return Response({"status": status.HTTP_400_BAD_REQUEST})
+    
+
+class SearchEvents(APIView):
+    def post(self,request):
+        events = EventService.searchEvent(request.data["name"])
+        if events != None:
+            return Response(events, status=status.HTTP_200_OK)
+        return Response({"status": status.HTTP_400_BAD_REQUEST})
+

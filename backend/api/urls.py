@@ -11,4 +11,5 @@ urlpatterns = [
     path('update-user-details/',views.UpdateUserAPIView.as_view()),
     path('sign-up-event/',views.SignUpEventAPIView.as_view()), 
     path('profile/<str:user_id>/',views.GetProfileDetailsAPIView.as_view(), name="get-profile"),       
+    path('search-events/', views.SearchEvents.as_view())
 ]
