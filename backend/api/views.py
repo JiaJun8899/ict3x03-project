@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from api.services import OrganizerAdminService, EventService, AccountService,UserService,EventCommonService
+from api.services import OrganizerAdminService, EventService, AccountService,UserService,EventCommonService,EmergencyContactService,NokService
 from django.utils import timezone
 from datetime import datetime
 import json
@@ -132,7 +132,7 @@ class RegisterUserAPIView(APIView):
 class UpdateUserAPIView(APIView):
     def put(self, request):
         # ['first_name', 'last_name', 'email', 'phoneNum', 'username']
-        valid = UserService.UserService.validUser(request.data["eid"])
+        valid = UserService.UserService.getUserById(request.data["id"])
         if valid != None:
             data ={
                 "first_name": request.data["first_name"],
@@ -141,23 +141,36 @@ class UpdateUserAPIView(APIView):
                 "phoneNum": request.data["phoneNum"],
                 "username": request.data["username"],
             }
-
-            success = UserService.UserService.updateUserProfile(data,request.data["eid"])
+            success = UserService.UserService.updateUserProfile(data,request.data["id"])
             if success:
                 return Response({"status": status.HTTP_200_OK})
         return Response({"status": status.HTTP_400_BAD_REQUEST})
     
+class GetProfileDetailsAPIView(APIView):
+    def get(self,request,user_id):
+        data = {}
+        valid = UserService.UserService.getUserById(user_id)
+        data["profile"] = valid
+        emergency = EmergencyContactService.EmergencyContactService.getContactById(user_id)
+        if emergency:            
+            # data["emergency"] = emergency
+            # print(emergency)
+            nok = NokService.NokService.getNokById(emergency["nok"])
+            data["nok"] = nok
+        
+        # print(valid)
+        return Response(data, status=status.HTTP_200_OK)
+
+    
 class SignUpEventAPIView(APIView):
     def post(self,request):
 
-        validUser = UserService.UserService.getUserById(request.data["eid"])
-        validEvent = EventCommonService.EventCommonService.getEventByID(request.data["eeid"])
+        validUser = UserService.UserService.getUserById(request.data["id"])
+        validEvent = EventCommonService.EventCommonService.getEventByID(request.data["eid"])
         if validUser != None and validEvent != None:
-            # print(validUser["user"])
-            # print(validEvent)
             data={               
-                "event": request.data["eeid"],     
-                "participant":request.data["eid"]          
+                "event": request.data["eid"],     
+                "participant":request.data["id"]          
             }
             success = UserService.UserService.signUpEvent(data=data)
             if success:

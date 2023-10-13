@@ -1,7 +1,8 @@
 from sre_compile import FAILURE
 from sre_constants import SUCCESS
-from api.models import GenericUser, EventParticipant, NormalUser
-from api.serializer import NormalUserSerializer, GenericUserSerializer, EventParticipantSerializer,EventSignUpParticipantSerializer
+from api.models import GenericUser, NOK, EmergencyContacts, NormalUser
+from api.serializer import NormalUserSerializer, GenericUserSerializer, EventParticipantSerializer,EventSignUpParticipantSerializer, NOKSerializer
+from django.http import JsonResponse
 
 class UserService:
     def __init__(self):
@@ -9,15 +10,17 @@ class UserService:
     
     @staticmethod
     def validUser(eid):
-        user = GenericUser.genericUserManager.getByUUID(eid)
+        user = NormalUser.normalUserManager.getByUUID(eid)
+        print(user)
         return user
     
     @staticmethod
     def getUserById(eid):
+        # data = {}
         try:
-            user =  NormalUser.normalUserManager.getByUUID(eid)
-            serializer = NormalUserSerializer(user)            
-            return serializer.data
+            user =  NormalUser.normalUserManager.getByUUID(eid)            
+            serializerGeneric = NormalUserSerializer(user)      
+            return serializerGeneric.data    
         except Exception as e:
             return False
 
@@ -29,6 +32,7 @@ class UserService:
             if serializer.is_valid():
                 serializer.save()
                 return True
+            print(serializer.errors)
         except Exception as e:
             print(e)
             return False
@@ -37,7 +41,7 @@ class UserService:
     @staticmethod
     def signUpEvent(data):
         try:
-            eventSerializer = EventParticipantSerializer(data=data)
+            eventSerializer = EventSignUpParticipantSerializer(data=data)
             print(eventSerializer.is_valid())
             print(eventSerializer.errors)
             if eventSerializer.is_valid():
