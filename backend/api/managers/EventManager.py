@@ -1,4 +1,6 @@
 from .GenericInfoManager import GenericInfoManager
 
 class EventManager(GenericInfoManager):
-    pass
+    def searchEvent(self,name):
+        event = self.filter(eventName__contains=name)
+        return event
