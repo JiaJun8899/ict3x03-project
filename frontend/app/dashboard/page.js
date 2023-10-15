@@ -1,26 +1,21 @@
-import axios from "axios";
-import dynamic from "next/dynamic";
 import { Suspense } from "react";
+import { getUser, getEvents, getEventsOrg } from "../utils/utils";
+import OrganiserDashboard from "./organiserDashboard";
+import RegularDashboard from "./normalUserDashboard";
 
-const OrganiserDashboard = dynamic(() => import("./organiserDashboard"), {
-  ssr: false,
-});
-const RegularDashboard = dynamic(() => import("./normalUserDashboard"), {
-  ssr: false,
-});
-
-async function getUser() {
-  const response = await axios.get("http://127.0.0.1:8000/api/test");
-  return response.data;
-}
+export const dynamic = "force-dynamic";
 
 async function Dashboard({ promise }) {
   const userRole = await promise;
-
-  if (userRole.role === "test") {
-    return <OrganiserDashboard />;
+  if (userRole.role != "test") {
+    const data = await getEvents();
+    return <RegularDashboard data={data} />;
   } else {
-    return <RegularDashboard />;
+    const orgID = "2364004d84ce4462b27f6ef43e5529f5";
+    const data = await getEventsOrg(orgID);
+    console.log("got fetch?")
+    console.log(data)
+    return <OrganiserDashboard data={data} />;
   }
 }
 
@@ -29,7 +24,7 @@ export default async function Page() {
   return (
     <div>
       <Suspense fallback={<p>Loading ...</p>}>
-        <Dashboard promise={userRole} />;
+        <Dashboard promise={userRole} />
       </Suspense>
     </div>
   );
