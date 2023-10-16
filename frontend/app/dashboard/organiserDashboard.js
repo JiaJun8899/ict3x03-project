@@ -81,8 +81,8 @@ function StackEx() {
         desc="The future can be even brighter but a goal without a plan is just a wish"
       />
       <Feature
-        title="Save Money"
-        desc="You deserve good things. With a whooping 10-15% interest rate per annum"
+        title="Header"
+        desc="Some desc"
       />
     </Stack>
   );
