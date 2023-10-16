@@ -29,7 +29,9 @@ SECRET_KEY = 'django-insecure--q)fc7j=(8nq0=-kgb1)(k!x+9_&56pq_g6oqd8!@wht@i=ezo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '172.18.0.4'
+]
 
 #User models
 # Application definition
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
+    'corsheaders',
 ]
 
 AUTH_USER_MODEL = 'api.GenericUser'
@@ -50,6 +53,7 @@ AUTH_USER_MODEL = 'api.GenericUser'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -57,6 +61,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://172.18.0.3:3000'
+]
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
@@ -129,6 +137,8 @@ USE_TZ = True
 
 STATIC_ROOT = BASE_DIR / 'production_static'
 STATIC_URL = 'static/'
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'backend/mediafiles')
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
