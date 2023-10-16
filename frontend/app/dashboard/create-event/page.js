@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 
 export default function SignupCard() {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     eventName: "",
     startDate: "",

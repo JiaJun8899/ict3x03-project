@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure--q)fc7j=(8nq0=-kgb1)(k!x+9_&56pq_g6oqd8!@wht@i=ezo
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '172.18.0.4'
+    
 ]
 
 #User models
