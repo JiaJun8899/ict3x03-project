@@ -3,10 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from api.services import OrganizerAdminService, EventService, AccountService,UserService,EventCommonService,EmergencyContactService,NokService
 from django.utils import timezone
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from datetime import datetime
 import json
 
 
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 class UpdateOrganizerStatus(APIView):
     def put(self, request):
         success = OrganizerAdminService.updateOrganizer(
@@ -53,20 +55,22 @@ class EventAPI(APIView):
 
 
 class EventsByOrganizationAPI(APIView):
+    parser_classes = (MultiPartParser,FormParser, JSONParser)
+
     def get(self, request, organization_id):
         eventsByOrg = EventService.getEventByOrg(organization_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
     def post(self, request, organization_id):
         """Create Event"""
+        print(request.data)
         data = {
-            "eventStatus": request.data["eventStatus"],
-            "eventName": request.data["eventName"],
-            "startDate": timezone.now(),
-            "endDate": timezone.now(),
-            "eventStatus": request.data["eventStatus"],
-            "noVol": request.data["noVol"],
-            "eventDesc": request.data["eventDesc"],
+            "eventName": request.data['eventName'],
+            "startDate": request.data['startDate'],
+            "endDate": request.data['endDate'],
+            "noVol": request.data['noVol'],
+            "eventDesc": request.data['eventDesc'],
+            "eventImage": request.data['eventImage'],
         }
         success = EventService.createEvent(data, organization_id)
         if success:
@@ -76,19 +80,20 @@ class EventsByOrganizationAPI(APIView):
 
     def put(self, request, organization_id):
         """Update event"""
-        checkValid = EventService.checkValid(
+        print(request.data)
+        checkValid = EventService.checkValid(organization_id,
             request.data["eid"]
         )  # Should be able to remove and just use under updateEvent
         if checkValid:
-            data = {
-                "eventStatus": request.data["eventStatus"],
-                "eventName": request.data["eventName"],
-                "startDate": timezone.now(),
-                "endDate": timezone.now(),
-                "eventStatus": request.data["eventStatus"],
-                "noVol": request.data["noVol"],
-                "eventDesc": request.data["eventDesc"],
-            }
+            data = {}
+
+            for key, value in request.data.items():
+                if key == 'eventImage' and not isinstance(value, InMemoryUploadedFile):
+                    pass
+                else:
+                    data[key] = value
+            data['eventStatus'] = 'open'
+            print(data)
             success = EventService.updateEvent(data, request.data["eid"])
             if success:
                 return Response({"status": status.HTTP_200_OK})
@@ -96,7 +101,9 @@ class EventsByOrganizationAPI(APIView):
 
     def delete(self, request, organization_id):
         """Delete Event and Mapping"""
+        # print(request.data)
         success = EventService.deleteEvent(request.data["eid"])
+        success = True
         if success:
             return Response({"status": status.HTTP_200_OK})
         else:
@@ -105,7 +112,7 @@ class EventsByOrganizationAPI(APIView):
 
 class EventSingleByOrganizationAPI(APIView):
     def get(self, request, organization_id, event_id):
-        eventsByOrg = EventService.getParticipantsByEvent(organization_id, event_id)
+        eventsByOrg = EventService.getEventByID(organization_id, event_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
 class RegisterUserAPIView(APIView):
@@ -126,8 +133,6 @@ class RegisterUserAPIView(APIView):
             birthday = datetime.strptime(request.data["birthday"], "%d%m%Y").date()
             AccountService.createNormalUser(data, birthday)
         return Response(status=status.HTTP_200_OK)
-    
-
 class UpdateUserAPIView(APIView):
     def put(self, request):
         # ['first_name', 'last_name', 'email', 'phoneNum', 'username']
@@ -196,3 +201,8 @@ class SearchEvents(APIView):
             return Response(events, status=status.HTTP_200_OK)
         return Response({"status": status.HTTP_400_BAD_REQUEST})
 
+
+
+class TestAPI(APIView):
+    def get(self, request):
+        return Response({'role': 'test'}, status=status.HTTP_200_OK)

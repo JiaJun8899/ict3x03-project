@@ -15,7 +15,7 @@ class Event(models.Model):
     startDate= models.DateTimeField(blank=False)
     endDate= models.DateTimeField(blank=False)
     eventImage = models.ImageField(blank = True, upload_to='events/')
-    eventStatus = models.CharField(choices=STATUS_CHOICES, max_length=10,blank=False,validators=[MinLengthValidator(2)])
+    eventStatus = models.CharField(choices=STATUS_CHOICES, max_length=10,blank=False,validators=[MinLengthValidator(2)], default="Open")
     noVol = models.IntegerField(default=0, verbose_name="Number of Volunteers",blank=False)
     eventDesc = models.TextField(blank=False,validators=[MinLengthValidator(2)])
     

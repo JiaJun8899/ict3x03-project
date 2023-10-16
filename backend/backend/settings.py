@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
+    'corsheaders',
 ]
 
 AUTH_USER_MODEL = 'api.GenericUser'
@@ -50,6 +51,7 @@ AUTH_USER_MODEL = 'api.GenericUser'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -57,6 +59,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
@@ -129,6 +134,8 @@ USE_TZ = True
 
 STATIC_ROOT = BASE_DIR / 'production_static'
 STATIC_URL = 'static/'
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'backend/mediafiles')
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
