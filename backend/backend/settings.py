@@ -20,14 +20,13 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Email stuff
-""" EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' """
-""" EMAIL_HOST = os.environ.get("EMAIL_HOST")# E.g., for Gmail, it's 'smtp.gmail.com' """
-""" EMAIL_PORT = 587  # Port for TLS """
-""" EMAIL_USE_TLS = True  # Use TLS security """
-""" EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")# Your email address """
-""" EMAIL_HOST_PASSWORD =  os.environ.get("EMAIL_HOST_PASSWORD") # Your email password """
-
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get("EMAIL_HOST")# E.g., for Gmail, it's 'smtp.gmail.com'
+EMAIL_PORT = 587  # Port for TLS
+EMAIL_USE_TLS = True  # Use TLS security
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")# Your email address
+EMAIL_HOST_PASSWORD =  os.environ.get("EMAIL_HOST_PASSWORD") # Your email password
+OTP_EMAIL_SENDER = EMAIL_HOST_USER
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -46,6 +45,8 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'django_otp',
+    'django_otp.plugins.otp_email',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -74,7 +75,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
-
+    "django_otp.middleware.OTPMiddleware",
 ]
 
 ROOT_URLCONF = 'backend.urls'
