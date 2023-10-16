@@ -39,7 +39,7 @@ SECRET_KEY = 'django-insecure--q)fc7j=(8nq0=-kgb1)(k!x+9_&56pq_g6oqd8!@wht@i=ezo
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '172.18.0.4'
+    'backend'
 ]
 
 #User models
@@ -79,8 +79,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://172.18.0.3:3000'
+        'http://frontend:3000',
 ]
 ROOT_URLCONF = 'backend.urls'
 
@@ -162,9 +161,6 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
 CSRF_TRUSTED_ORIGINS=[
-    'http://localhost:3000',
+        'http://frontend:3000',
 ]
