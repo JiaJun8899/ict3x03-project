@@ -1,11 +1,10 @@
 "use client";
+import Link from "next/link";
 
 export default function Page() {
   return (
     <>
-    <div>
-      This is a home page
-    </div>
+      <Link href="/dashboard">This is a home page</Link>
     </>
   );
 }
