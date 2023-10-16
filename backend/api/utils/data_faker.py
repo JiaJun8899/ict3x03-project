@@ -8,7 +8,7 @@ import os
 
 # Initialize the faker instance
 fake = Faker()
-Faker.seed(1234)
+Faker.seed(14434)
 
 
 # Configure Django settings to run the script standalone
@@ -27,7 +27,7 @@ def generate_singapore_nric():
 
 def create_generic_users():
     User = get_user_model()
-    username = fake.user_name()
+    username = fake.user_name() + "_" + str(random.randint(0,999999))
     if not User.objects.filter(username=username).exists():
         user = User(username=username, first_name=fake.first_name(), last_name=fake.last_name(),phoneNum=generate_8_digit_phone(), 
                                    nric=generate_singapore_nric(), email=username+"@gmail.com",)
@@ -47,13 +47,17 @@ def create_admins():
 def create_normal_users(num):
     for _ in range(num):
         user = create_generic_users()
+        if user == None:
+            continue
         NormalUser.normalUserManager.create(user=user,birthday=fake.date())
 
 
 def create_organizers(num):
     for _ in range(num):
         user = create_generic_users()
-        Organizer.organiserManager.create(user=user,validOrganisation =True)
+        if user == None:
+            continue
+        Organizer.organizerManager.create(user=user,validOrganisation =True)
 
 def create_events(num):
     for _ in range(num):
@@ -76,11 +80,10 @@ def create_NOKs(num):
 
 
 def create_emergency_contacts():
-    all_normal_users = NormalUser.normalUserManager.all()
+    all_normal_users = NormalUser.normalUserManager.exclude(emergencycontacts__isnull=False)
     all_nok = NOK.objects.all()
-
     nok_count = len(all_nok)
-
+    
     for normal_user in all_normal_users:
         selected_nok = all_nok[random.randint(0, nok_count - 1)]
         try:
@@ -95,7 +98,7 @@ def create_emergency_contacts():
 def create_event_organizer_mappings():
     try:
         for event in Event.eventManager.all():
-            for organizer in Organizer.organiserManager.all():
+            for organizer in Organizer.organizerManager.all():
                 # Check for existing mapping
                 existing_mapping = EventOrganizerMapping.objects.filter(event=event, organizer=organizer).exists()
 
@@ -108,7 +111,7 @@ def create_event_organizer_mappings():
 def create_event_participants():
     for event in Event.eventManager.all():
         for normal_user in NormalUser.normalUserManager.all():
-            EventParticipant.objects.create(event=event, participant=normal_user)
+            EventParticipant.objects.get_or_create(event=event, participant=normal_user)
 
 @transaction.atomic
 def runfile():

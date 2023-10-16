@@ -63,6 +63,13 @@ class EventService:
         particpants = EventParticipant.eventParticipantManager.getParticipantsByEventUUID(eid)
         serializer = EventParticipantSerializer(particpants, many=True)
         return serializer.data
+        
+    def searchEvent(name):
+        events = Event.eventManager.searchEvent(name)
+        print(events)
+        serializer =  EventSerializer(events,many=True)
+        return serializer.data
+
     
     def getEventByID(organizer_id, eid):
         orgEventInstance = EventOrganizerMapping.eventMapperManager.getMapByOrgEventUUID(organizer_id, eid)
