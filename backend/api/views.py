@@ -1,3 +1,4 @@
+from django_otp.decorators import otp_required
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -301,9 +302,34 @@ class Login(APIView):
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
-        authenticated = AuthService.authenticateUser(request, username, password)
-        if authenticated:
-            request.session["email"] = authenticated.email
-            request.session["role"] = AccountService.getUserRole(authenticated.id)
-            return Response({"detail": "Logged in successfully."}, status=200)
+        authService = AuthService()
+        userWithCorrectCredential = authService.authenticateUser(request, username, password)
+        if userWithCorrectCredential :
+            request.session["id"] = str(userWithCorrectCredential.id) 
+            request.session["role"] = AccountService.getUserRole(userWithCorrectCredential.id)
+            return Response({"detail": "Credentials are correct"}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)
+
+class VerifyOtp(APIView):
+    def __init__(self, *args, **kwargs):
+        self.authService = AuthService()
+        super().__init__(*args, **kwargs)
+
+    def get(self,request):
+        isOtpSent = self.authService.generateOTP(request.session["id"])
+        if isOtpSent:
+            return Response({"detail": "Credentials are correct"}, status=200)
+        return Response({"detail": "Invalid credentials."}, status=401)
+
+    def post(self,request):
+        otp = request.data.get("OTP")
+        uuid = request.session["id"]
+        verified = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
+        if verified:
+            return Response({"detail": "LOGIN SUCCESS"}, status=200)
+        return Response({"detail": "WRONG OTP"}, status=401)
+
+class Logout(APIView):
+        def post(self,request):
+            AuthService.logout(request)
+            return Response({"detail": "LOGOUT SUCCESS"}, status=200)
