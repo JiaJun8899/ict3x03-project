@@ -211,7 +211,7 @@ class SearchEvents(APIView):
 
 class TestAPI(APIView):
     def get(self, request):
-        return Response({'role': 'test'}, status=status.HTTP_200_OK)
+        return Response({'id': request.session["_auth_user_id"], 'email' : request.session["email"]}, status=status.HTTP_200_OK)
 
 class GetAllEvent(APIView):
     def get(self, request):
@@ -252,5 +252,6 @@ class Login(APIView):
         password = request.data.get("password")
         authenticated = AuthService.authenticateUser(request, username, password)
         if authenticated:
+            request.session["email"] = authenticated.email
             return Response({"detail": "Logged in successfully."}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)

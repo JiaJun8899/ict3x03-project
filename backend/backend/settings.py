@@ -39,7 +39,7 @@ SECRET_KEY = 'django-insecure--q)fc7j=(8nq0=-kgb1)(k!x+9_&56pq_g6oqd8!@wht@i=ezo
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'backend'
+    'localhost'
 ]
 
 #User models
@@ -68,19 +68,15 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    "django.middleware.common.CommonMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
 
 ]
 
-CORS_ALLOWED_ORIGINS = [
-        'http://frontend:3000',
-]
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
@@ -161,6 +157,11 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS=[
-        'http://frontend:3000',
+        'http://localhost:3000'
+]
+
+CORS_ALLOWED_ORIGINS = [
+        'http://localhost:3000',
 ]
