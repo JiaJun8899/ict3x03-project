@@ -11,12 +11,20 @@ class GenericUser(AbstractUser):
         regex=r'^[A-Za-z]\d{7}[A-Za-z]$',
         message="NRIC must start with an alphabet character, followed by 8 digits, and ending with an alphabet character."
     ) 
-
+    email = models.EmailField(
+        verbose_name="email address",
+        max_length=255,
+        unique=True,
+        blank=False
+        )
     phoneNum = models.CharField(max_length=8, null=False,blank=False,validators=[MinLengthValidator(8)])
     nric = models.CharField(max_length=9, null=False, blank=False,validators=[nricRegex])
     genericUserManager = GenericUserManager()
     class Meta:
         app_label = "api"
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'phoneNum', 'nric']
 
     def __str__(self):
         return str(self.first_name) + str(self.last_name)

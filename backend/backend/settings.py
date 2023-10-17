@@ -19,6 +19,15 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Email stuff
+""" EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' """
+""" EMAIL_HOST = os.environ.get("EMAIL_HOST")# E.g., for Gmail, it's 'smtp.gmail.com' """
+""" EMAIL_PORT = 587  # Port for TLS """
+""" EMAIL_USE_TLS = True  # Use TLS security """
+""" EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")# Your email address """
+""" EMAIL_HOST_PASSWORD =  os.environ.get("EMAIL_HOST_PASSWORD") # Your email password """
+
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -30,7 +39,7 @@ SECRET_KEY = 'django-insecure--q)fc7j=(8nq0=-kgb1)(k!x+9_&56pq_g6oqd8!@wht@i=ezo
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '172.18.0.4'
+    'backend', 'localhost'
 ]
 
 #User models
@@ -45,26 +54,29 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
-    'corsheaders',
+    'corsheaders'
 ]
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
 AUTH_USER_MODEL = 'api.GenericUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    "django.middleware.common.CommonMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://172.18.0.3:3000'
-]
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
@@ -145,4 +157,11 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS=[
+        'http://localhost:3000'
+]
 
+CORS_ALLOWED_ORIGINS = [
+        'http://localhost:3000',
+]

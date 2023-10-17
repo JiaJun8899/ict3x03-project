@@ -1,43 +1,49 @@
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from api.services import OrganizerAdminService, EventService, AccountService,UserService,EventCommonService,EmergencyContactService,NokService
-from django.utils import timezone
+from api.services import *
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from datetime import datetime
-import json
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
 
+def csrf(request):
+    return JsonResponse({'csrfToken': get_token(request)})
+
+def ping(request):
+    return JsonResponse({'result': 'OK'})
 
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 class UpdateOrganizerStatus(APIView):
     def put(self, request):
-        success = OrganizerAdminService.updateOrganizer(
-            request.data["user"], request.data["validOrganisation"]
-        )
+        organizerAdminService = OrganizerAdminService()
+        success = organizerAdminService .updateOrganizer(organizer_uuid = request.data["user"],status = request.data["validOrganisation"])
         if success:
-            return Response(
-                {
-                    "status": "success",
-                    "message": "Organizer status updated successfully.",
-                }
-            )
+            return Response({"message": "Organizer status updated successfully."})
         else:
-            return Response(
-                {"status": "error", "message": "Failed to update organizer status."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"message": "Failed to update organizer status."})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class GetAllOrganizers(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        organizers = OrganizerAdminService.getAllOrganizers()
+        organizerAdminService = OrganizerAdminService()
+        organizers = organizerAdminService.getAllOrganizers()
+
         if organizers != None:
             # Assuming that the returned organizers is a QuerySet or list of Organizer instances
-            return Response({"status": status.HTTP_200_OK, "data": organizers})
+            return Response({"data": organizers})
         else:
             return Response(
-                {"status": "error", "message": "Failed to retrieve organizers."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+                    {"status": "error", "message": "Failed to retrieve organizers."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+
 
 
 class EventAPI(APIView):
@@ -206,3 +212,49 @@ class SearchEvents(APIView):
 class TestAPI(APIView):
     def get(self, request):
         return Response({'role': 'test'}, status=status.HTTP_200_OK)
+        """ return Response({'id': request.session["_auth_user_id"], 'email' : request.session["email"]}, status=status.HTTP_200_OK) """
+        # Example of session being used
+
+
+class GetAllEvent(APIView):
+    def get(self, request):
+        eventService = EventService()
+        events = eventService.getAllEvents()
+
+        if  events != None:
+            # Assuming that the returned organizers is a QuerySet or list of Organizer instances
+            return Response({"data":events})
+        else:
+            return Response({"Failed to retrieve organizers."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class Login(APIView):
+    def post(self,request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        authenticated = AuthService.authenticateUser(request, username, password)
+        if authenticated:
+            return Response({"detail": "Logged in successfully."}, status=200)
+        return Response({"detail": "Invalid credentials."}, status=401)
+
+
+
+class GetAllEvent(APIView):
+    def get(self, request):
+        eventService = EventService()
+        events = eventService.getAllEvents()
+
+        if  events != None:
+            # Assuming that the returned organizers is a QuerySet or list of Organizer instances
+            return Response({"data":events})
+        else:
+            return Response({"Failed to retrieve organizers."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class Login(APIView):
+    def post(self,request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        authenticated = AuthService.authenticateUser(request, username, password)
+        if authenticated:
+            request.session["email"] = authenticated.email
+            return Response({"detail": "Logged in successfully."}, status=200)
+        return Response({"detail": "Invalid credentials."}, status=401)

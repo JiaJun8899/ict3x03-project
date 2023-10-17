@@ -5,11 +5,6 @@ class EventService:
     def __init__(self):
         pass
     
-    @staticmethod
-    def getAllEvent():
-        events = EventOrganizerMapping.eventMapperManager.getAllRecords()
-        serializer = EventOrganizerMappingSerializer(events, many=True)
-        return serializer.data
     
     def createEvent(data, organization_id):
         eventSerializer = EventSerializer(data=data)

@@ -3,7 +3,7 @@ import "server-only"
 import axios from "axios";
 
 
-const URI = "http://172.18.0.4:8000/api/"
+const URI = "http://backend:8000/api/"
 
 function formDataToJson(formData) {
   let json = {};
