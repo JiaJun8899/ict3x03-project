@@ -1,4 +1,3 @@
-from api.models import GenericUser, NormalUser, Organizer
 from api.serializer import OrganizerSerializer, RegisterNormalUserSerializer, RegisterUserSerializer
 class AccountService:
     def createOrganisation(data):
@@ -11,7 +10,7 @@ class AccountService:
                 return True
             else:
                 genericUserObj.delete()
-                print(organizer._errors)
+                print(organizer.errors)
         return False
                 
     def createNormalUser(data, birthday):
@@ -21,6 +20,8 @@ class AccountService:
             normalUser = RegisterNormalUserSerializer(data={"user":genericUserObj.id, 'birthday':birthday})
             if normalUser.is_valid():
                 normalUser.save()
+                return True
             else:
                 genericUserObj.delete()
-                print(normalUser._errors)
+                print(normalUser.errors)
+        return False

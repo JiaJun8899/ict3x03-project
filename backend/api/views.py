@@ -124,21 +124,25 @@ class EventSingleByOrganizationAPI(APIView):
 class RegisterUserAPIView(APIView):
     def post(self, request):
         data = {
-            "username": request.data["username"],
+            "username": request.data["userName"],
             "email": request.data["email"],
-            "first_name": request.data["first_name"],
-            "last_name": request.data["last_name"],
+            "first_name": request.data["firstName"],
+            "last_name": request.data["lastName"],
             "phoneNum": request.data["phoneNum"],
-            "nric": request.data["nric"],
+            "nric": request.data["NRIC"],
             "password": request.data["password"],
             "password2": request.data["password2"],
         }
-        if request.data["organizer"]:
-            AccountService.createOrganisation(data)
+        if request.data["organization"]:
+            success = AccountService.createOrganisation(data)
         else:
-            birthday = datetime.strptime(request.data["birthday"], "%d%m%Y").date()
-            AccountService.createNormalUser(data, birthday)
-        return Response(status=status.HTTP_200_OK)
+            birthday = datetime.strptime(request.data["birthday"], "%Y-%m-%d").date()
+            success = AccountService.createNormalUser(data, birthday)
+        if success:
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
 class UpdateUserAPIView(APIView):
     def put(self, request):
         # ['first_name', 'last_name', 'email', 'phoneNum', 'username']
