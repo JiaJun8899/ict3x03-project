@@ -212,6 +212,9 @@ class SearchEvents(APIView):
 class TestAPI(APIView):
     def get(self, request):
         return Response({'role': 'test'}, status=status.HTTP_200_OK)
+        """ return Response({'id': request.session["_auth_user_id"], 'email' : request.session["email"]}, status=status.HTTP_200_OK) """
+        # Example of session being used
+
 
 class GetAllEvent(APIView):
     def get(self, request):
