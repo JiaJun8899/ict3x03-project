@@ -29,9 +29,10 @@ import NextLink from "next/link";
 import { deleteEvent } from "../utils/utils";
 import { useRouter } from "next/navigation";
 
+// Hello World
 function DeleteModal(eventData) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const event = eventData.eventData
+  const event = eventData.eventData;
   const router = useRouter();
   return (
     <>
@@ -41,13 +42,17 @@ function DeleteModal(eventData) {
         <ModalContent>
           <ModalHeader>Delete Event Modal</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>Are you sure you want to delete {event.eventName}?</ModalBody>
+          <ModalBody>
+            Are you sure you want to delete {event.eventName}?
+          </ModalBody>
           <ModalFooter>
             <Button
               colorScheme="red"
               mr={3}
               onClick={() => {
-                deleteEvent(event.eid);onClose();router.refresh()
+                deleteEvent(event.eid);
+                onClose();
+                router.refresh();
               }}
             >
               Delete Event
@@ -63,12 +68,18 @@ function DeleteModal(eventData) {
 }
 
 function Feature({ title, desc }) {
-  const router = useRouter()
+  const router = useRouter();
   return (
     <Box p={5} shadow="md" borderWidth="1px">
       <Heading fontSize="xl">{title}</Heading>
       <Text mt={4}>{desc}</Text>
-      <Button onClick={()=>{router.push('/dashboard/create-event')}}>Create Event Page</Button>
+      <Button
+        onClick={() => {
+          router.push("/dashboard/create-event");
+        }}
+      >
+        Create Event Page
+      </Button>
     </Box>
   );
 }
@@ -80,10 +91,7 @@ function StackEx() {
         title="Create Event"
         desc="The future can be even brighter but a goal without a plan is just a wish"
       />
-      <Feature
-        title="Header"
-        desc="Some desc"
-      />
+      <Feature title="Header" desc="Some desc" />
     </Stack>
   );
 }
@@ -96,14 +104,13 @@ function convertTime(time) {
 }
 
 function EventRow({ event, index }) {
-
   return (
     <Tr>
       <Td>
         <Image
           src={
             event.eventImage
-              ? "http://127.0.0.1:8000" + event.eventImage
+              ? "http://backend:8000" + event.eventImage
               : "https://picsum.photos/200"
           }
         />
@@ -140,7 +147,7 @@ function EventRow({ event, index }) {
 }
 
 export default function OrganiserDashboard(props) {
-  const allEvents = props.data
+  const allEvents = props.data;
   function CreateEventRow() {
     return allEvents.map((event, index) => {
       return <EventRow event={event.event} key={index} />;
