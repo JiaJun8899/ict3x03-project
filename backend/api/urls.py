@@ -10,7 +10,7 @@ urlpatterns = [
     path('register',views.RegisterUserAPIView.as_view()),
     path('update-user-details/',views.UpdateUserAPIView.as_view()),
     path('sign-up-event/',views.SignUpEventAPIView.as_view()), 
-    path('profile/<str:user_id>/',views.GetProfileDetailsAPIView.as_view(), name="get-profile"),       
+    path('profile/',views.GetProfileDetailsAPIView.as_view(), name="get-profile"),       
     path('search-events/', views.SearchEvents.as_view()),
     path('test',views.TestAPI.as_view()),
     path('get-all-events/', views.GetAllEvent.as_view(), name='get_all_events'),
