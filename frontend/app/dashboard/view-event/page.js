@@ -27,18 +27,31 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { DateTime } from "luxon";
-import React from "react";
-import { deleteEvent } from "@/app/utils/utils";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import React,{useState, useEffect} from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+
+const API_HOST = "http://localhost:8000/api";
 
 function convertTime(time) {
   const convertedTime = DateTime.fromISO(time)
     .toJSDate()
     .toLocaleString("en-SG");
-    console.log(convertedTime.substring(0, 16));
   return convertedTime;
 }
-
+async function deleteEvent(eId) {
+  const token = await getCsrfToken();
+  const response = await axios.delete(API_HOST + "/get-event-byorg/", {
+    data: {
+      eid: eId,
+    },
+    headers: {
+      "X-CSRFToken": token,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+}
 function DeleteModal(eventData) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const event = eventData.eventData;
@@ -78,11 +91,34 @@ function DeleteModal(eventData) {
   );
 }
 
-export default function ViewEventDetails(eventData) {
-  const event = eventData.eventData;
-  const pathName = useParams().eid;
-  const  params= useSearchParams().get("event");
+export default function ViewEventDetails({ searchParams }) {
+    const [event, setEvent] = useState({
+      eventName: "",
+      startDate: "",
+      endDate: "",
+      noVol: "",
+      eventDesc: "",
+      eventImage: undefined,
+    });
   const router = useRouter();
+  async function getEvent() {
+    try {
+      const response = await axios.get(
+        `${API_HOST}/get-single-event/${searchParams.event}`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(response.data);
+      setEvent(response.data);
+    } catch (error) {
+      console.error("There was an fetching your profile", error);
+    }
+  }
+  useEffect(() => {
+    getEvent();
+  }, [searchParams]);
+
   return (
     <Container maxW={"7xl"}>
       <SimpleGrid
@@ -96,7 +132,7 @@ export default function ViewEventDetails(eventData) {
             alt={"product image"}
             src={
               event.eventImage
-                ? "http://127.0.0.1:8000" + event.eventImage
+                ? "http://localhost:8000" + event.eventImage
                 : "https://picsum.photos/200"
             }
             fit={"cover"}
@@ -172,7 +208,13 @@ export default function ViewEventDetails(eventData) {
                   {event.eventStatus}
                 </ListItem>
                 <ButtonGroup>
-                  <Button onClick={() => router.push("/dashboard/edit-event/"+ pathName+"/?event="+params)}>
+                  <Button
+                    onClick={() =>
+                      router.push(
+                        "/dashboard/edit-event/?event=" + searchParams.event
+                      )
+                    }
+                  >
                     Edit Event
                   </Button>
                   <DeleteModal eventData={event} />
