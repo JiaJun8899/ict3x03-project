@@ -66,6 +66,7 @@ class EventSignUpParticipantSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventParticipant
         fields = ['event','participant']
+        validators = []
 
 class RegisterUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True,validators=[UniqueValidator(queryset=GenericUser.genericUserManager.getAllRecords())])
