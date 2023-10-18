@@ -125,11 +125,6 @@ export default function Page() {
     }
   }
 
-  // useEffect(()=>{
-  //     fetchEvent()
-  //     // console.log('hi')
-  // },[])
-
   const signup = async () => {
     const token = await getCsrfToken();
     try {
