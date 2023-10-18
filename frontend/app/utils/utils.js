@@ -32,20 +32,6 @@ export async function getEventsByID(orgID, eID) {
   return response.data;
 }
 
-export async function createEvent(form) {
-  console.log(form.get("eventImage"));
-  const response = await axios.post(
-    "get-event-byorg/2364004d84ce4462b27f6ef43e5529f5/",
-    form,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-  return response.data;
-}
-
 export async function deleteEvent(eId) {
   const response = await axios.delete(
     "get-event-byorg/2364004d84ce4462b27f6ef43e5529f5/",
