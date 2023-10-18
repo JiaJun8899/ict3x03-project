@@ -1,6 +1,6 @@
 from sre_compile import FAILURE
 from sre_constants import SUCCESS
-from api.models import GenericUser, NOK, EmergencyContacts, NormalUser
+from api.models import GenericUser, NOK, EmergencyContacts, NormalUser,EventParticipant
 from api.serializer import NormalUserSerializer, GenericUserSerializer, EventParticipantSerializer,EventSignUpParticipantSerializer, NOKSerializer
 from django.http import JsonResponse
 
@@ -42,10 +42,23 @@ class UserService:
     def signUpEvent(data):
         try:
             eventSerializer = EventSignUpParticipantSerializer(data=data)
-            print(eventSerializer.is_valid())
-            print(eventSerializer.errors)
+            # print(eventSerializer.is_valid())
+            # print(eventSerializer.errors)
             if eventSerializer.is_valid():
+                # print("here is data " + data["participant"])
                 eventSerializer.save()
+                return True
+        except Exception as e:
+            print(e)
+            return False
+        
+    @staticmethod
+    def cancelSignUpEvent(data):
+        try:
+            eventSerializer = EventSignUpParticipantSerializer(data=data)
+            if eventSerializer.is_valid():
+                print(data["participant"])
+                EventParticipant.eventParticipantManager.deleteByUUID(data["participant"])
                 return True
         except Exception as e:
             print(e)

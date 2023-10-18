@@ -7,3 +7,6 @@ class EventParticipantManager(GenericInfoManager):
             return particpantsMap
         except Exception:
             return None
+    
+    def deleteByUUID(self, uuid):
+        return self.filter(participant_id=uuid).delete()

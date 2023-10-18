@@ -211,6 +211,23 @@ class SignUpEventAPIView(APIView):
             if success:
                 return Response({"status": status.HTTP_200_OK})
         return Response({"status": status.HTTP_400_BAD_REQUEST})
+
+class CancelSignUpEventAPIView(APIView):
+    def delete(self,request):
+        # print(request.session.value())
+        id = UUID(request.session["_auth_user_id"]).hex
+        validUser = UserService.getUserById(id)
+        validEvent = EventCommonService.getEventByID(request.data["eid"])
+        if validUser != None and validEvent != None:
+            data={               
+                "event": request.data["eid"],     
+                "participant":id          
+            }
+            success = UserService.cancelSignUpEvent(data=data)
+            # print(success)
+            if success:
+                return Response({"status": status.HTTP_200_OK})
+        return Response({"status": status.HTTP_400_BAD_REQUEST})
     
 
 class SearchEvents(APIView):
