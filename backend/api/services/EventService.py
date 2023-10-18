@@ -71,3 +71,8 @@ class EventService:
         eventInstance = Event.eventManager.getByUUID(orgEventInstance.event_id)
         serializer = EventSerializer(eventInstance)
         return serializer.data
+    
+    def userGetEventById(self,eid):
+        eventInstance = Event.eventManager.getByUUID(uuid=eid)
+        serializer = EventSerializer(eventInstance)
+        return serializer.data

@@ -198,13 +198,14 @@ class GetProfileDetailsAPIView(APIView):
     
 class SignUpEventAPIView(APIView):
     def post(self,request):
-
-        validUser = UserService.getUserById(request.data["id"])
+        id = UUID(request.session["_auth_user_id"]).hex
+        validUser = UserService.getUserById(id)
+        print(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
         if validUser != None and validEvent != None:
             data={               
                 "event": request.data["eid"],     
-                "participant":request.data["id"]          
+                "participant":id          
             }
             success = UserService.signUpEvent(data=data)
             if success:
@@ -223,8 +224,8 @@ class SearchEvents(APIView):
 
 class TestAPI(APIView):
     def get(self, request):
-        # return Response({'role': 'test'}, status=status.HTTP_200_OK)
-        return Response({'id': request.session["_auth_user_id"], 'email' : request.session["email"]}, status=status.HTTP_200_OK)
+        return Response({'role': 'test'}, status=status.HTTP_200_OK)
+        # return Response({'id': request.session["_auth_user_id"], 'email' : request.session["email"]}, status=status.HTTP_200_OK)
         # Example of session being used
 
 
@@ -238,6 +239,17 @@ class GetAllEvent(APIView):
             return Response({"data":events})
         else:
             return Response({"Failed to retrieve organizers."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GetEvent(APIView):
+    def get(self, request, eid):
+        eventService = EventService()
+        events = eventService.userGetEventById(eid)
+
+        if  events != None:
+            # Assuming that the returned organizers is a QuerySet or list of Organizer instances
+            return Response({"data":events})
+        else:
+            return Response({"Failed to retrieve event."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class Login(APIView):
     def post(self,request):
