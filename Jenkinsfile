@@ -9,6 +9,7 @@ pipeline {
         }
         stage('Test') {
             steps {
+				sh 'npm install'
 				dependencyCheck additionalArguments: ''' 
                     -o './'
                     -s './'
