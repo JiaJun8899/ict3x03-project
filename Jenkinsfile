@@ -9,13 +9,14 @@ pipeline {
         }
         stage('Test') {
             steps {
-        dependencyCheck additionalArguments: ''' 
+				dependencyCheck additionalArguments: ''' 
                     -o './'
                     -s './'
                     -f 'ALL' 
                     --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
 
-        dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+        dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
+		}
       }
     }
 }
