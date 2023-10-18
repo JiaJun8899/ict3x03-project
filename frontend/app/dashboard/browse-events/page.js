@@ -43,9 +43,9 @@ function convertTime(time) {
   console.log(convertedTime.substring(0, 16));
   return convertedTime;
 }
-function DeleteModal(eventData) {
+const DeleteModal = ({eventData,cancelSignup}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const event = eventData.eventData;
+  const event = eventData
   const router = useRouter();
   return (
     <>
@@ -64,11 +64,7 @@ function DeleteModal(eventData) {
             <Button
               colorScheme="red"
               mr={3}
-              onClick={() => {
-                deleteEvent(event.eid);
-                onClose();
-                router.replace("/dashboard", { replace: true });
-              }}
+              onClick={cancelSignup}
             >
               Delete Event
             </Button>
@@ -93,14 +89,14 @@ export default function Page() {
   const searchParams = useSearchParams();
   const search = searchParams.get("eid");
   const [event, setEvent] = useState({
-    // eid: "",
-    // endDate: "",
-    // eventDesc: "",
-    // eventImage: null,
-    // eventName: "",
-    // eventStatus: "",
-    // noVol: 0,
-    // startDate: "",
+    eid: "",
+    endDate: "",
+    eventDesc: "",
+    eventImage: null,
+    eventName: "",
+    eventStatus: "",
+    noVol: 0,
+    startDate: "",
   });
   useEffect(() => {
     fetchEvent();
@@ -154,9 +150,25 @@ export default function Page() {
     }
   };
   const cancelSignup = async () => {
+    const token = await getCsrfToken();
+    // console.log('cancel signup')
     try {
-    } catch (error) {}
-  };
+        const response = await axios.delete(
+            `${API_HOST}/cancel-sign-up-event/`,
+            {
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": token,
+                },
+                data: { eid: search },
+            }
+        );
+        console.log(response);
+    } catch (error) {
+        console.error(error);
+    }
+};
 
   return (
     <>
@@ -249,7 +261,7 @@ export default function Page() {
                   </ListItem>
                   <ButtonGroup>
                     <Button onClick={signup}>Sign Up Event</Button>
-                    <DeleteModal eventData={event} />
+                    <DeleteModal eventData={event} cancelSignup={cancelSignup} />
                   </ButtonGroup>
                 </List>
               </Box>
