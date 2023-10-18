@@ -24,6 +24,7 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { DateTime } from "luxon";
 import ViewEventDetails from "../view-event/ViewEvent";
@@ -43,9 +44,9 @@ function convertTime(time) {
   console.log(convertedTime.substring(0, 16));
   return convertedTime;
 }
-const DeleteModal = ({eventData,cancelSignup}) => {
+const DeleteModal = ({ eventData, cancelSignup }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const event = eventData
+  const event = eventData;
   const router = useRouter();
   return (
     <>
@@ -61,11 +62,7 @@ const DeleteModal = ({eventData,cancelSignup}) => {
             Are you sure you want to delete {event.eventName}?
           </ModalBody>
           <ModalFooter>
-            <Button
-              colorScheme="red"
-              mr={3}
-              onClick={cancelSignup}
-            >
+            <Button colorScheme="red" mr={3} onClick={cancelSignup}>
               Delete Event
             </Button>
             <Button colorScheme="blue" onClick={() => onClose()}>
@@ -76,15 +73,10 @@ const DeleteModal = ({eventData,cancelSignup}) => {
       </Modal>
     </>
   );
-}
+};
 
 export default function Page() {
-    // Here need to check if its a normal user if not just throw 404
-//   if ( 0 === 0 ){
-//     return (
-//         <>GG</>
-//     )
-//   }
+  const toast = useToast();
   const API_HOST = "http://localhost:8000/api";
   const searchParams = useSearchParams();
   const search = searchParams.get("eid");
@@ -124,11 +116,11 @@ export default function Page() {
       console.log(error);
     }
   }
-
+  
   const signup = async () => {
     const token = await getCsrfToken();
-    try {
-      const response = await axios.post(
+    const response = await axios
+      .post(
         `${API_HOST}/sign-up-event/`,
         { eid: search },
         {
@@ -138,32 +130,43 @@ export default function Page() {
             "X-CSRFToken": token,
           },
         }
-      );
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-    }
+      )
+      .then(function (response) {
+        console.log(response);
+        toast({
+          title: "Signup successful.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      })
+      .catch(function (error) {
+        console.log(error);
+        toast({
+          title: "Signup failed.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      });  
   };
   const cancelSignup = async () => {
     const token = await getCsrfToken();
     // console.log('cancel signup')
     try {
-        const response = await axios.delete(
-            `${API_HOST}/cancel-sign-up-event/`,
-            {
-                withCredentials: true,
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": token,
-                },
-                data: { eid: search },
-            }
-        );
-        console.log(response);
+      const response = await axios.delete(`${API_HOST}/cancel-sign-up-event/`, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": token,
+        },
+        data: { eid: search },
+      });
+      console.log(response);
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
-};
+  };
 
   return (
     <>
@@ -256,7 +259,10 @@ export default function Page() {
                   </ListItem>
                   <ButtonGroup>
                     <Button onClick={signup}>Sign Up Event</Button>
-                    <DeleteModal eventData={event} cancelSignup={cancelSignup} />
+                    <DeleteModal
+                      eventData={event}
+                      cancelSignup={cancelSignup}
+                    />
                   </ButtonGroup>
                 </List>
               </Box>

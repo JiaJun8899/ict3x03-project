@@ -145,23 +145,9 @@ class RegisterUserAPIView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateUserAPIView(APIView):
-    def put(self, request):
-        # ['first_name', 'last_name', 'email', 'phoneNum', 'username']
-        # ["name", "relationship", "phoneNum"]
-        print(request)
+    def put(self, request):        
         id = UUID(request.session["_auth_user_id"]).hex
         valid = UserService.getUserById(id) 
-        emergency = EmergencyContactService.getContactById(id)
-        if emergency:    
-            nokData = {
-                "name" : request.data["nokName"], 
-                "relationship" : request.data["nokRelationship"],
-                "phoneNum": request.data["nokPhone"]
-            }
-            nokUpdateSuccess = NokService.updateNok(nokData,emergency["nok"]) 
-            # print(nokUpdateSuccess)       
-            # nok = NokService.NokService.getNokById(emergency["nok"])
-        
         if valid != None:
             data ={
                 "first_name": request.data["firstname"],
@@ -170,10 +156,19 @@ class UpdateUserAPIView(APIView):
                 "phoneNum": request.data["phoneNum"],
                 "username": request.data["userName"],
             }
-            success = UserService.updateUserProfile(data,id)
-            if success:
-                return Response({"status": status.HTTP_200_OK})
-        return Response({"status": status.HTTP_400_BAD_REQUEST})
+        emergency = EmergencyContactService.getContactById(id)
+        if emergency:    
+            nokData = {
+                "name" : request.data["nokName"], 
+                "relationship" : request.data["nokRelationship"],
+                "phoneNum": request.data["nokPhone"]
+            }
+        nokUpdateSuccess = NokService.updateNok(nokData,emergency["nok"])         
+        
+        success = UserService.updateUserProfile(data,id)
+        if success and nokUpdateSuccess:
+            return Response(status= status.HTTP_200_OK)
+        return Response(status= status.HTTP_400_BAD_REQUEST)
     
 class GetProfileDetailsAPIView(APIView):
     def get(self,request):
@@ -200,7 +195,6 @@ class SignUpEventAPIView(APIView):
     def post(self,request):
         id = UUID(request.session["_auth_user_id"]).hex
         validUser = UserService.getUserById(id)
-        print(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
         if validUser != None and validEvent != None:
             data={               
@@ -208,9 +202,10 @@ class SignUpEventAPIView(APIView):
                 "participant":id          
             }
             success = UserService.signUpEvent(data=data)
-            if success:
-                return Response({"status": status.HTTP_200_OK})
-        return Response({"status": status.HTTP_400_BAD_REQUEST})
+            print(success)
+        if success:
+            return Response(status= status.HTTP_200_OK)
+        return Response(status= status.HTTP_400_BAD_REQUEST)
 
 class CancelSignUpEventAPIView(APIView):
     def delete(self,request):
@@ -224,10 +219,9 @@ class CancelSignUpEventAPIView(APIView):
                 "participant":id          
             }
             success = UserService.cancelSignUpEvent(data=data)
-            # print(success)
             if success:
-                return Response({"status": status.HTTP_200_OK})
-        return Response({"status": status.HTTP_400_BAD_REQUEST})
+                return Response(status= status.HTTP_200_OK)
+        return Response(status= status.HTTP_400_BAD_REQUEST)
     
 
 class SearchEvents(APIView):
@@ -235,7 +229,7 @@ class SearchEvents(APIView):
         events = EventService.searchEvent(request.data["name"])
         if events != None:
             return Response(events, status=status.HTTP_200_OK)
-        return Response({"status": status.HTTP_400_BAD_REQUEST})
+        return Response(status =status.HTTP_400_BAD_REQUEST)
 
 
 

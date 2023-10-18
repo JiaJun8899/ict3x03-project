@@ -42,8 +42,6 @@ class UserService:
     def signUpEvent(data):
         try:
             eventSerializer = EventSignUpParticipantSerializer(data=data)
-            # print(eventSerializer.is_valid())
-            # print(eventSerializer.errors)
             if eventSerializer.is_valid():
                 # print("here is data " + data["participant"])
                 eventSerializer.save()
