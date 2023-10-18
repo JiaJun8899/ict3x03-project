@@ -1,30 +1,48 @@
+"use client";
 import { Suspense } from "react";
-import { getUser, getEvents, getEventsOrg } from "../utils/utils";
-import OrganiserDashboard from "./organiserDashboard";
-import RegularDashboard from "./normalUserDashboard";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import axios from "axios";
 
-export const dynamic = "force-dynamic";
+const API_HOST = "http://localhost:8000/api";
 
-async function Dashboard({ promise }) {
-  const userRole = await promise;
-  if (userRole.role != "test") {
-    const data = await getEvents();
-    return <RegularDashboard data={data} />;
-  } else {
-    const orgID = "2364004d84ce4462b27f6ef43e5529f5";
-    const data = await getEventsOrg(orgID);
-    console.log("got fetch?")
-    console.log(data)
-    return <OrganiserDashboard data={data} />;
+const OrganiserDashboard = dynamic(() => import("./organiserDashboard"), {
+  ssr: false,
+});
+const RegularDashboard = dynamic(() => import("./normalUserDashboard"), {
+  ssr: false,
+});
+
+
+export default function Page() {
+  const [userRole, setUserRole] = useState("none");
+  async function getRole() {
+    try {
+      const response = await axios.get(`${API_HOST}/test`, {
+        withCredentials: true,
+      });
+      setUserRole(response.data);
+    } catch (error) {
+      console.error("There was an fetching your profile", error);
+    }
   }
-}
+  function Dashboard() {
+    const role = userRole.role;
+    console.log(role);
+    if (role == "Organizer") {
+      return <OrganiserDashboard />;
+    } else {
+      return <RegularDashboard />;
+    }
+  }
+  useEffect(() => {
+    getRole();
+  }, []);
 
-export default async function Page() {
-  const userRole = getUser();
   return (
     <div>
       <Suspense fallback={<p>Loading ...</p>}>
-        <Dashboard promise={userRole} />
+        <Dashboard userRole={userRole} />
       </Suspense>
     </div>
   );

@@ -19,9 +19,9 @@ import {
   FormControl,
 } from "../providers";
 import NextLink from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DateTime } from "luxon";
-import axios, { all } from "axios";
+import axios from "axios";
 
 let _csrfToken = null;
 const API_HOST = "http://localhost:8000/api";
@@ -88,36 +88,50 @@ function EventRow({ event, index }) {
   );
 }
 
-async function submitSearch(x,setAllEvents){
+async function submitSearch(x, setAllEvents) {
   const token = await getCsrfToken();
-  console.log(x)
-  try{
+  console.log(x);
+  try {
     const response = await axios.post(
       `${API_HOST}/search-events/`,
-    {name:x},
-    {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": token,
+      { name: x },
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": token,
+        },
       }
-    }
-    )
-    setAllEvents(response.data)
-    console.log(response.data)
-  }catch(error){
-    console.log(error)
+    );
+    setAllEvents(response.data);
+    console.log(response.data);
+  } catch (error) {
+    console.log(error);
   }
 }
 
 export default function RegularDashboard(props) {
-  var allEvents = props.data;
-  const setEvent  = (event)=>{  
-    props.callback(event)
+  // var allEvents = props.data;
+  // const setEvent  = (event)=>{
+  //   props.callback(event)
+  // }
+  const [events, setEvents] = useState([]);
+  async function getAllData() {
+    try {
+      const API_HOST = "http://localhost:8000/api";
+      const response = await axios.get(`${API_HOST}/get-all-events/`);
+      setEvents(response.data);
+      // console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
   }
-  const [searchText,setSearchText] = useState("")
+  useEffect(() => {
+    getAllData();
+  }, []);
+  const [searchText, setSearchText] = useState("");
   function CreateEventRow() {
-    return allEvents.map((event, index) => {
+    return events.map((event, index) => {
       return <EventRow event={event} key={index} />;
     });
   }
@@ -126,8 +140,18 @@ export default function RegularDashboard(props) {
       <StackEx />
       <Stack m={8} direction="row">
         <FormControl id="search">
-        <Input width='90%' placeholder="Search" value={searchText }onChange={(e)=>setSearchText(e.target.value)} />
-        <Button width='10%' onClick={()=>submitSearch(searchText,setEvent)}>Search</Button>
+          <Input
+            width="90%"
+            placeholder="Search"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <Button
+            width="10%"
+            onClick={() => submitSearch(searchText, setEvents)}
+          >
+            Search
+          </Button>
         </FormControl>
       </Stack>
       <Stack>

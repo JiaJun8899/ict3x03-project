@@ -19,9 +19,10 @@ import {
 } from "../providers";
 import { useState } from "react";
 import { ViewIcon, ViewOffIcon } from "../providers";
-import { registerAcc } from "../utils/utils";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
+import axios from "axios";
+const API_HOST = "http://localhost:8000/api";
 
 export default function SignupCard() {
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +37,7 @@ export default function SignupCard() {
     organization: false,
     password: "",
     password2: "",
-    email: "",
-    userName: "",
+    email: ""
   });
   function updateForm(value) {
     return setForm((prev) => {
@@ -46,12 +46,14 @@ export default function SignupCard() {
     });
   }
   async function handleForm(form) {
-    const response = await registerAcc(form);
-    if (response === 200) {
-      router.replace("/");
-    } else {
-      console.log("fail");
-    }
+    const response = await axios
+      .post(API_HOST + "/register", form)
+      .then(function (response) {
+        router.replace("/");
+      })
+      .catch(function (error) {
+        console.log("fail");
+      });
   }
   return (
     <Flex
@@ -76,18 +78,6 @@ export default function SignupCard() {
           p={8}
         >
           <Stack spacing={4}>
-            <Box>
-              <FormControl id="userName" isRequired>
-                <FormLabel>User Name</FormLabel>
-                <Input
-                  type="text"
-                  value={form.userName}
-                  onChange={(e) => {
-                    updateForm({ userName: e.target.value });
-                  }}
-                />
-              </FormControl>
-            </Box>
             <HStack>
               <Box>
                 <FormControl id="firstName" isRequired>

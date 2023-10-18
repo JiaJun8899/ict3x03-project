@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Flex,
   Box,
@@ -18,30 +17,71 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 
+let _csrfToken = null;
+const API_HOST = "http://localhost:8000/api";
+
 async function onSubmit(data) {
   console.log(data);
-  const response = await axios.put(
-    "http://127.0.0.1:8000/api/get-event-byorg/2364004d84ce4462b27f6ef43e5529f5/",
-    data,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
+  const token = await getCsrfToken();
+
+  const response = await axios.put(`${API_HOST}/get-event-byorg/`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      "X-CSRFToken": token,
+    },
+    withCredentials: true,
+  });
   console.log(response.data);
   return response.data;
 }
+async function getCsrfToken() {
+  if (_csrfToken === null) {
+    const response = await fetch(`${API_HOST}/csrf/`, {
+      credentials: "include",
+    });
+    const data = await response.json();
+    _csrfToken = data.csrfToken;
+  }
+  return _csrfToken;
+}
+export default function EditEvent({ searchParams }) {
+  // console.log(searchParams);
+  const [form, setForm] = useState({
+    eventName: "",
+    startDate: "",
+    endDate: "",
+    noVol: "",
+    eventDesc: "",
+    eventImage: undefined,
+  });
 
-export default function EditEvent({ eventData }) {
-  eventData.startDate = eventData.startDate.substring(0, 16);
-  eventData.endDate = eventData.endDate.substring(0, 16);
-  const [form, setForm] = useState(eventData);
   const [imgPreview, setImgPreview] = useState(
     form.eventImage
-      ? "http://127.0.0.1:8000" + form.eventImage
+      ? "http://localhost:8000" + form.eventImage
       : "https://picsum.photos/200"
   );
+
+  async function getEvent() {
+    try {
+      const response = await axios.get(
+        `${API_HOST}/get-single-event/${searchParams.event}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      response.data.startDate = response.data.startDate.substring(0, 16);
+      response.data.endDate = response.data.endDate.substring(0, 16);
+      console.log(response.data);
+      setForm(response.data);
+    } catch (error) {
+      console.error("There was an fetching your profile", error);
+    }
+  }
+  useEffect(() => {
+    getEvent();
+  }, [searchParams]);
+
   function updateForm(value) {
     return setForm((prev) => {
       console.log(form);
@@ -152,20 +192,20 @@ export default function EditEvent({ eventData }) {
             <Stack spacing={10} pt={2}>
               <ButtonGroup gap="4">
                 <Link href="/dashboard" prefetch={false} replace={true}>
-                  <Button
-                    loadingText="Submitting"
-                    size="lg"
-                    bg={"blue.400"}
-                    color={"white"}
-                    _hover={{
-                      bg: "blue.500",
-                    }}
-                    onClick={() => {
-                      onSubmit(form);
-                    }}
-                  >
-                    Update Event
-                  </Button>
+                <Button
+                  loadingText="Submitting"
+                  size="lg"
+                  bg={"blue.400"}
+                  color={"white"}
+                  _hover={{
+                    bg: "blue.500",
+                  }}
+                  onClick={() => {
+                    onSubmit(form);
+                  }}
+                >
+                  Update Event
+                </Button>
                 </Link>
                 <Link href="/dashboard" prefetch={false}>
                   <Button

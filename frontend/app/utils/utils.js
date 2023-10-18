@@ -2,7 +2,7 @@
 import "server-only";
 import axios from "axios";
 
-axios.defaults.baseURL = "http://127.0.0.1:8000/api";
+axios.defaults.baseURL = "http://backend:8000/api";
 axios.defaults.headers = {
   "Cache-Control": "no-cache",
   Pragma: "no-cache",
@@ -29,20 +29,6 @@ export async function getEventsOrg(orgID) {
 
 export async function getEventsByID(orgID, eID) {
   const response = await axios.get("get-single-event/" + orgID + "/" + eID);
-  return response.data;
-}
-
-export async function createEvent(form) {
-  console.log(form.get("eventImage"));
-  const response = await axios.post(
-    "get-event-byorg/2364004d84ce4462b27f6ef43e5529f5/",
-    form,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
   return response.data;
 }
 
