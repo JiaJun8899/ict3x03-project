@@ -9,18 +9,19 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from uuid import UUID
-
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
-
 def ping(request):
     return JsonResponse({"result": "OK"})
 
-
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-
+class TestAPI(APIView):
+    def get(self, request):
+        # return Response({"role": "test"}, status=status.HTTP_200_OK)
+        return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
+        # Example of session being used
 
 class UpdateOrganizerStatus(APIView):
     def put(self, request):
@@ -239,14 +240,6 @@ class SearchEvents(APIView):
             return Response(events, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
-class TestAPI(APIView):
-    def get(self, request):
-        # return Response({"role": "test"}, status=status.HTTP_200_OK)
-        return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
-        # Example of session being used
-
-
 class GetAllEvent(APIView):
     def get(self, request):
         eventService = EventService()
@@ -260,7 +253,6 @@ class GetAllEvent(APIView):
                 {"Failed to retrieve organizers."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
 
 class GetEvent(APIView):
     def get(self, request, eid):
@@ -276,17 +268,6 @@ class GetEvent(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-
-# class Login(APIView):
-#     def post(self, request):
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-#         authenticated = AuthService.authenticateUser(request, username, password)
-#         if authenticated:
-#             return Response({"detail": "Logged in successfully."}, status=200)
-#         return Response({"detail": "Invalid credentials."}, status=401)
-
-
 class GetAllEvent(APIView):
     def get(self, request):
         eventService = EventService()
@@ -300,7 +281,6 @@ class GetAllEvent(APIView):
                 {"Failed to retrieve organizers."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
 
 class Login(APIView):
     def post(self, request):
