@@ -26,10 +26,39 @@ import {
 import React from "react";
 import { DateTime } from "luxon";
 import NextLink from "next/link";
-import { deleteEvent } from "../utils/utils";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-// Hello World
+const API_HOST = "http://localhost:8000/api";
+
+async function deleteEvent(eId) {
+  const token = await getCsrfToken();
+  const response = await axios.delete(API_HOST + "/get-event-byorg/", {
+    data: {
+      eid: eId,
+    },
+    headers: {
+      "X-CSRFToken": token,
+    },
+    withCredentials: true,
+  });
+  return response.data;
+}
+
+let _csrfToken = null;
+
+async function getCsrfToken() {
+  if (_csrfToken === null) {
+    const response = await fetch(`${API_HOST}/csrf/`, {
+      credentials: "include",
+    });
+    const data = await response.json();
+    _csrfToken = data.csrfToken;
+  }
+  return _csrfToken;
+}
+
 function DeleteModal(eventData) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const event = eventData.eventData;
@@ -110,7 +139,7 @@ function EventRow({ event, index }) {
         <Image
           src={
             event.eventImage
-              ? "http://backend:8000" + event.eventImage
+              ? "http://localhost:8000" + event.eventImage
               : "https://picsum.photos/200"
           }
         />
@@ -122,10 +151,7 @@ function EventRow({ event, index }) {
       <Td>
         <Link
           as={NextLink}
-          href={
-            "/dashboard/edit-event/2364004d84ce4462b27f6ef43e5529f5/?event=" +
-            event.eid
-          }
+          href={"/dashboard/edit-event/?event=" + event.eid}
           prefetch={false}
         >
           Edit
@@ -134,7 +160,7 @@ function EventRow({ event, index }) {
         <Link
           as={NextLink}
           href={
-            "/dashboard/view-event/2364004d84ce4462b27f6ef43e5529f5/?event=" +
+            "/dashboard/view-event/?event=" +
             event.eid
           }
           prefetch={false}
@@ -146,13 +172,27 @@ function EventRow({ event, index }) {
   );
 }
 
-export default function OrganiserDashboard(props) {
-  const allEvents = props.data;
+export default function OrganiserDashboard() {
+  const [allEvents, setAllEvents] = useState([]);
+  async function getEvents() {
+    try {
+      const response = await axios.get(`${API_HOST}/get-event-byorg/`, {
+        withCredentials: true,
+      });
+      console.log(response.data);
+      setAllEvents(response.data);
+    } catch (error) {
+      console.error("There was an fetching your profile", error);
+    }
+  }
   function CreateEventRow() {
     return allEvents.map((event, index) => {
       return <EventRow event={event.event} key={index} />;
     });
   }
+  useEffect(() => {
+    getEvents();
+  }, []);
   return (
     <>
       <StackEx />

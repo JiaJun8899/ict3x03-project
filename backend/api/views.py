@@ -33,8 +33,6 @@ class UpdateOrganizerStatus(APIView):
             return Response({"message": "Organizer status updated successfully."})
         else:
             return Response({"message": "Failed to update organizer status."})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class GetAllOrganizers(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
@@ -71,12 +69,15 @@ class EventAPI(APIView):
 class EventsByOrganizationAPI(APIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser)
 
-    def get(self, request, organization_id):
+    def get(self, request):
+        organization_id = request.session["_auth_user_id"]
+        print(organization_id)
         eventsByOrg = EventService.getEventByOrg(organization_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
-    def post(self, request, organization_id):
+    def post(self, request):
         """Create Event"""
+        organization_id = request.session["_auth_user_id"]
         print(request.data)
         data = {
             "eventName": request.data["eventName"],
@@ -92,15 +93,15 @@ class EventsByOrganizationAPI(APIView):
         else:
             return Response({"status": status.HTTP_400_BAD_REQUEST})
 
-    def put(self, request, organization_id):
+    def put(self, request):
         """Update event"""
         print(request.data)
+        organization_id = request.session["_auth_user_id"]
         checkValid = EventService.checkValid(
             organization_id, request.data["eid"]
         )  # Should be able to remove and just use under updateEvent
         if checkValid:
             data = {}
-
             for key, value in request.data.items():
                 if key == "eventImage" and not isinstance(value, InMemoryUploadedFile):
                     pass
@@ -113,9 +114,10 @@ class EventsByOrganizationAPI(APIView):
                 return Response({"status": status.HTTP_200_OK})
         return Response({"status": status.HTTP_400_BAD_REQUEST})
 
-    def delete(self, request, organization_id):
+    def delete(self, request):
         """Delete Event and Mapping"""
         # print(request.data)
+        organization_id = request.session["_auth_user_id"]
         success = EventService.deleteEvent(request.data["eid"])
         success = True
         if success:
@@ -125,7 +127,8 @@ class EventsByOrganizationAPI(APIView):
 
 
 class EventSingleByOrganizationAPI(APIView):
-    def get(self, request, organization_id, event_id):
+    def get(self, request, event_id):
+        organization_id = request.session["_auth_user_id"]
         eventsByOrg = EventService.getEventByID(organization_id, event_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
@@ -133,7 +136,7 @@ class EventSingleByOrganizationAPI(APIView):
 class RegisterUserAPIView(APIView):
     def post(self, request):
         data = {
-            "username": request.data["userName"],
+            "username": request.data["email"],
             "email": request.data["email"],
             "first_name": request.data["firstName"],
             "last_name": request.data["lastName"],
@@ -154,11 +157,11 @@ class RegisterUserAPIView(APIView):
 
 
 class UpdateUserAPIView(APIView):
-    def put(self, request):        
+    def put(self, request):
         id = UUID(request.session["_auth_user_id"]).hex
-        valid = UserService.getUserById(id) 
+        valid = UserService.getUserById(id)
         if valid != None:
-            data ={
+            data = {
                 "first_name": request.data["firstname"],
                 "last_name": request.data["lastname"],
                 "email": request.data["email"],
@@ -166,31 +169,32 @@ class UpdateUserAPIView(APIView):
                 "username": request.data["userName"],
             }
         emergency = EmergencyContactService.getContactById(id)
-        if emergency:    
+        if emergency:
             nokData = {
-                "name" : request.data["nokName"], 
-                "relationship" : request.data["nokRelationship"],
-                "phoneNum": request.data["nokPhone"]
+                "name": request.data["nokName"],
+                "relationship": request.data["nokRelationship"],
+                "phoneNum": request.data["nokPhone"],
             }
-        nokUpdateSuccess = NokService.updateNok(nokData,emergency["nok"])         
-        
-        success = UserService.updateUserProfile(data,id)
+        nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])
+
+        success = UserService.updateUserProfile(data, id)
         if success and nokUpdateSuccess:
-            return Response(status= status.HTTP_200_OK)
-        return Response(status= status.HTTP_400_BAD_REQUEST)
-    
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 class GetProfileDetailsAPIView(APIView):
-    def get(self,request):
+    def get(self, request):
         data = {}
         id = UUID(request.session["_auth_user_id"]).hex
         # this part use the session to get id
         valid = UserService.getUserById(id)
         print(valid)
         # print(UUID(request.session["_auth_user_id"]).hex)
-        
+
         data["profile"] = valid
         emergency = EmergencyContactService.getContactById(id)
-        if emergency:            
+        if emergency:
             # data["emergency"] = emergency
             # print(emergency)
             nok = NokService.getNokById(emergency["nok"])
@@ -199,52 +203,47 @@ class GetProfileDetailsAPIView(APIView):
         # print(valid)
         return Response(data, status=status.HTTP_200_OK)
 
-    
+
 class SignUpEventAPIView(APIView):
-    def post(self,request):
+    def post(self, request):
         id = UUID(request.session["_auth_user_id"]).hex
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
         if validUser != None and validEvent != None:
-            data={               
-                "event": request.data["eid"],     
-                "participant":id          
-            }
+            data = {"event": request.data["eid"], "participant": id}
             success = UserService.signUpEvent(data=data)
             print(success)
         if success:
-            return Response(status= status.HTTP_200_OK)
-        return Response(status= status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class CancelSignUpEventAPIView(APIView):
-    def delete(self,request):
+    def delete(self, request):
         # print(request.session.value())
         id = UUID(request.session["_auth_user_id"]).hex
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
         if validUser != None and validEvent != None:
-            data={               
-                "event": request.data["eid"],     
-                "participant":id          
-            }
+            data = {"event": request.data["eid"], "participant": id}
             success = UserService.cancelSignUpEvent(data=data)
             if success:
-                return Response(status= status.HTTP_200_OK)
-        return Response(status= status.HTTP_400_BAD_REQUEST)
-    
+                return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class SearchEvents(APIView):
     def post(self, request):
         events = EventService.searchEvent(request.data["name"])
         if events != None:
             return Response(events, status=status.HTTP_200_OK)
-        return Response(status =status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TestAPI(APIView):
     def get(self, request):
-        return Response({'role': 'test'}, status=status.HTTP_200_OK)
-        # return Response({'id': request.session["_auth_user_id"], 'email' : request.session["email"]}, status=status.HTTP_200_OK)
+        # return Response({"role": "test"}, status=status.HTTP_200_OK)
+        return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
         # Example of session being used
 
 
@@ -268,20 +267,24 @@ class GetEvent(APIView):
         eventService = EventService()
         events = eventService.userGetEventById(eid)
 
-        if  events != None:
+        if events != None:
             # Assuming that the returned organizers is a QuerySet or list of Organizer instances
-            return Response({"data":events})
+            return Response({"data": events})
         else:
-            return Response({"Failed to retrieve event."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"Failed to retrieve event."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-class Login(APIView):
-    def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
-        authenticated = AuthService.authenticateUser(request, username, password)
-        if authenticated:
-            return Response({"detail": "Logged in successfully."}, status=200)
-        return Response({"detail": "Invalid credentials."}, status=401)
+
+# class Login(APIView):
+#     def post(self, request):
+#         username = request.data.get("username")
+#         password = request.data.get("password")
+#         authenticated = AuthService.authenticateUser(request, username, password)
+#         if authenticated:
+#             return Response({"detail": "Logged in successfully."}, status=200)
+#         return Response({"detail": "Invalid credentials."}, status=401)
 
 
 class GetAllEvent(APIView):
@@ -306,5 +309,6 @@ class Login(APIView):
         authenticated = AuthService.authenticateUser(request, username, password)
         if authenticated:
             request.session["email"] = authenticated.email
+            request.session["role"] = AccountService.getUserRole(authenticated.id)
             return Response({"detail": "Logged in successfully."}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)
