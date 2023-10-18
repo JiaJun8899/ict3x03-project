@@ -1,29 +1,22 @@
 "use client";
-
 import {
   Flex,
   Box,
   FormControl,
   FormLabel,
   Input,
-  InputGroup,
   HStack,
-  InputRightElement,
   Stack,
   Button,
   Heading,
   Text,
   useColorModeValue,
-  Link,
-  Checkbox,
+  useToast,
 } from "../providers";
 import { useState, useEffect } from "react";
-import { ViewIcon, ViewOffIcon } from "../providers";
-import { useToast } from "@chakra-ui/react";
 import axios from "axios";
 
 export default function ProfilePage() {
-  // const [showPassword, setShowPassword] = useState(false);
   const API_HOST = "http://localhost:8000/api";
   const [details, setDetails] = useState({
     firstname: "",
@@ -80,31 +73,41 @@ export default function ProfilePage() {
         nokPhone: response.data["nok"]["phoneNum"],
         nokRelationship: response.data["nok"]["relationship"],
       });
-      console.log(response);
-      console.log(Date(details.birthday));
     } catch (error) {
-      console.error("There was an fetching data", error);
+      console.error("There was an fetching your profile", error);
     }
   }
   async function updateProfile() {
-    const token = await getCsrfToken()
-    console.log(token)
-    try {
-      console.log(details);
-      response = await axios.put(`${API_HOST}/update-user-details/`, details, {
+    const token = await getCsrfToken();
+    console.log(token);
+    console.log(details);
+    var response = await axios
+      .put(`${API_HOST}/update-user-details/`, details, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": token,
         },
+      })
+      .then(function (response) {
+        toast({
+          title: "Profile updated successful.",
+          // description: "You are now logged in!",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      })
+      .catch(function (error) {
+        toast({
+          title: "Profile update failed.",
+          // description: await response.text(),
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       });
-      console.log(response)
-      return response.data
-    } catch (error) {
-      console.log(error);
-    }
   }
-
   return (
     <Flex
       minH={"100vh"}
@@ -142,7 +145,11 @@ export default function ProfilePage() {
               <Box>
                 <FormControl id="lastName">
                   <FormLabel>Last Name</FormLabel>
-                  <Input type="text" value={details.lastname} />
+                  <Input
+                    type="text"
+                    value={details.lastname}
+                    onChange={(e) => updateDetails("lastname", e.target.value)}
+                  />
                 </FormControl>
               </Box>
             </HStack>
@@ -150,13 +157,21 @@ export default function ProfilePage() {
               <Box>
                 <FormControl id="phoneNum">
                   <FormLabel>Phone Number</FormLabel>
-                  <Input type="tel" value={details.phoneNum} />
+                  <Input
+                    type="tel"
+                    value={details.phoneNum}
+                    onChange={(e) => updateDetails("phoneNum", e.target.value)}
+                  />
                 </FormControl>
               </Box>
             </HStack>
             <FormControl id="email">
               <FormLabel>Email address</FormLabel>
-              <Input type="email" value={details.email} />
+              <Input
+                type="email"
+                value={details.email}
+                onChange={(e) => updateDetails("email", e.target.value)}
+              />
             </FormControl>
             <Stack spacing={10} pt={2}>
               <Stack
@@ -167,7 +182,11 @@ export default function ProfilePage() {
                 {/* <Checkbox>I am an Organisation</Checkbox> */}
                 <FormControl id="email">
                   <FormLabel>Birthday</FormLabel>
-                  <Input type="date" value={details.birthday} />
+                  <Input
+                    type="date"
+                    value={details.birthday}
+                    onChange={(e) => updateDetails("birthday", e.target.value)}
+                  />
                 </FormControl>
               </Stack>
               <Stack>
@@ -175,13 +194,25 @@ export default function ProfilePage() {
                   <Box>
                     <FormControl id="nokName">
                       <FormLabel>NOK</FormLabel>
-                      <Input type="text" value={details.nokName} />
+                      <Input
+                        type="text"
+                        value={details.nokName}
+                        onChange={(e) =>
+                          updateDetails("nokName", e.target.value)
+                        }
+                      />
                     </FormControl>
                   </Box>
                   <Box>
                     <FormControl id="relationship">
                       <FormLabel>Relationship</FormLabel>
-                      <Input type="text" value={details.nokRelationship} />
+                      <Input
+                        type="text"
+                        value={details.nokRelationship}
+                        onChange={(e) =>
+                          updateDetails("nokRelationship", e.target.value)
+                        }
+                      />
                     </FormControl>
                   </Box>
                 </HStack>
@@ -190,7 +221,13 @@ export default function ProfilePage() {
                   <Box>
                     <FormControl id="phoneNum">
                       <FormLabel>Phone Number</FormLabel>
-                      <Input type="tel" value={details.nokPhone} />
+                      <Input
+                        type="tel"
+                        value={details.nokPhone}
+                        onChange={(e) =>
+                          updateDetails("nokPhone", e.target.value)
+                        }
+                      />
                     </FormControl>
                   </Box>
                 </HStack>
