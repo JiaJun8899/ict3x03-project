@@ -17,7 +17,7 @@ pipeline {
 	    steps {
 	        sh 'docker compose up --build -d --wait'
 	    }
-	    
+	}
         stage('Check OWASP') {
             steps {
 				echo 'Check OWASP Stage'
