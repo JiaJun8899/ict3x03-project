@@ -1,6 +1,12 @@
 pipeline {
     agent any
     stages {
+        stage('Test Docker') {
+            step {
+                sh '''
+                docker version
+                '''
+        }
         stage('Build Test Docker') {
             agent {
                 docker { image 'node:16-alpine' }
