@@ -1,8 +1,14 @@
 pipeline {
-    agent {
-	    docker { image 'node:16-alpine' }
-	}
+    agent none
     stages {
+	stage('Build Test Docker') {
+	    agent {
+	        docker { image 'node:16-alpine' }
+	    } 
+	    steps {
+	        echo 'Done'
+	    }
+	}
         stage('Check OWASP') {
             steps {
 				echo 'Check OWASP Stage'
