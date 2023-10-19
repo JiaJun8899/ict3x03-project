@@ -1,10 +1,14 @@
 pipeline {
     agent any
-
+    tools {
+        nodejs "NodeJS"
+    }
     stages {
-        stage('Build') {
+        stage('Build NextJS') {
             steps {
-                echo 'building'
+                dir('frontend') {
+                    sh 'npm install'
+                }
             }
         }
         stage('Test') {
