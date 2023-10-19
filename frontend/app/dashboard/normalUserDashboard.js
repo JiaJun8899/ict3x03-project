@@ -72,7 +72,13 @@ function EventRow({ event, index }) {
   return (
     <Tr>
       <Td>
-        <Image src="https://picsum.photos/200" />
+        <Image
+          src={
+            event.eventImage
+              ? "http://localhost:8000" + event.eventImage
+              : "https://picsum.photos/200"
+          }
+        />
       </Td>
       {/* <Td>{event.organizer}</Td> */}
       <Td>{event.eventName}</Td>
@@ -80,7 +86,7 @@ function EventRow({ event, index }) {
       <Td>{endDate}</Td>
       <Td>{event.eventStatus}</Td>
       <Td>
-        <NextLink href={`event?eid=${event.eid}`}>
+        <NextLink href={`dashboard/event?eid=${event.eid}`}>
           <Button variant={"link"}>Details</Button>
         </NextLink>
       </Td>

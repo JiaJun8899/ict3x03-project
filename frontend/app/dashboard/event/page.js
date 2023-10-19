@@ -27,7 +27,6 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { DateTime } from "luxon";
-import ViewEventDetails from "../view-event/ViewEvent";
 // Import only what's needed
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -116,7 +115,7 @@ export default function Page() {
       console.log(error);
     }
   }
-  
+
   const signup = async () => {
     const token = await getCsrfToken();
     const response = await axios
@@ -148,7 +147,7 @@ export default function Page() {
           duration: 3000,
           isClosable: true,
         });
-      });  
+      });
   };
   const cancelSignup = async () => {
     const token = await getCsrfToken();
@@ -182,7 +181,7 @@ export default function Page() {
               alt={"product image"}
               src={
                 event.eventImage
-                  ? "http://127.0.0.1:8000" + event.eventImage
+                  ? "http://localhost:8000" + event.eventImage
                   : "https://picsum.photos/200"
               }
               fit={"cover"}
