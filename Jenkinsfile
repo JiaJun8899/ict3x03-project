@@ -4,12 +4,9 @@ pipeline {
         nodejs "NodeJS"
     }
     stages {
-        stage('Build NextJS') {
+        stage('Build Docker') {
             steps {
-                dir('frontend') {
-                    sh 'npm install'
-	            sh 'npm run dev'
-                }
+                sh 'docker'
             }
         }
         stage('Check OWASP') {
