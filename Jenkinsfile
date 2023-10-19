@@ -6,6 +6,7 @@ pipeline {
                 sh '''
                 docker version
                 '''
+            }
         }
         stage('Build Test Docker') {
             agent {
