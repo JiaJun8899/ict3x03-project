@@ -8,12 +8,13 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh 'npm install'
+	            sh 'npm run dev'
                 }
             }
         }
-        stage('Test') {
+        stage('Check OWASP') {
             steps {
-				echo 'testing'
+				echo 'Check OWASP Stage'
 //				dependencyCheck additionalArguments: ''' 
 //                    -o './'
 //                    -s './'
