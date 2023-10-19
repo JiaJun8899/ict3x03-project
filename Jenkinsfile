@@ -1,23 +1,9 @@
 pipeline {
-    agent any
+    agent none
     stages {
-        stage('Verify Docker') {
-            steps {
-                sh '''
-		  docker version
-    		  docker info
-		  docker compose version
-		'''
-            }
-        }
-	stage('Prune Docker Data') {
+	stage('Docker Frontend') {
 	    steps {
-		sh 'docker system prune -a --volumes -f'
-	    }
-	}
-	stage('Start Containers') {
-	    steps {
-	        sh 'docker compose up --build -d --wait'
+		docker { image 'node:16-alpine' }
 	    }
 	}
         stage('Check OWASP') {
