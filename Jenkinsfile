@@ -6,7 +6,9 @@ pipeline {
     stages {
         stage('Build Docker') {
             steps {
-                sh 'docker'
+                sh '''
+		  docker version
+		'''
             }
         }
         stage('Check OWASP') {
