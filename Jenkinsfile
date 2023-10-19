@@ -3,10 +3,6 @@ pipeline {
 	    docker { image 'node:16-alpine' }
 	}
     stages {
-	
-	stage('Test') {
-	    
-	}
         stage('Check OWASP') {
             steps {
 				echo 'Check OWASP Stage'
