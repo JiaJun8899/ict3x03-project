@@ -2,7 +2,7 @@ pipeline {
     agent any
     stages {
         stage('Test Docker') {
-            step {
+            steps {
                 sh '''
                 docker version
                 '''
