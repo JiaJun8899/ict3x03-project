@@ -8,12 +8,11 @@ pipeline {
                 '''
             }
         }
-        stage('Build Test Docker') {
-            agent {
-                docker { image 'node:16-alpine' }
-            } 
+        stage('Build Container') {
             steps {
-                echo 'Done'
+                sh '''
+                docker compose up --build -d
+                '''
             }
         }
         stage('Check OWASP') {
