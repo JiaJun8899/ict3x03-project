@@ -22,6 +22,7 @@ import { ViewIcon, ViewOffIcon } from "../providers";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import axios from "axios";
+import ReCAPTCHA from "react-google-recaptcha-v2";
 const API_HOST = "http://localhost:8000/api";
 
 export default function SignupCard() {
@@ -39,6 +40,7 @@ export default function SignupCard() {
     password2: "",
     email: ""
   });
+  const [recaptchaValue, setRecaptchaValue] = useState(null);
   function updateForm(value) {
     return setForm((prev) => {
       console.log(form);
@@ -46,14 +48,21 @@ export default function SignupCard() {
     });
   }
   async function handleForm(form) {
-    const response = await axios
-      .post(API_HOST + "/register", form)
-      .then(function (response) {
-        router.replace("/");
-      })
-      .catch(function (error) {
-        console.log("fail");
-      });
+    form.recaptchaValue = recaptchaValue;
+    try {
+      const response = await axios.post(API_HOST + "/register", form);
+      router.replace("/");
+    } catch (error) {
+      console.log("fail");
+    }
+    //const response = await axios
+    //  .post(API_HOST + "/register", form)
+    //  .then(function (response) {
+    //    router.replace("/");
+    //  })
+    //  .catch(function (error) {
+    //    console.log("fail");
+    //  });
   }
   return (
     <Flex
@@ -216,6 +225,14 @@ export default function SignupCard() {
                   />
                 </FormControl>
               </HStack>
+              <FormControl id="recaptcha" isRequired>
+                <ReCAPTCHA
+                  sitekey="6Ldqu7YoAAAAAOWypyZABbjPTmRyb7KIv7gYs4j4"
+                  onChange={(value) => {
+                    setRecaptchaValue(value);
+                  }}
+                />
+              </FormControl>
               <Button
                 loadingText="Submitting"
                 size="lg"
