@@ -11,7 +11,8 @@ class AuthService:
 
     def authenticateUser(self, request, username, password):
         self.user = authenticate(request, username=username, password=password)
-        self.emailDevice = EmailDevice.objects.get_or_create(user=user, email=user.email)[0]
+        if self.user:
+            self.emailDevice = EmailDevice.objects.get_or_create(user=self.user, email=self.user.email,name="EMAIL")[0]
         return self.user
 
     def generateOTP(self, uuid=None):
