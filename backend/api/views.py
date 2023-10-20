@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from uuid import UUID
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+import requests
 
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
@@ -151,8 +152,22 @@ class RegisterUserAPIView(APIView):
         else:
             birthday = datetime.strptime(request.data["birthday"], "%Y-%m-%d").date()
             success = AccountService.createNormalUser(data, birthday)
-        if success:
-            return Response(status=status.HTTP_200_OK)
+        
+        recaptcha_response = request.data["recaptchaValue"]
+        recaptcha_secret = ""
+
+        verification_data = {
+            "secret": recaptcha_secret,
+            "response": recaptcha_response
+        }
+        response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=verification_data)
+        recaptcha_result = response.json()
+        print(recaptcha_result)
+        if recaptcha_result["success"]:
+            if success:
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
