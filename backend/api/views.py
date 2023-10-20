@@ -11,7 +11,10 @@ from django.middleware.csrf import get_token
 from uuid import UUID
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import requests
+from dotenv import load_dotenv
 
+load_dotenv()
+RECAPTCHA_KEY = os.getenv('RECAPTCHA_KEY',os.environ.get('RECAPTCHA_KEY'))
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
