@@ -2,7 +2,8 @@ from django.contrib import admin
 from api.models import Admin, Organizer,NormalUser,GenericUser
 from django.contrib.auth.models import Group
 # Register your models here.
-
+from django_otp.admin import OTPAdminSite
+admin.site.__class__ = OTPAdminSite
 
 @admin.register(Organizer)
 class OrganizerAdmin(admin.ModelAdmin):
@@ -20,4 +21,7 @@ class GenericUserAdmin(admin.ModelAdmin):
 
     exclude = ["password"]
 
+@admin.register(Admin)
+class AdminAdmin(admin.ModelAdmin):
+    pass
 admin.site.unregister(Group)

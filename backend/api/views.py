@@ -1,3 +1,4 @@
+from django_otp.decorators import otp_required
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -18,8 +19,6 @@ RECAPTCHA_KEY = os.getenv('RECAPTCHA_KEY',os.environ.get('RECAPTCHA_KEY'))
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
-def ping(request):
-    return JsonResponse({"result": "OK"})
 
 class TestAPI(APIView):
     def get(self, request):
@@ -27,7 +26,6 @@ class TestAPI(APIView):
         if "_auth_user_id" in request.session:
             return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
         return Response({'role' : None}, status=status.HTTP_200_OK) 
-        # Example of session being used
 
 class UpdateOrganizerStatus(APIView):
     def put(self, request):
@@ -303,9 +301,34 @@ class Login(APIView):
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
-        authenticated = AuthService.authenticateUser(request, username, password)
-        if authenticated:
-            request.session["email"] = authenticated.email
-            request.session["role"] = AccountService.getUserRole(authenticated.id)
-            return Response({"detail": "Logged in successfully."}, status=200)
+        authService = AuthService()
+        userWithCorrectCredential = authService.authenticateUser(request, username, password)
+        if userWithCorrectCredential :
+            request.session["temp_id"] = str(userWithCorrectCredential.id) 
+            return Response({"detail": "Credentials are correct"}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)
+
+class GetOTP(APIView):
+    def post(self,request):
+        self.authService = AuthService()
+        id = request.session["temp_id"]
+        isOtpSent = self.authService.generateOTP(id)
+        if isOtpSent:
+            return Response({"detail": "Credentials are correct"}, status=200)
+        return Response({"detail": "Invalid credentials."}, status=401)
+
+class VerifyOtp(APIView):
+    def post(self,request):
+        self.authService = AuthService()
+        otp = request.data.get("OTP")
+        uuid = request.session["temp_id"]
+        verifiedUser = self.authService.verifyOTP(request=request,uuid = uuid ,otpToken = otp)
+        if verifiedUser:
+            request.session["role"] = AccountService.getUserRole(verifiedUser.id)
+            return Response({"detail": "LOGIN SUCCESS"}, status=200)
+        return Response({"detail": "WRONG OTP"}, status=401)
+
+class Logout(APIView):
+        def post(self,request):
+            AuthService.logout(request)
+            return Response({"detail": "LOGOUT SUCCESS"}, status=200)

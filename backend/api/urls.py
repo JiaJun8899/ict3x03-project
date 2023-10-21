@@ -18,6 +18,11 @@ urlpatterns = [
     path('get-event/<str:eid>',views.GetEvent.as_view()),
     path('auth-login/', views.Login.as_view(), name='get_all_events'),
     path('csrf/', views.csrf),
-    path('ping/', views.ping),
+    path('get-all-events/', views.GetAllEvent.as_view(), name='get_all_events'),
+    path('auth-login/', views.Login.as_view(), name='get_all_events'),
+    path('auth-verify-OTP/', views.VerifyOtp.as_view(), name='get_all_events'),
+    path('auth-get-OTP/', views.GetOTP.as_view(), name='get_all_events'),
+    path('auth-logout/', views.Logout.as_view(), name='get_all_events'),
+    path('csrf/', views.csrf),
 ]
 
