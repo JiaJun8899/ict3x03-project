@@ -69,11 +69,13 @@ export default function EditEvent({ searchParams }) {
           withCredentials: true,
         }
       );
-
       response.data.startDate = response.data.startDate.substring(0, 16);
       response.data.endDate = response.data.endDate.substring(0, 16);
       console.log(response.data);
       setForm(response.data);
+      if (response.data.eventImage) {
+        setImgPreview("http://localhost:8000" + response.data.eventImage);
+      }
     } catch (error) {
       console.error("There was an fetching your profile", error);
     }

@@ -55,14 +55,6 @@ export default function SignupCard() {
     } catch (error) {
       console.log("fail");
     }
-    //const response = await axios
-    //  .post(API_HOST + "/register", form)
-    //  .then(function (response) {
-    //    router.replace("/");
-    //  })
-    //  .catch(function (error) {
-    //    console.log("fail");
-    //  });
   }
   return (
     <Flex
