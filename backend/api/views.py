@@ -26,7 +26,6 @@ class TestAPI(APIView):
         if "_auth_user_id" in request.session:
             return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
         return Response({'role' : None}, status=status.HTTP_200_OK) 
-        # Example of session being used
 
 class UpdateOrganizerStatus(APIView):
     def put(self, request):
@@ -305,27 +304,27 @@ class Login(APIView):
         authService = AuthService()
         userWithCorrectCredential = authService.authenticateUser(request, username, password)
         if userWithCorrectCredential :
-            request.session["id"] = str(userWithCorrectCredential.id) 
-            request.session["role"] = AccountService.getUserRole(userWithCorrectCredential.id)
+            request.session["temp_id"] = str(userWithCorrectCredential.id) 
             return Response({"detail": "Credentials are correct"}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)
 
-class VerifyOtp(APIView):
-    def __init__(self, *args, **kwargs):
+class GetOTP(APIView):
+    def post(self,request):
         self.authService = AuthService()
-        super().__init__(*args, **kwargs)
-
-    def get(self,request):
-        isOtpSent = self.authService.generateOTP(request.session["id"])
+        id = request.session["temp_id"]
+        isOtpSent = self.authService.generateOTP(id)
         if isOtpSent:
             return Response({"detail": "Credentials are correct"}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)
 
+class VerifyOtp(APIView):
     def post(self,request):
+        self.authService = AuthService()
         otp = request.data.get("OTP")
-        uuid = request.session["id"]
-        verified = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
-        if verified:
+        uuid = request.session["temp_id"]
+        verifiedUser = self.authService.verifyOTP(request=request,uuid = uuid ,otpToken = otp)
+        if verifiedUser:
+            request.session["role"] = AccountService.getUserRole(verifiedUser.id)
             return Response({"detail": "LOGIN SUCCESS"}, status=200)
         return Response({"detail": "WRONG OTP"}, status=401)
 
