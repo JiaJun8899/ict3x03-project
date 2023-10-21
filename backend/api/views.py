@@ -24,7 +24,9 @@ def ping(request):
 class TestAPI(APIView):
     def get(self, request):
         # return Response({"role": "test"}, status=status.HTTP_200_OK)
-        return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
+        if "_auth_user_id" in request.session:
+            return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
+        return Response({'role' : None}, status=status.HTTP_200_OK) 
         # Example of session being used
 
 class UpdateOrganizerStatus(APIView):
