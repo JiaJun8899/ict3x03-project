@@ -16,6 +16,7 @@ import {
 import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { API_HOST } from "@/app/utils/utils";
 
 export default function SignupCard() {
   const router = useRouter();
@@ -28,7 +29,6 @@ export default function SignupCard() {
     eventImage: undefined,
   });
   let _csrfToken = null;
-  const API_HOST = "http://localhost:8000/api";
   async function getCsrfToken() {
     if (_csrfToken === null) {
       const response = await fetch(`${API_HOST}/csrf/`, {

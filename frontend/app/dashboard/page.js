@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import { notFound } from "next/navigation";
-
-const API_HOST = "http://localhost:8000/api";
+import { API_HOST } from "@/app/utils/utils";
 
 const OrganiserDashboard = dynamic(() => import("./organiserDashboard"), {
   ssr: false,

@@ -31,8 +31,7 @@ import { DateTime } from "luxon";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-export const dynamic = "force-dynamic";
+import { API_HOST } from "@/app/utils/utils";
 
 let _csrfToken = null;
 
@@ -76,7 +75,6 @@ const DeleteModal = ({ eventData, cancelSignup }) => {
 
 export default function Page() {
   const toast = useToast();
-  const API_HOST = "http://localhost:8000/api";
   const searchParams = useSearchParams();
   const search = searchParams.get("eid");
   const [event, setEvent] = useState({

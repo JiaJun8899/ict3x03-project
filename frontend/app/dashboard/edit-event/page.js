@@ -16,9 +16,9 @@ import {
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { API_HOST } from "@/app/utils/utils";
 
 let _csrfToken = null;
-const API_HOST = "http://localhost:8000/api";
 
 async function onSubmit(data) {
   console.log(data);

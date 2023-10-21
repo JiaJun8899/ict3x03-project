@@ -16,6 +16,7 @@ import {
   useColorModeValue,
   Link,
   Checkbox,
+  Tooltip
 } from "../providers";
 import { useState } from "react";
 import { ViewIcon, ViewOffIcon } from "../providers";
@@ -23,7 +24,7 @@ import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import axios from "axios";
 import ReCAPTCHA from "react-google-recaptcha-v2";
-const API_HOST = "http://localhost:8000/api";
+import { API_HOST, updateForm } from "@/app/utils/utils";
 
 export default function SignupCard() {
   const [showPassword, setShowPassword] = useState(false);
@@ -41,16 +42,11 @@ export default function SignupCard() {
     email: ""
   });
   const [recaptchaValue, setRecaptchaValue] = useState(null);
-  function updateForm(value) {
-    return setForm((prev) => {
-      console.log(form);
-      return { ...prev, ...value };
-    });
-  }
+
   async function handleForm(form) {
     form.recaptchaValue = recaptchaValue;
     try {
-      const response = await axios.post(API_HOST + "/register", form);
+      await axios.post(API_HOST + "/register", form);
       router.replace("/");
     } catch (error) {
       console.log("fail");
@@ -87,19 +83,19 @@ export default function SignupCard() {
                     type="text"
                     value={form.firstName}
                     onChange={(e) => {
-                      updateForm({ firstName: e.target.value });
+                      updateForm({ firstName: e.target.value }, setForm);
                     }}
                   />
                 </FormControl>
               </Box>
               <Box>
-                <FormControl id="lastName">
+                <FormControl id="lastName" isRequired>
                   <FormLabel>Last Name</FormLabel>
                   <Input
                     type="text"
                     value={form.lastName}
                     onChange={(e) => {
-                      updateForm({ lastName: e.target.value });
+                      updateForm({ lastName: e.target.value }, setForm);
                     }}
                   />
                 </FormControl>
@@ -113,19 +109,19 @@ export default function SignupCard() {
                     type="text"
                     value={form.NRIC}
                     onChange={(e) => {
-                      updateForm({ NRIC: e.target.value });
+                      updateForm({ NRIC: e.target.value }, setForm);
                     }}
                   />
                 </FormControl>
               </Box>
               <Box>
-                <FormControl id="phoneNum">
+                <FormControl id="phoneNum" isRequired>
                   <FormLabel>Phone Number</FormLabel>
                   <Input
                     type="tel"
                     value={form.phoneNum}
                     onChange={(e) => {
-                      updateForm({ phoneNum: e.target.value });
+                      updateForm({ phoneNum: e.target.value }, setForm);
                     }}
                   />
                 </FormControl>
@@ -137,7 +133,7 @@ export default function SignupCard() {
                 type="email"
                 value={form.email}
                 onChange={(e) => {
-                  updateForm({ email: e.target.value });
+                  updateForm({ email: e.target.value }, setForm);
                 }}
               />
             </FormControl>
@@ -148,7 +144,7 @@ export default function SignupCard() {
                   type={showPassword ? "text" : "password"}
                   value={form.password}
                   onChange={(e) => {
-                    updateForm({ password: e.target.value });
+                    updateForm({ password: e.target.value }, setForm);
                   }}
                 />
                 <InputRightElement h={"full"}>
@@ -170,7 +166,7 @@ export default function SignupCard() {
                   type={showPassword2 ? "text" : "password"}
                   value={form.password2}
                   onChange={(e) => {
-                    updateForm({ password2: e.target.value });
+                    updateForm({ password2: e.target.value }, setForm);
                   }}
                 />
                 <InputRightElement h={"full"}>
@@ -196,7 +192,7 @@ export default function SignupCard() {
                   <Checkbox
                     value={form.organization}
                     onChange={(e) => {
-                      updateForm({ organization: e.target.checked });
+                      updateForm({ organization: e.target.checked }, setForm);
                     }}
                   >
                     I am an Organisation
@@ -207,14 +203,26 @@ export default function SignupCard() {
                   isRequired={form.organization ? false : true}
                 >
                   <FormLabel>Birthday if applicable</FormLabel>
-                  <Input
-                    disabled={form.organization ? true : false}
-                    type="date"
-                    value={form.birthday}
-                    onChange={(e) => {
-                      updateForm({ birthday: e.target.value });
-                    }}
-                  />
+                  <Tooltip
+                    label="You must be 16 years old and above to volunteer with us"
+                    hasArrow
+                  >
+                    <Input
+                      disabled={form.organization ? true : false}
+                      type="date"
+                      max={
+                        new Date(
+                          new Date().setFullYear(new Date().getFullYear() - 16)
+                        )
+                          .toISOString()
+                          .split("T")[0]
+                      }
+                      value={form.birthday}
+                      onChange={(e) => {
+                        updateForm({ birthday: e.target.value }, setForm);
+                      }}
+                    />
+                  </Tooltip>
                 </FormControl>
               </HStack>
               <FormControl id="recaptcha" isRequired>
@@ -243,7 +251,7 @@ export default function SignupCard() {
             <Stack pt={6}>
               <Text align={"center"}>
                 Already a user?{" "}
-                <Link as={NextLink} color={"blue.400"} href="/">
+                <Link as={NextLink} color={"blue.400"} href="/login">
                   Login
                 </Link>
               </Text>

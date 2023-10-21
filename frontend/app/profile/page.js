@@ -15,9 +15,9 @@ import {
 } from "../providers";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { API_HOST } from "@/app/utils/utils";
 
 export default function ProfilePage() {
-  const API_HOST = "http://localhost:8000/api";
   const [details, setDetails] = useState({
     firstname: "",
     email: "",
