@@ -11,7 +11,10 @@ from django.middleware.csrf import get_token
 from uuid import UUID
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import requests
+from dotenv import load_dotenv
 
+load_dotenv()
+RECAPTCHA_KEY = os.getenv('RECAPTCHA_KEY',os.environ.get('RECAPTCHA_KEY'))
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
@@ -21,7 +24,9 @@ def ping(request):
 class TestAPI(APIView):
     def get(self, request):
         # return Response({"role": "test"}, status=status.HTTP_200_OK)
-        return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
+        if "_auth_user_id" in request.session:
+            return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
+        return Response({'role' : None}, status=status.HTTP_200_OK) 
         # Example of session being used
 
 class UpdateOrganizerStatus(APIView):
@@ -147,29 +152,26 @@ class RegisterUserAPIView(APIView):
             "password": request.data["password"],
             "password2": request.data["password2"],
         }
-        if request.data["organization"]:
-            success = AccountService.createOrganisation(data)
-        else:
-            birthday = datetime.strptime(request.data["birthday"], "%Y-%m-%d").date()
-            success = AccountService.createNormalUser(data, birthday)
-        
         recaptcha_response = request.data["recaptchaValue"]
-        recaptcha_secret = ""
-
         verification_data = {
-            "secret": recaptcha_secret,
+            "secret": RECAPTCHA_KEY,
             "response": recaptcha_response
         }
         response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=verification_data)
         recaptcha_result = response.json()
         print(recaptcha_result)
-        if recaptcha_result["success"]:
+        if not recaptcha_result["success"]:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if request.data["organization"]:
+                success = AccountService.createOrganisation(data)
+            else:
+                birthday = datetime.strptime(request.data["birthday"], "%Y-%m-%d").date()
+                success = AccountService.createNormalUser(data, birthday)
             if success:
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class UpdateUserAPIView(APIView):

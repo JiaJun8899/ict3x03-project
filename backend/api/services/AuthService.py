@@ -7,6 +7,6 @@ class AuthService:
         if user:
             # Django's login function sets the user ID in the session
             login(request, user)
-        print("failed to login")
+            print("Login Success")
         return user
 

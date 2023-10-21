@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
+import { notFound } from "next/navigation";
 
 const API_HOST = "http://localhost:8000/api";
 
@@ -12,7 +13,6 @@ const OrganiserDashboard = dynamic(() => import("./organiserDashboard"), {
 const RegularDashboard = dynamic(() => import("./normalUserDashboard"), {
   ssr: false,
 });
-
 
 export default function Page() {
   const [userRole, setUserRole] = useState("none");
@@ -29,10 +29,12 @@ export default function Page() {
   function Dashboard() {
     const role = userRole.role;
     console.log(role);
-    if (role == "Organizer") {
+    if (role === "Organizer") {
       return <OrganiserDashboard />;
-    } else {
+    } else if (role === "Normal") {
       return <RegularDashboard />;
+    } else{
+      return notFound()
     }
   }
   useEffect(() => {

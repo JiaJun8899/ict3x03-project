@@ -25,9 +25,20 @@ export default function SignupCard() {
     endDate: "",
     noVol: "",
     eventDesc: "",
-    eventImage:undefined
+    eventImage: undefined,
   });
-  
+  let _csrfToken = null;
+  const API_HOST = "http://localhost:8000/api";
+  async function getCsrfToken() {
+    if (_csrfToken === null) {
+      const response = await fetch(`${API_HOST}/csrf/`, {
+        credentials: "include",
+      });
+      const data = await response.json();
+      _csrfToken = data.csrfToken;
+    }
+    return _csrfToken;
+  }
 
   function updateForm(value) {
     return setForm((prev) => {
@@ -36,25 +47,22 @@ export default function SignupCard() {
     });
   }
   async function onSubmit(e) {
-    console.log(form);
+    const token = await getCsrfToken();
     await axios
-      .post(
-        "http://127.0.0.1:8000/api/get-event-byorg/2364004d84ce4462b27f6ef43e5529f5/",
-        form,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      )
+      .post(`${API_HOST}/get-event-byorg/`, form, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "X-CSRFToken": token,
+      },
+      withCredentials: true,
+    })
       .then((res) => {
         console.log(res);
       })
       .catch((error) => {
         console.log(error);
-        return;
       });
-      router.replace('/dashboard')
+    router.replace("/dashboard");
   }
   return (
     <Flex
@@ -137,7 +145,7 @@ export default function SignupCard() {
                 type="file"
                 accept="image/png, image/jpeg"
                 onChange={(e) => {
-                  updateForm({ eventImage :e.target.files[0]});
+                  updateForm({ eventImage: e.target.files[0] });
                 }}
               />
             </FormControl>
