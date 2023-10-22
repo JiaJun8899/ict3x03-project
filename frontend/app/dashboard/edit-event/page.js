@@ -154,11 +154,12 @@ export default function EditEvent({ searchParams }) {
                 </FormControl>
               </Box>
               <Box>
-                <FormControl name="endDate">
+                <FormControl name="endDate" isRequired>
                   <FormLabel>End Date</FormLabel>
                   <Input
                     name="endDate"
                     type="datetime-local"
+                    min={form.startDate}
                     value={form.endDate}
                     onChange={(e) => {
                       updateForm({ endDate: e.target.value });
@@ -194,20 +195,20 @@ export default function EditEvent({ searchParams }) {
             <Stack spacing={10} pt={2}>
               <ButtonGroup gap="4">
                 <Link href="/dashboard" prefetch={false} replace={true}>
-                <Button
-                  loadingText="Submitting"
-                  size="lg"
-                  bg={"blue.400"}
-                  color={"white"}
-                  _hover={{
-                    bg: "blue.500",
-                  }}
-                  onClick={() => {
-                    onSubmit(form);
-                  }}
-                >
-                  Update Event
-                </Button>
+                  <Button
+                    loadingText="Submitting"
+                    size="lg"
+                    bg={"blue.400"}
+                    color={"white"}
+                    _hover={{
+                      bg: "blue.500",
+                    }}
+                    onClick={() => {
+                      onSubmit(form);
+                    }}
+                  >
+                    Update Event
+                  </Button>
                 </Link>
                 <Link href="/dashboard" prefetch={false}>
                   <Button

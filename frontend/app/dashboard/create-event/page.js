@@ -46,16 +46,17 @@ export default function SignupCard() {
       return { ...prev, ...value };
     });
   }
+
   async function onSubmit(e) {
     const token = await getCsrfToken();
     await axios
       .post(`${API_HOST}/get-event-byorg/`, form, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        "X-CSRFToken": token,
-      },
-      withCredentials: true,
-    })
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "X-CSRFToken": token,
+        },
+        withCredentials: true,
+      })
       .then((res) => {
         console.log(res);
       })
@@ -119,6 +120,7 @@ export default function SignupCard() {
                   <FormLabel>Start Date</FormLabel>
                   <Input
                     type="datetime-local"
+                    min={new Date().toISOString().substring(0, 16)}
                     value={form.startDate}
                     onChange={(e) => {
                       updateForm({ startDate: e.target.value });
@@ -131,6 +133,7 @@ export default function SignupCard() {
                   <FormLabel>End Date</FormLabel>
                   <Input
                     type="datetime-local"
+                    min={form.startDate}
                     value={form.endDate}
                     onChange={(e) => {
                       updateForm({ endDate: e.target.value });
