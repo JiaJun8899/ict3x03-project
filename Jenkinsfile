@@ -9,9 +9,14 @@ pipeline {
                 '''
             }
         }
-        stage('Build Container') {
+        stage('Set up frontend') {
             steps {
-                echo 'TBD -> Setting up env for testing'
+                dir('frontend') {
+                    sh '''
+                    npm install
+                    '''
+                }
+                
             }
         }
         stage('Check OWASP') {
