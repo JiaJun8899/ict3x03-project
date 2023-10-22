@@ -1,5 +1,6 @@
 pipeline {
     agent any
+    tools {nodejs "NodeJS"}
     stages {
         stage('Test Docker') {
             steps {
@@ -9,7 +10,7 @@ pipeline {
                 '''
             }
         }
-        stage('Set up frontend') {
+        stage('Installing dependencies on NextJS') {
             steps {
                 dir('frontend') {
                     sh '''
@@ -17,6 +18,13 @@ pipeline {
                     '''
                 }
                 
+            }
+        }
+        stage('Setting up container') {
+            steps{
+                sh '''
+                docker compose up --build -d
+                '''
             }
         }
         stage('Check OWASP') {
@@ -39,7 +47,11 @@ pipeline {
     }
     post {
         always {
-            echo 'TBD -> shutdown docker compose'
+            steps {
+                sh '''
+                docker compose down
+                '''
+            }
         }
     }
 }
