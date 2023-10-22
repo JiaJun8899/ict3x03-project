@@ -30,8 +30,7 @@ import { DateTime } from "luxon";
 import React,{useState, useEffect} from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-
-const API_HOST = "http://localhost:8000/api";
+import { API_HOST } from "@/app/utils/utils";
 
 function convertTime(time) {
   const convertedTime = DateTime.fromISO(time)

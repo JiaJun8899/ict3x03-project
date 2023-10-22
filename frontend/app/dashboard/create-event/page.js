@@ -16,6 +16,7 @@ import {
 import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { API_HOST } from "@/app/utils/utils";
 
 export default function SignupCard() {
   const router = useRouter();
@@ -28,7 +29,6 @@ export default function SignupCard() {
     eventImage: undefined,
   });
   let _csrfToken = null;
-  const API_HOST = "http://localhost:8000/api";
   async function getCsrfToken() {
     if (_csrfToken === null) {
       const response = await fetch(`${API_HOST}/csrf/`, {
@@ -46,16 +46,17 @@ export default function SignupCard() {
       return { ...prev, ...value };
     });
   }
+
   async function onSubmit(e) {
     const token = await getCsrfToken();
     await axios
       .post(`${API_HOST}/get-event-byorg/`, form, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        "X-CSRFToken": token,
-      },
-      withCredentials: true,
-    })
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "X-CSRFToken": token,
+        },
+        withCredentials: true,
+      })
       .then((res) => {
         console.log(res);
       })
@@ -119,6 +120,7 @@ export default function SignupCard() {
                   <FormLabel>Start Date</FormLabel>
                   <Input
                     type="datetime-local"
+                    min={new Date().toISOString().substring(0, 16)}
                     value={form.startDate}
                     onChange={(e) => {
                       updateForm({ startDate: e.target.value });
@@ -131,6 +133,7 @@ export default function SignupCard() {
                   <FormLabel>End Date</FormLabel>
                   <Input
                     type="datetime-local"
+                    min={form.startDate}
                     value={form.endDate}
                     onChange={(e) => {
                       updateForm({ endDate: e.target.value });

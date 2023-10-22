@@ -29,8 +29,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-const API_HOST = "http://localhost:8000/api";
+import { API_HOST } from "@/app/utils/utils";
 
 async function deleteEvent(eId) {
   const token = await getCsrfToken();

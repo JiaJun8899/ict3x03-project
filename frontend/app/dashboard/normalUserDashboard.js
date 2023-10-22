@@ -22,9 +22,9 @@ import NextLink from "next/link";
 import React, { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import axios from "axios";
+import { API_HOST } from "@/app/utils/utils";
 
 let _csrfToken = null;
-const API_HOST = "http://localhost:8000/api";
 
 async function getCsrfToken() {
   if (_csrfToken === null) {
