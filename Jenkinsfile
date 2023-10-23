@@ -6,7 +6,6 @@ pipeline {
             steps {
                 sh '''
                 docker version
-                docker compose version
                 '''
             }
         }
@@ -47,7 +46,7 @@ pipeline {
     }
     post {
         always {
-            steps {
+            script {
                 sh '''
                 docker compose down
                 '''
