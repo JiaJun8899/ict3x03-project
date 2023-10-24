@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useToast } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -9,7 +8,7 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Checkbox,
+  useToast,
   Stack,
   Button,
   Heading,
