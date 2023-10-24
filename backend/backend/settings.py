@@ -170,3 +170,30 @@ CORS_ALLOWED_ORIGINS = [
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 # SECURE_SSL_REDIRECT = True
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} | {asctime} | {name} | {module} | {funcName} | {message}",
+            "style": "{",
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "backend/general.log",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
