@@ -21,19 +21,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Email stuff
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get("EMAIL_HOST")# E.g., for Gmail, it's 'smtp.gmail.com'
+EMAIL_HOST = os.getenv('EMAIL_HOST',os.environ.get('EMAIL_HOST'))# E.g., for Gmail, it's 'smtp.gmail.com'
 EMAIL_PORT = 587  # Port for TLS
 EMAIL_USE_TLS = True  # Use TLS security
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")# Your email address
-EMAIL_HOST_PASSWORD =  os.environ.get("EMAIL_HOST_PASSWORD") # Your email password
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER',os.environ.get('EMAIL_HOST_USER'))# Your email address
+EMAIL_HOST_PASSWORD =  os.getenv('EMAIL_HOST_PASSWORD',os.environ.get('EMAIL_HOST_PASSWORD'))# Your email password
 OTP_EMAIL_SENDER = EMAIL_HOST_USER
 OTP_EMAIL_TOKEN_VALIDITY=70
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_KEY',os.environ.get('DJANGO_KEY'))
-
+SECRET_KEY = os.getenv('SECRET_KEY',os.environ.get('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

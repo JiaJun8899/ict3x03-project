@@ -15,17 +15,23 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-RECAPTCHA_KEY = os.getenv('RECAPTCHA_KEY',os.environ.get('RECAPTCHA_KEY'))
+RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
+
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
-
 class TestAPI(APIView):
     def get(self, request):
-        # return Response({"role": "test"}, status=status.HTTP_200_OK)
         if "_auth_user_id" in request.session:
-            return Response({'id': request.session["_auth_user_id"], 'role' : request.session["role"]}, status=status.HTTP_200_OK)
-        return Response({'role' : None}, status=status.HTTP_200_OK) 
+            return Response(
+                {
+                    "id": request.session["_auth_user_id"],
+                    "role": request.session["role"],
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response({"role": None}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class UpdateOrganizerStatus(APIView):
     def put(self, request):
@@ -35,9 +41,16 @@ class UpdateOrganizerStatus(APIView):
             status=request.data["validOrganisation"],
         )
         if success:
-            return Response({"message": "Organizer status updated successfully."})
+            return Response(
+                {"message": "Organizer status updated successfully."},
+                status=status.HTTP_200_OK,
+            )
         else:
-            return Response({"message": "Failed to update organizer status."})
+            return Response(
+                {"message": "Failed to update organizer status."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
 
 class GetAllOrganizers(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
@@ -151,11 +164,10 @@ class RegisterUserAPIView(APIView):
             "password2": request.data["password2"],
         }
         recaptcha_response = request.data["recaptchaValue"]
-        verification_data = {
-            "secret": RECAPTCHA_KEY,
-            "response": recaptcha_response
-        }
-        response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=verification_data)
+        verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
+        response = requests.post(
+            "https://www.google.com/recaptcha/api/siteverify", data=verification_data
+        )
         recaptcha_result = response.json()
         print(recaptcha_result)
         if not recaptcha_result["success"]:
@@ -164,7 +176,9 @@ class RegisterUserAPIView(APIView):
             if request.data["organization"]:
                 success = AccountService.createOrganisation(data)
             else:
-                birthday = datetime.strptime(request.data["birthday"], "%Y-%m-%d").date()
+                birthday = datetime.strptime(
+                    request.data["birthday"], "%Y-%m-%d"
+                ).date()
                 success = AccountService.createNormalUser(data, birthday)
             if success:
                 return Response(status=status.HTTP_200_OK)
@@ -255,6 +269,7 @@ class SearchEvents(APIView):
             return Response(events, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class GetAllEvent(APIView):
     def get(self, request):
         eventService = EventService()
@@ -268,6 +283,7 @@ class GetAllEvent(APIView):
                 {"Failed to retrieve organizers."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
 
 class GetEvent(APIView):
     def get(self, request, eid):
@@ -283,6 +299,7 @@ class GetEvent(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+
 class GetAllEvent(APIView):
     def get(self, request):
         eventService = EventService()
@@ -297,19 +314,23 @@ class GetAllEvent(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+
 class Login(APIView):
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
         authService = AuthService()
-        userWithCorrectCredential = authService.authenticateUser(request, username, password)
-        if userWithCorrectCredential :
-            request.session["temp_id"] = str(userWithCorrectCredential.id) 
+        userWithCorrectCredential = authService.authenticateUser(
+            request, username, password
+        )
+        if userWithCorrectCredential:
+            request.session["temp_id"] = str(userWithCorrectCredential.id)
             return Response({"detail": "Credentials are correct"}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)
 
+
 class GetOTP(APIView):
-    def post(self,request):
+    def post(self, request):
         self.authService = AuthService()
         id = request.session["temp_id"]
         isOtpSent = self.authService.generateOTP(id)
@@ -317,18 +338,22 @@ class GetOTP(APIView):
             return Response({"detail": "Credentials are correct"}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)
 
+
 class VerifyOtp(APIView):
-    def post(self,request):
+    def post(self, request):
         self.authService = AuthService()
         otp = request.data.get("OTP")
         uuid = request.session["temp_id"]
-        verifiedUser = self.authService.verifyOTP(request=request,uuid = uuid ,otpToken = otp)
+        verifiedUser = self.authService.verifyOTP(
+            request=request, uuid=uuid, otpToken=otp
+        )
         if verifiedUser:
             request.session["role"] = AccountService.getUserRole(verifiedUser.id)
             return Response({"detail": "LOGIN SUCCESS"}, status=200)
         return Response({"detail": "WRONG OTP"}, status=401)
 
+
 class Logout(APIView):
-        def post(self,request):
-            AuthService.logout(request)
-            return Response({"detail": "LOGOUT SUCCESS"}, status=200)
+    def post(self, request):
+        AuthService.logout(request)
+        return Response({"detail": "LOGOUT SUCCESS"}, status=200)
