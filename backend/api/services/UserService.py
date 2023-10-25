@@ -53,9 +53,10 @@ class UserService:
     @staticmethod
     def cancelSignUpEvent(data):
         try:
-            eventSerializer = EventSignUpParticipantSerializer(data=data)
-            if eventSerializer.is_valid():
-                print(data["participant"])
+            # eventSerializer = EventSignUpParticipantSerializer(data=data)            
+            signedup = EventParticipant.eventParticipantManager.getSingleUserEventmap(data["event"],data["participant"])
+            if list(signedup) != []:
+                # print(data["participant"])
                 EventParticipant.eventParticipantManager.deleteByUUID(data["participant"])
                 return True
         except Exception as e:
