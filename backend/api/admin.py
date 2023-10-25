@@ -1,5 +1,5 @@
 from django.contrib import admin
-from api.models import Admin, Organizer,NormalUser,GenericUser
+from api.models import Admin, Organizer,NormalUser,GenericUser,Event,EventOrganizerMapping,EventParticipant
 from django.contrib.auth.models import Group
 # Register your models here.
 from django_otp.admin import OTPAdminSite
@@ -23,5 +23,16 @@ class GenericUserAdmin(admin.ModelAdmin):
 
 @admin.register(Admin)
 class AdminAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(EventParticipant)
+class EventParticipantAdmin(admin.ModelAdmin):
+    pass
+@admin.register(EventOrganizerMapping)
+class EventOrganizerMappingAdmin(admin.ModelAdmin):
     pass
 admin.site.unregister(Group)
