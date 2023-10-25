@@ -189,8 +189,11 @@ class RegisterUserAPIView(APIView):
 
 class UpdateUserAPIView(APIView):
     def put(self, request):
+
         id = UUID(request.session["_auth_user_id"]).hex
         valid = UserService.getUserById(id)
+        # print(valid)
+        
         if valid != None:
             data = {
                 "first_name": request.data["firstname"],
@@ -199,17 +202,23 @@ class UpdateUserAPIView(APIView):
                 "phoneNum": request.data["phoneNum"],
                 "username": request.data["userName"],
             }
+        
         emergency = EmergencyContactService.getContactById(id)
+        # print("hi"+ emergency)
         if emergency:
             nokData = {
                 "name": request.data["nokName"],
                 "relationship": request.data["nokRelationship"],
                 "phoneNum": request.data["nokPhone"],
             }
-        nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])
-
-        success = UserService.updateUserProfile(data, id)
-        if success and nokUpdateSuccess:
+            nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])
+            success = UserService.updateUserProfile(data, id)
+        else:
+            # create a nok here pls
+            newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
+            emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)
+            
+        if (success and nokUpdateSuccess) or emergencySuccess:
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -225,6 +234,7 @@ class GetProfileDetailsAPIView(APIView):
 
         data["profile"] = valid
         emergency = EmergencyContactService.getContactById(id)
+        # print(emergency)
         if emergency:
             # data["emergency"] = emergency
             # print(emergency)

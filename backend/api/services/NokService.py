@@ -22,6 +22,21 @@ class NokService:
             return False   
         
     @staticmethod
+    def createNok(name,relationship,phoneNum):
+        try:
+            newNok = NOK.objects.create(
+                name=name,
+                relationship=relationship,
+                phoneNum=phoneNum,
+            )
+            serializer  = NOKSerializer(newNok)
+            return serializer.data
+        except Exception as e:
+            print(e)
+            return False
+
+        
+    @staticmethod
     def updateNok(data,id):
         try:
             user = NOK.objects.get(id=id) 

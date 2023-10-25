@@ -13,11 +13,24 @@ class EmergencyContactService:
     def getContactById(id):
         try:
             contact =  EmergencyContacts.objects.get(normalUser_id=id)
+            # print(contact)
             serializer = EmergencyContactsSerializer(contact)          
             return serializer.data
         except Exception as e:
             print(e)
             return False   
+        
+    def createNewContact(nok_id,user_id):
+        try:
+            contact = EmergencyContacts.objects.create(
+                normalUser_id=user_id,
+                nok_id= nok_id
+            )
+            serializer = EmergencyContactsSerializer(contact)
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
 
             
