@@ -189,6 +189,16 @@ export default function LoginPage() {
                 >
                   {otpSent ? "Verify OTP" : "Request OTP"}
                 </Button>
+                <Button
+                  variant={"link"}
+                  colorScheme={"blue"}
+                  size={"sm"}
+                  onClick={() => {
+                    router.push("/register");
+                  }}
+                >
+                  New? Regster with us today!
+                </Button>
               </Stack>
             </Stack>
           </form>
