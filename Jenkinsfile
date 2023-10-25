@@ -16,7 +16,6 @@ pipeline {
                     npm install
                     '''
                 }
-                
             }
         }
         stage('Setting up container') {
@@ -45,12 +44,22 @@ pipeline {
         }
     }
     post {
-        always {
+        // Only run docker compose down when the build is successful
+        success {
             script {
                 sh '''
                 docker compose down
+                docker container prune -f
                 '''
             }
+        }
+        failure {
+            echo "Build failure"
+        }
+        // Clean up workspace
+        cleanup {
+            echo "Cleaning workspace"
+            cleanWs()
         }
     }
 }
