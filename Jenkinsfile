@@ -18,13 +18,13 @@ pipeline {
                 }
             }
         }
-        stage('Setting up container') {
-            steps{
-                sh '''
-                docker compose up --build -d
-                '''
-            }
-        }
+        // stage('Setting up container') {
+        //     steps{
+        //         sh '''
+        //         docker compose up --build -d
+        //         '''
+        //     }
+        // }
         stage('Check OWASP') {
             steps {
                 echo 'Check OWASP Stage'
