@@ -45,14 +45,14 @@ pipeline {
     }
     post {
         // Only run docker compose down when the build is successful
-        success {
-            script {
-                sh '''
-                docker compose down
-                docker container prune -f
-                '''
-            }
-        }
+        // success {
+        //     script {
+        //         sh '''
+        //         docker compose down
+        //         docker container prune -f
+        //         '''
+        //     }
+        // }
         failure {
             echo "Build failure"
         }
