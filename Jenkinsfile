@@ -56,10 +56,5 @@ pipeline {
         failure {
             echo "Build failure"
         }
-        // Clean up workspace
-        cleanup {
-            echo "Cleaning workspace"
-            cleanWs()
-        }
     }
 }
