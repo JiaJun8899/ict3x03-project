@@ -22,6 +22,8 @@ class AccountService:
 
     def createNormalUser(data, birthday):
         genericUserSerializer = RegisterUserSerializer(data=data)
+        print(genericUserSerializer.is_valid())
+        print(genericUserSerializer.errors)
         if genericUserSerializer.is_valid():
             genericUserObj = genericUserSerializer.save()
             normalUser = RegisterNormalUserSerializer(

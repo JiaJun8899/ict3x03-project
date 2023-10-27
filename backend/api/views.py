@@ -14,6 +14,12 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import requests
 from dotenv import load_dotenv
 
+import logging
+
+adminLogger = logging.getLogger("backend.api.views.admin")
+generalLogger = logging.getLogger("backend.api.views.general")
+authLogger = logging.getLogger("backend.api.views.auth")
+
 load_dotenv()
 RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
 
@@ -41,6 +47,7 @@ class UpdateOrganizerStatus(APIView):
             status=request.data["validOrganisation"],
         )
         if success:
+            adminLogger.warning("Organizer {organizer_uuid} updated ... okay try this one later")
             return Response(
                 {"message": "Organizer status updated successfully."},
                 status=status.HTTP_200_OK,
@@ -181,6 +188,7 @@ class RegisterUserAPIView(APIView):
                 ).date()
                 success = AccountService.createNormalUser(data, birthday)
             if success:
+                authLogger.debug("User {username} created.")
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -317,6 +325,7 @@ class GetAllEvent(APIView):
 
 class Login(APIView):
     def post(self, request):
+        print(request.__dict__)
         username = request.data.get("username")
         password = request.data.get("password")
         authService = AuthService()
@@ -325,7 +334,10 @@ class Login(APIView):
         )
         if userWithCorrectCredential:
             request.session["temp_id"] = str(userWithCorrectCredential.id)
+            authLogger.info(f"views.Login | insert_IP_here | {{'User' : '{username}', 'credentials' : 'VALID'}}") #relook message later
             return Response({"detail": "Credentials are correct"}, status=200)
+        
+        authLogger.info(f"views.Login | insert_IP_here | {{'User' : '{username}', 'credentials' : 'INVALID'}}") #relook message later
         return Response({"detail": "Invalid credentials."}, status=401)
 
 
@@ -356,4 +368,5 @@ class VerifyOtp(APIView):
 class Logout(APIView):
     def post(self, request):
         AuthService.logout(request)
+        authLogger.debug("Username {request.data['user']} logged out.") #check back later
         return Response({"detail": "LOGOUT SUCCESS"}, status=200)

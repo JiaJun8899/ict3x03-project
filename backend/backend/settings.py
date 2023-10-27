@@ -172,10 +172,15 @@ CSRF_COOKIE_SECURE = True
 
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,
+    "disable_existing_loggers": True, #limit loggers to only the ones defined here for more security
     "formatters": {
         "verbose": {
             "format": "{levelname} | {asctime} | {name} | {module} | {funcName} | {message}",
+            "style": "{",
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        "auth": {
+            "format": "{levelname} | {asctime} | {message}",
             "style": "{",
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
@@ -184,13 +189,46 @@ LOGGING = {
         "file": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
-            "filename": "backend/general.log",
+            "filename": "backend/logs/django.log",
             "formatter": "verbose",
+        },
+        "adminFile": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "backend/logs/admin.log",
+            "formatter": "verbose",
+        },
+        "generalFile": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "backend/logs/general.log",
+            "formatter": "verbose",
+        },
+        "authFile": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "backend/logs/auth.log",
+            "formatter": "auth",
         },
     },
     "loggers": {
         "django": {
             "handlers": ["file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "backend.api.views.admin": {
+            "handlers": ["adminFile"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "backend.api.views.general": {
+            "handlers": ["generalFile"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "backend.api.views.auth": {
+            "handlers": ["authFile"],
             "level": "INFO",
             "propagate": False,
         },
