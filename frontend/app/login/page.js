@@ -197,7 +197,7 @@ export default function LoginPage() {
                     router.push("/register");
                   }}
                 >
-                  New? Regster with us today!
+                  New? Register with us today!
                 </Button>
               </Stack>
             </Stack>
