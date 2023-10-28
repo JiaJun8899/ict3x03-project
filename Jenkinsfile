@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Semgrep Scan') {
             steps {
-                sh 'semgrep ci'
+                sh 'semgrep scan'
             }
         }
         stage('Setting up container') {
