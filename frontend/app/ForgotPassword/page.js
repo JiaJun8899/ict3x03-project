@@ -22,7 +22,7 @@ export default function ForgotPasswordForm() {
     const [isOtpStage, setIsOtpStage] = useState(false);
     const [currentPassword, setCurrentPassword] = useState(''); // New State
     const [newPassword, setNewPassword] = useState(''); // New State
-    const [ReTypeNewPassword, setReTypeNewPassword] = useState(''); // New State
+    const [reTypeNewPassword, setReTypeNewPassword] = useState(''); // New State
     const [isPasswordStage, setIsPasswordStage] = useState(true); // New State
     const API_HOST = `http://localhost:8000/api`;
   
@@ -152,13 +152,13 @@ export default function ForgotPasswordForm() {
           />
         </FormControl>)}
         {!isOtpStage && (
-        <FormControl id="ReTypeNewPassword">
+        <FormControl id="reTypeNewPassword">
             <FormLabel>Re-enter your Password</FormLabel>
           <Input
             placeholder="Enter your password again"
             _placeholder={{ color: 'gray.500' }}
             type="password"
-            value={ReTypeNewPassword}
+            value={reTypeNewPassword}
             onChange={(e) => setReTypeNewPassword(e.target.value)}
           />
         </FormControl>)}
