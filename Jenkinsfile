@@ -21,7 +21,7 @@ pipeline {
         stage('Setting up container') {
             steps{
                 sh '''
-                docker compose up --build -d
+                docker compose up --build -d /home/docker.env
                 '''
             }
         }
@@ -44,15 +44,15 @@ pipeline {
         }
     }
     post {
-        // Only run docker compose down when the build is successful
-        // success {
-        //     script {
-        //         sh '''
-        //         docker compose down
-        //         docker container prune -f
-        //         '''
-        //     }
-        // }
+        Only run docker compose down when the build is successful
+        success {
+            script {
+                sh '''
+                docker compose down
+                docker container prune -f
+                '''
+            }
+        }
         failure {
             echo "Build failure"
         }
