@@ -52,7 +52,7 @@ pipeline {
         }
     }
     post {
-        Only run docker compose down when the build is successful
+        //Only run docker compose down when the build is successful
         success {
             script {
                 sh '''
