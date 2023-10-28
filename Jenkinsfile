@@ -53,7 +53,7 @@ pipeline {
     }
     post {
         //Only run docker compose down when the build is successful
-        success {
+        always {
             script {
                 sh '''
                 docker compose down
