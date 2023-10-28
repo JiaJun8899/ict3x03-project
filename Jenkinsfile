@@ -1,6 +1,9 @@
 pipeline {
     agent any
     tools {nodejs "NodeJS"}
+    environment {
+        SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
+    }
     stages {
         stage('Test Docker') {
             steps {
@@ -16,6 +19,12 @@ pipeline {
                     npm install
                     '''
                 }
+            }
+        }
+        stage('Semgrep Scan') {
+            steps {
+                sh 'pip3 install semgrep'
+                sh 'semgrep ci'
             }
         }
         stage('Setting up container') {
@@ -54,7 +63,7 @@ pipeline {
         //     }
         // }
         failure {
-            echo "Build failure"
+            echo 'Something went wrong'
         }
     }
 }
