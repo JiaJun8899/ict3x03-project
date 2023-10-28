@@ -1,5 +1,4 @@
 pipeline {
-	// test deploy
     agent any
     tools {nodejs "NodeJS"}
     environment {
