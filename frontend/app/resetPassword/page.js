@@ -54,9 +54,14 @@ const handleSubmitRequest = async () => {
         router.push("/login")
     }
   } catch (error) {
-    console.log(error);
-    // Handle error - Maybe show an error message
-    console.log("Failed to change the password");
+      
+    toast({
+        title: "Failed to change password",
+        description: "Fail to change password",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+    });
   }
 };
 
