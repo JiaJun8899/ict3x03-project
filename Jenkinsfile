@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Semgrep Scan') {
             steps {
-                sh 'semgrep ci'
+                sh 'semgrep scan'
             }
         }
         stage('Setting up container') {
@@ -53,7 +53,7 @@ pipeline {
     }
     post {
         //Only run docker compose down when the build is successful
-        success {
+        always {
             script {
                 sh '''
                 docker compose down
