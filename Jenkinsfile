@@ -1,4 +1,5 @@
 pipeline {
+	// test deploy
     agent any
     tools {nodejs "NodeJS"}
     environment {
@@ -23,7 +24,7 @@ pipeline {
         }
         stage('Semgrep Scan') {
             steps {
-                sh 'semgrep scan'
+                sh 'semgrep ci'
             }
         }
         stage('Setting up container') {
@@ -53,7 +54,7 @@ pipeline {
     }
     post {
         //Only run docker compose down when the build is successful
-        always {
+        success {
             script {
                 sh '''
                 docker compose down
