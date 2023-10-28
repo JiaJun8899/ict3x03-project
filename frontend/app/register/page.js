@@ -16,7 +16,8 @@ import {
   useColorModeValue,
   Link,
   Checkbox,
-  Tooltip
+  Tooltip,
+  useToast,
 } from "../providers";
 import { useState } from "react";
 import { ViewIcon, ViewOffIcon } from "../providers";
@@ -42,6 +43,7 @@ export default function SignupCard() {
     email: ""
   });
   const [recaptchaValue, setRecaptchaValue] = useState(null);
+  const toast = useToast();
 
   async function handleForm(form) {
     form.recaptchaValue = recaptchaValue;
@@ -49,9 +51,28 @@ export default function SignupCard() {
       await axios.post(API_HOST + "/register", form);
       router.replace("/");
     } catch (error) {
-      console.log("fail");
+      const values = Object.values(error.response.data)
+      if (values[0] != "<"){
+        toast({
+          title: "Login failed",
+          description: values[0],
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+      else {
+        toast({
+          title: "Login failed",
+          description: "An error occured. Please try again",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     }
-  }
+  };
+
   return (
     <Flex
       minH={"100vh"}
@@ -128,7 +149,7 @@ export default function SignupCard() {
               </Box>
             </HStack>
             <FormControl id="email" isRequired>
-              <FormLabel>Email address</FormLabel>
+              <FormLabel>Email address (username)</FormLabel>
               <Input
                 type="email"
                 value={form.email}

@@ -163,28 +163,29 @@ class RegisterUserAPIView(APIView):
             "password": request.data["password"],
             "password2": request.data["password2"],
         }
-        recaptcha_response = request.data["recaptchaValue"]
-        verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
-        response = requests.post(
-            "https://www.google.com/recaptcha/api/siteverify", data=verification_data
-        )
-        recaptcha_result = response.json()
-        print(recaptcha_result)
-        if not recaptcha_result["success"]:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        else:
-            if request.data["organization"]:
-                success = AccountService.createOrganisation(data)
-            else:
-                birthday = datetime.strptime(
-                    request.data["birthday"], "%Y-%m-%d"
-                ).date()
-                success = AccountService.createNormalUser(data, birthday)
-            if success:
-                return Response(status=status.HTTP_200_OK)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        if request.data["organization"]:
+            success, errors = AccountService.createOrganisation(data)
+        else:
+            birthday = datetime.strptime(
+                request.data["birthday"], "%Y-%m-%d"
+            ).date()
+            success, errors = AccountService.createNormalUser(data, birthday)
+        if success != False:
+            recaptcha_response = request.data["recaptchaValue"]
+            verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
+            response = requests.post(
+                "https://www.google.com/recaptcha/api/siteverify", data=verification_data
+            )
+            recaptcha_result = response.json()
+            print(recaptcha_result)
+            if not recaptcha_result["success"]:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(status=status.HTTP_200_OK)
+        else:
+            print(errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateUserAPIView(APIView):
     def put(self, request):
