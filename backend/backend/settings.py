@@ -27,7 +27,7 @@ EMAIL_USE_TLS = True  # Use TLS security
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER',os.environ.get('EMAIL_HOST_USER'))# Your email address
 EMAIL_HOST_PASSWORD =  os.getenv('EMAIL_HOST_PASSWORD',os.environ.get('EMAIL_HOST_PASSWORD'))# Your email password
 OTP_EMAIL_SENDER = EMAIL_HOST_USER
-OTP_EMAIL_TOKEN_VALIDITY=70
+OTP_EMAIL_TOKEN_VALIDITY=300
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
