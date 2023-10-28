@@ -29,7 +29,7 @@ pipeline {
         stage('Setting up container') {
             steps{
                 sh '''
-                docker compose up --build -d /home/docker.env
+                docker compose up --build -d
                 '''
             }
         }
