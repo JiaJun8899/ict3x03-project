@@ -21,6 +21,15 @@ RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
+def validEventOrg(request, eid):
+    organization_id = request.session["_auth_user_id"]
+    print(organization_id)
+    checkValid = EventService.checkValid(organization_id, eid)
+    if checkValid:
+        return JsonResponse({"valid": True})
+    else:
+        return JsonResponse({"valid": False})
+
 class TestAPI(APIView):
     def get(self, request):
         if "_auth_user_id" in request.session:
@@ -151,6 +160,11 @@ class EventSingleByOrganizationAPI(APIView):
         eventsByOrg = EventService.getEventByID(organization_id, event_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
+class EventParticipantAPI(APIView):
+    def get(self, request, event_id):
+        organization_id = request.session["_auth_user_id"]
+        eventsByOrg = EventService.getParticipantsByEvent(organization_id, event_id)
+        return Response(eventsByOrg, status=status.HTTP_200_OK)
 
 class RegisterUserAPIView(APIView):
     def post(self, request):
