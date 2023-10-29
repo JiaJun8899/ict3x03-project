@@ -24,13 +24,12 @@ export default function ForgotPasswordForm() {
   const router = useRouter(); // Get the router object
 
   const handleSubmitRequest = async () => {
+    // Validate whether newPassword and confirmPassword are the same, or any other validations
+    if (newPassword !== confirmPassword) {
+      // Show some toast or error message
+      return;
+    }
     try {
-      // Validate whether newPassword and confirmPassword are the same, or any other validations
-      if (newPassword !== confirmPassword) {
-        // Show some toast or error message
-        return;
-      }
-
       const response = await axios.put(
         `${API_HOST}/auth-change-password/`,
         {
@@ -47,11 +46,8 @@ export default function ForgotPasswordForm() {
           withCredentials: true,
         }
       );
-
-      if (response.status === 200) {
-        // Handle success - Maybe redirect to login or show a success message
-        router.push("/login");
-      }
+      // Handle success - Maybe redirect to login or show a success message
+      router.push("/login");
     } catch (error) {
       toast({
         title: "Failed to change password",

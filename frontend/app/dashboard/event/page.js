@@ -31,20 +31,12 @@ import { DateTime } from "luxon";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_HOST } from "@/app/utils/utils";
+import { API_HOST, convertTime} from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
-function convertTime(time) {
-  const convertedTime = DateTime.fromISO(time)
-    .toJSDate()
-    .toLocaleString("en-SG");
-  console.log(convertedTime.substring(0, 16));
-  return convertedTime;
-}
-const DeleteModal = ({ eventData, cancelSignup }) => {
+const WithdrawModal = ({ eventData, cancelSignup }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const event = eventData;
-  const router = useRouter();
   return (
     <>
       <Button colorScheme="red" onClick={onOpen}>
@@ -265,7 +257,7 @@ export default function Page() {
                   </ListItem>
                   <ButtonGroup>
                     <Button onClick={signup}>Sign Up Event</Button>
-                    <DeleteModal
+                    <WithdrawModal
                       eventData={event}
                       cancelSignup={cancelSignup}
                     />
