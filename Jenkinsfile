@@ -24,27 +24,27 @@ pipeline {
         stage('Semgrep Scan') {
             steps {
                 echo 'SAST Scanning'
-                //sh 'semgrep scan'
+                sh 'semgrep scan'
             }
         }
         stage('Setting up container') {
             steps{
                 echo 'Setting up Container'
-                //sh '''
-                //docker compose up --build -d
-                //'''
+                sh '''
+                docker compose up --build -d
+                '''
             }
         }
         stage('Check OWASP') {
             steps {
                 echo 'Check OWASP Stage'
                 // Add your OWASP Dependency-Check configuration here if needed
-                //dependencyCheck additionalArguments: ''' 
-                //     -o './'
-                //     -s './'
-                //     -f 'ALL' 
-                //     --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-                //dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
+                dependencyCheck additionalArguments: ''' 
+                     -o './'
+                     -s './'
+                     -f 'ALL' 
+                     --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
             }
         }
         stage('Testing Stage'){
@@ -58,10 +58,9 @@ pipeline {
         always {
             script {
                 // Containers are running, check their status
-                def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nextjs_frontend_prod', returnStdout: true).trim()
-                def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend_prod', returnStdout: true).trim()
-                def dbContainer = sh(script: 'docker inspect -f "{{.State.Status}}" backend_database_prod', returnStdout: true).trim()
-                echo "${frontendContainer}"
+                def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nexjs_frontend', returnStdout: true).trim()
+                def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend', returnStdout: true).trim()
+                def dbContainer = sh(script: 'docker inspect -f "{{.State.Status}}" backend_database', returnStdout: true).trim()
                 // Check if any container's status is not "Up"
                 if (frontendContainer != 'running' || backendContainer != 'running' || dbContainer != 'running') {
                         // At least one container is running but not "Up," send an email
