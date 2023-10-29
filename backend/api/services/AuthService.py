@@ -10,6 +10,7 @@ class AuthService:
         self.emailDevice = EmailDevice()
     
     def setEmailDevice(self):
+        if self.user != None:
             self.emailDevice = EmailDevice.objects.get_or_create(user=self.user, email=self.user.email,name="EMAIL")[0]
 
     def authenticateUser(self, request, username, password):
@@ -71,3 +72,12 @@ class AuthService:
     def changePassword(self,user,password):
         user.set_password(password)
         user.save()
+        return True
+
+    def requestOTPFroMEmail(self,email):
+        user = GenericUser.genericUserManager.getUserByEmail(email)
+        if user:
+            self.generateOTP(user.id)
+
+    def getUserByEmail(self,email):
+        return GenericUser.genericUserManager.getUserByEmail(email)

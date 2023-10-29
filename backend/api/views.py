@@ -359,15 +359,6 @@ class Logout(APIView):
             AuthService.logout(request)
             return Response({"detail": "LOGOUT SUCCESS"}, status=200)
 
-class ResetPassword(APIView):
-    def post(self,request):
-        self.authService = AuthService()
-        email = request.data.get("email")
-        user = GenericUser.genericUserManager.getUserByEmail(email)
-        isOtpSent = self.authService.generateOTP(user.id)
-        if isOtpSent:
-            return Response({"detail": "Credentials are correct"}, status=200)
-        return Response({"detail": "Invalid credentials."}, status=401)
 
 class ChangePassword(APIView):
     def post(self,request):
@@ -384,8 +375,8 @@ class ChangePassword(APIView):
             currentPassword = request.data.get("currentPassword")
             newPasswordConfirmation = request.data.get("newPasswordConfirmation")
             newPassword = request.data.get("newPassword")
-            OTP = request.data.get("OTP")
-            if None in [currentPassword, newPasswordConfirmation, newPassword, OTP]:
+            otp = request.data.get("OTP")
+            if None in [currentPassword, newPasswordConfirmation, newPassword, otp]:
                 return Response({"detail": "Missing fields"}, status=status.HTTP_400_BAD_REQUEST)
 
             authService = AuthService()
@@ -393,19 +384,40 @@ class ChangePassword(APIView):
             
             if newPassword != newPasswordConfirmation:
                 return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
-            if OTP is None:
-                return Response({"detail": "No OTP"}, status=status.HTTP_400_BAD_REQUEST)
             if currentUser is None:
                 return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
             userWithCorrectCredential = authService.authenticateUser(request, currentUser.email, currentPassword)
             
-            if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id, OTP):
-                authService.changePassword(userWithCorrectCredential, newPassword)
-                return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
+            if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id,otp):
+                if authService.changePassword(userWithCorrectCredential, newPassword):
+                    return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
                 
             return Response({"detail": "Invalid current password"}, status=status.HTTP_401_UNAUTHORIZED)
             
         except Exception as e:
             return Response({"detail": f"Something went wrong: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class ResetPassword(APIView):
+    def post(self,request):
+        email = request.data.get("email")
+        auth = AuthService()
+        auth.requestOTPFroMEmail(email)
+        return Response({"detail": "email should be sent"}, status=200)
+
+    def put(self,request):
+        otp= request.data.get("OTP")
+        email = request.data.get("email")
+        newPasswordConfirmation = request.data.get("newPasswordConfirmation")
+        newPassword = request.data.get("newPassword")
+        auth = AuthService()
+        if newPassword != newPasswordConfirmation:
+            return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+        user = auth.getUserByEmail(email)
+        if user:
+            isOTPCorrect = auth.verifyOTP(user.id,otp)
+            if isOTPCorrect:
+                if auth.changePassword(user, newPassword):
+                    return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
+        return Response({"detail": "Something went wrong"}, status=status.HTTP_401_UNAUTHORIZED)

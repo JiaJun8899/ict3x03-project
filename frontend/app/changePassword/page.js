@@ -15,9 +15,9 @@ import { useToast } from "@chakra-ui/react";
 import Cookie from "js-cookie";
 
 export default function ForgotPasswordForm() {
-    const [email, setEmail] = useState('');
     const toast = useToast();
   const [otp, setOtp] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -33,10 +33,10 @@ const handleSubmitRequest = async () => {
     }
 
     const response = await axios.put(
-      `${API_HOST}/auth-reset-password/`,
+      `${API_HOST}/auth-change-password/`,
       {
         OTP: otp,
-        email:email,
+        currentPassword: oldPassword,
         newPassword: newPassword,
         newPasswordConfirmation: confirmPassword,
       },
@@ -54,10 +54,11 @@ const handleSubmitRequest = async () => {
         router.push("/login")
     }
   } catch (error) {
+      
     toast({
         title: "Failed to change password",
         description: "Fail to change password",
-        status: "error",
+        status: "success",
         duration: 3000,
         isClosable: true,
     });
@@ -66,10 +67,8 @@ const handleSubmitRequest = async () => {
 
     const handleRequestOtp = async () => {
             const response = await axios.post(
-                `${API_HOST}/auth-reset-password/`,
-                {
-                    "email":email
-                },
+                `${API_HOST}/auth-get-OTP/`,
+                {},
                 {
                     headers: {
                         "X-CSRFToken": Cookie.get("csrftoken"),
@@ -99,24 +98,8 @@ const handleSubmitRequest = async () => {
         <Text fontSize={{ base: 'sm', sm: 'md' }}>
           You'll get an email with a reset link
         </Text>
-      
-        {/* Email input field */}
-
         {/* OTP input field */}
         <Flex alignItems="center">
-        <FormControl id="email">
-            <Input
-                type="email"
-                placeholder="Your Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
-        </FormControl>
-          <Button bg={'blue.400'} color={'white'} onClick={handleRequestOtp}>
-            GET OTP
-          </Button>
-        </Flex>
-
           <FormControl id="otp" mr={4}>
             <Input
               type="text"
@@ -125,6 +108,20 @@ const handleSubmitRequest = async () => {
               onChange={(e) => setOtp(e.target.value)}
             />
           </FormControl>
+          <Button bg={'blue.400'} color={'white'} onClick={handleRequestOtp}>
+            GET OTP
+          </Button>
+        </Flex>
+
+        {/* Old Password input field */}
+        <FormControl id="old-password">
+          <Input
+            type="password"
+            placeholder="Old Password"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+          />
+        </FormControl>
 
         {/* New Password input field */}
         <FormControl id="new-password">
