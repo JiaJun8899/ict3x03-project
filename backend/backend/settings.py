@@ -54,7 +54,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
-    'corsheaders'
+    'corsheaders',
+    'single_session',
+
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -168,8 +170,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 # SECURE_SSL_REDIRECT = True
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
