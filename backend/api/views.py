@@ -13,6 +13,7 @@ from uuid import UUID
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import requests
 from dotenv import load_dotenv
+from django.db import transaction
 
 import logging
 
@@ -25,6 +26,15 @@ RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
 
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
+
+def validEventOrg(request, eid):
+    organization_id = request.session["_auth_user_id"]
+    print(organization_id)
+    checkValid = EventService.checkValid(organization_id, eid)
+    if checkValid:
+        return JsonResponse({"valid": True})
+    else:
+        return JsonResponse({"valid": False})
 
 class TestAPI(APIView):
     def get(self, request):
@@ -157,6 +167,11 @@ class EventSingleByOrganizationAPI(APIView):
         eventsByOrg = EventService.getEventByID(organization_id, event_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
+class EventParticipantAPI(APIView):
+    def get(self, request, event_id):
+        organization_id = request.session["_auth_user_id"]
+        eventsByOrg = EventService.getParticipantsByEvent(organization_id, event_id)
+        return Response(eventsByOrg, status=status.HTTP_200_OK)
 
 class RegisterUserAPIView(APIView):
     def post(self, request):
@@ -196,6 +211,10 @@ class RegisterUserAPIView(APIView):
 
 class UpdateUserAPIView(APIView):
     def put(self, request):
+        emergencySuccess=False
+        success=False
+        nokUpdateSuccess=False
+
         id = UUID(request.session["_auth_user_id"]).hex
         valid = UserService.getUserById(id)
         if valid != None:
@@ -206,6 +225,7 @@ class UpdateUserAPIView(APIView):
                 "phoneNum": request.data["phoneNum"],
                 "username": request.data["userName"],
             }
+        # print("this is emergency before ")
         emergency = EmergencyContactService.getContactById(id)
         if emergency:
             nokData = {
@@ -213,10 +233,16 @@ class UpdateUserAPIView(APIView):
                 "relationship": request.data["nokRelationship"],
                 "phoneNum": request.data["nokPhone"],
             }
-        nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])
-
-        success = UserService.updateUserProfile(data, id)
-        if success and nokUpdateSuccess:
+            nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])
+            success = UserService.updateUserProfile(data, id)
+        else:
+            # create a nok here pls
+            with transaction.atomic():
+                newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
+                emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)
+                # print(newNok)
+                # print(emergencySuccess)        
+        if ((success and nokUpdateSuccess) or emergencySuccess):        
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -227,18 +253,12 @@ class GetProfileDetailsAPIView(APIView):
         id = UUID(request.session["_auth_user_id"]).hex
         # this part use the session to get id
         valid = UserService.getUserById(id)
-        print(valid)
-        # print(UUID(request.session["_auth_user_id"]).hex)
 
         data["profile"] = valid
         emergency = EmergencyContactService.getContactById(id)
         if emergency:
-            # data["emergency"] = emergency
-            # print(emergency)
             nok = NokService.getNokById(emergency["nok"])
             data["nok"] = nok
-
-        # print(valid)
         return Response(data, status=status.HTTP_200_OK)
 
 

@@ -49,7 +49,7 @@ const DeleteModal = ({ eventData, cancelSignup }) => {
   return (
     <>
       <Button colorScheme="red" onClick={onOpen}>
-        Cancel Event
+        Withdraw Event
       </Button>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
@@ -57,10 +57,17 @@ const DeleteModal = ({ eventData, cancelSignup }) => {
           <ModalHeader>Delete Event Modal</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            Are you sure you want to delete {event.eventName}?
+            Are you sure you want to withdraw {event.eventName}?
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="red" mr={3} onClick={cancelSignup}>
+            <Button
+              colorScheme="red"
+              mr={3}
+              onClick={() => {
+                cancelSignup();
+                onClose();
+              }}
+            >
               Delete Event
             </Button>
             <Button colorScheme="blue" onClick={() => onClose()}>
@@ -150,19 +157,34 @@ export default function Page() {
   const cancelSignup = async () => {
     const token = await getCsrfToken();
     // console.log('cancel signup')
-    try {
-      const response = await axios.delete(`${API_HOST}/cancel-sign-up-event/`, {
+    const response = await axios
+      .delete(`${API_HOST}/cancel-sign-up-event/`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": token,
         },
         data: { eid: search },
+      })
+      .then(function (response) {
+        console.log(response);
+        toast({
+          title: "Withdraw successful.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      })
+      .catch(function (error) {
+        console.log(error);
+        toast({
+          title: "Withdraw failed.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       });
-      console.log(response);
-    } catch (error) {
-      console.error(error);
-    }
+    console.log(response);
   };
 
   return (
