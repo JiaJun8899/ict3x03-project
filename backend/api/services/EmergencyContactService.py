@@ -12,10 +12,12 @@ class EmergencyContactService:
     @staticmethod
     def getContactById(id):
         try:
-            contact =  EmergencyContacts.objects.get(normalUser_id=id)
-            # print(contact)
-            serializer = EmergencyContactsSerializer(contact)          
-            return serializer.data
+            contact =  EmergencyContacts.objects.get(normalUser=id)        
+            serializer = EmergencyContactsSerializer(contact)  
+            if serializer != None:
+                return serializer.data
+            else:
+                return False
         except Exception as e:
             print(e)
             return False   

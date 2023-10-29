@@ -13,6 +13,7 @@ from uuid import UUID
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import requests
 from dotenv import load_dotenv
+from django.db import transaction
 
 load_dotenv()
 RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
@@ -189,11 +190,12 @@ class RegisterUserAPIView(APIView):
 
 class UpdateUserAPIView(APIView):
     def put(self, request):
+        emergencySuccess=False
+        success=False
+        nokUpdateSuccess=False
 
         id = UUID(request.session["_auth_user_id"]).hex
         valid = UserService.getUserById(id)
-        # print(valid)
-        
         if valid != None:
             data = {
                 "first_name": request.data["firstname"],
@@ -202,9 +204,8 @@ class UpdateUserAPIView(APIView):
                 "phoneNum": request.data["phoneNum"],
                 "username": request.data["userName"],
             }
-        
+        # print("this is emergency before ")
         emergency = EmergencyContactService.getContactById(id)
-        # print("hi"+ emergency)
         if emergency:
             nokData = {
                 "name": request.data["nokName"],
@@ -215,10 +216,12 @@ class UpdateUserAPIView(APIView):
             success = UserService.updateUserProfile(data, id)
         else:
             # create a nok here pls
-            newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
-            emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)
-            
-        if (success and nokUpdateSuccess) or emergencySuccess:
+            with transaction.atomic():
+                newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
+                emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)
+                # print(newNok)
+                # print(emergencySuccess)        
+        if ((success and nokUpdateSuccess) or emergencySuccess):        
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -229,19 +232,12 @@ class GetProfileDetailsAPIView(APIView):
         id = UUID(request.session["_auth_user_id"]).hex
         # this part use the session to get id
         valid = UserService.getUserById(id)
-        print(valid)
-        # print(UUID(request.session["_auth_user_id"]).hex)
 
         data["profile"] = valid
         emergency = EmergencyContactService.getContactById(id)
-        # print(emergency)
         if emergency:
-            # data["emergency"] = emergency
-            # print(emergency)
             nok = NokService.getNokById(emergency["nok"])
             data["nok"] = nok
-
-        # print(valid)
         return Response(data, status=status.HTTP_200_OK)
 
 
