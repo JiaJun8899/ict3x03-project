@@ -17,6 +17,7 @@ import {
   useColorMode,
   Center,
 } from "../providers";
+import NextLink from "next/link";
 import { MoonIcon, SunIcon } from "../providers";
 
 const NavLink = (props) => {
@@ -46,7 +47,11 @@ export default function Nav() {
     <>
       <Box bg={useColorModeValue("gray.100", "gray.900")} px={4}>
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
-          <Box>Logo</Box>
+          {/* <Box>Logo</Box> */}
+          <NextLink href={`dashboard/`}>
+            <Button variant={"link"}>Dashboard</Button>
+          </NextLink>
+         
 
           <Flex alignItems={"center"}>
             <Stack direction={"row"} spacing={7}>
@@ -81,8 +86,11 @@ export default function Nav() {
                   </Center>
                   <br />
                   <MenuDivider />
-                  <MenuItem>Your Servers</MenuItem>
-                  <MenuItem>Account Settings</MenuItem>
+                  {/* <MenuItem>Your Servers</MenuItem> */}
+                  <NextLink href={`/profile/`}> 
+                  <MenuItem>            
+                  Account Settings</MenuItem>
+                  </NextLink>
                   <MenuItem>Logout</MenuItem>
                 </MenuList>
               </Menu>
