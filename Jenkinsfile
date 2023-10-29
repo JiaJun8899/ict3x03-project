@@ -28,9 +28,9 @@ pipeline {
         }
         stage('Setting up container') {
             steps{
-                sh '''
-                docker compose up --build -d
-                '''
+                //sh '''
+                //docker compose up --build -d
+                //'''
             }
         }
         stage('Check OWASP') {
@@ -56,14 +56,16 @@ pipeline {
         always {
             script {
                 // Check if Docker containers are running
-                def dockerStatus = sh(script: 'docker ps --format "{{.Status}}"', returnStatus: true)
+                def dockerStatus = sh(script: 'docker ps --format "{{.Status}}" | awk "{print$1}"')
                 
                 if (dockerStatus == 0) {
                     // Containers are running, check their status
-                    def containerStatus = sh(script: 'docker ps --format "{{.Names}}: {{.Status}}"', returnStatus: true)
+                    def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nexjs_frontend', returnStatus: true).trim()
+                    def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend', returnStatus: true).trim()
+                    def dbContainer = sh(script: 'docker inspect -f "{{.State.Status}}" backend_database', returnStatus: true).trim()
                     
                     // Check if any container's status is not "Up"
-                    if (containerStatus.trim().contains(" Up ")) {
+                    if (frontendContainer != 'running' || backendContainer != running || dbContainer != running) {
                         // At least one container is running but not "Up," send an email
                         emailext subject: "Docker Container Status Issue",
                                   body: "One or more Docker containers are not in an 'Up' state. Please investigate.",
