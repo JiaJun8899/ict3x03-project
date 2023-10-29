@@ -60,7 +60,7 @@ pipeline {
                 def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nextjs_frontend_prod')
                 def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend_prod')
                 def dbContainer = sh(script: 'docker inspect -f "{{.State.Status}}" backend_database_prod')
-                echo '${frontendContainer}'
+                echo "${frontendContainer}"
                 // Check if any container's status is not "Up"
                 if (frontendContainer != 'running' || backendContainer != 'running' || dbContainer != 'running') {
                         // At least one container is running but not "Up," send an email
