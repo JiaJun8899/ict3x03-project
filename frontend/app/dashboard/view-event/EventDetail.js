@@ -25,12 +25,20 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  TableContainer,
 } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { API_HOST, convertTime } from "@/app/utils/utils";
 import Cookie from "js-cookie";
+import { DateTime } from "luxon";
 
 async function deleteEvent(eId) {
   const response = await axios.delete(API_HOST + "/get-event-byorg/", {
@@ -84,6 +92,65 @@ function DeleteModal(eventData) {
   );
 }
 
+function ParticpantRow({ particpant, index }) {
+    const userInfo = particpant.participant.user;
+    console.log(particpant.participant.user)
+  return (
+    <Tr>
+      <Td>{userInfo.first_name}</Td>
+      <Td>{userInfo.last_name}</Td>
+      <Td>{userInfo.phoneNum}</Td>
+      <Td>{userInfo.email}</Td>
+    </Tr>
+  );
+}
+
+function CreateEventRow(participantData) {
+  return participantData.map((particpant, index) => {
+    return <ParticpantRow particpant={particpant} key={index} />;
+  });
+}
+
+function ViewParticipantModal(participantData) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const participantList = participantData.participantData;
+  console.log(participantList)
+  return (
+    <>
+      <Button variant={'ghost'} onClick={onOpen}>
+        View Participants List
+      </Button>
+      <Modal isOpen={isOpen} onClose={onClose} size={'full'}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Particpant List</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <TableContainer spacing={8} mx={8} shadow="md" borderWidth="1px">
+              <Table variant="simple" size="sm">
+                <Thead>
+                  <Tr>
+                    <Th>First Name</Th>
+                    <Th>Last Name</Th>
+                    <Th>Phone Number</Th>
+                    <Th>Email</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>{CreateEventRow(participantList)}</Tbody>
+              </Table>
+            </TableContainer>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={() => onClose()}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}
+
 export default function ViewEventDetails({ searchParams }) {
   const [event, setEvent] = useState({
     eventName: "",
@@ -93,6 +160,7 @@ export default function ViewEventDetails({ searchParams }) {
     eventDesc: "",
     eventImage: undefined,
   });
+  const [participant, setParticipants] = useState([])
   const router = useRouter();
   async function getEvent() {
     try {
@@ -108,8 +176,25 @@ export default function ViewEventDetails({ searchParams }) {
       console.error("There was an fetching your profile", error);
     }
   }
+
+  async function getParticpants() {
+    try {
+      const response = await axios.get(
+        `${API_HOST}/view-participants/${searchParams.event}`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(response.data);
+      setParticipants(response.data)
+    } catch (error) {
+      console.error("There was an fetching your profile", error);
+    }
+  }
+
   useEffect(() => {
     getEvent();
+    getParticpants();
   }, [searchParams]);
 
   return (
@@ -192,7 +277,8 @@ export default function ViewEventDetails({ searchParams }) {
                   <Text as={"span"} fontWeight={"bold"}>
                     Number of Volunteers Needed:
                   </Text>{" "}
-                  {event.noVol} <Link>Volunteer List</Link>
+                  {event.noVol}{" "}
+                  <ViewParticipantModal participantData={participant} />
                 </ListItem>
                 <ListItem>
                   <Text as={"span"} fontWeight={"bold"}>

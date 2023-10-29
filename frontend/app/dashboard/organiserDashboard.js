@@ -119,7 +119,6 @@ function StackEx() {
         title="Create Event"
         desc="The future can be even brighter but a goal without a plan is just a wish"
       />
-      <Feature title="Header" desc="Some desc" />
     </Stack>
   );
 }
