@@ -29,9 +29,9 @@ pipeline {
         stage('Setting up container') {
             steps{
                 echo 'Setting up Container'
-                //sh '''
-                //docker compose up --build -d
-                //'''
+                sh '''
+                docker compose up --build -d
+                '''
             }
         }
         stage('Check OWASP') {
