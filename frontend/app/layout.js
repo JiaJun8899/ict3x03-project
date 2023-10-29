@@ -1,12 +1,15 @@
+'use client';
 import { Providers } from "./providers";
 import Nav from "./components/navbar";
-
-export default function RootLayout({ children }) {
+import { usePathname } from 'next/navigation';
+export default function RootLayout({ children }) {  
+  const pathname = usePathname();
+  console.log(pathname)
   return (
     <html lang="en">
       <body>
         <Providers>
-          <Nav></Nav>
+          {pathname!=="/login" ?<Nav></Nav>:<></>}
           {children}
         </Providers>
       </body>
