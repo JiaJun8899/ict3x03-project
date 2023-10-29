@@ -23,5 +23,8 @@ urlpatterns = [
     path('auth-verify-OTP/', views.VerifyOtp.as_view(), name='verify-OTP'), #verify success/fail, log
     path('auth-get-OTP/', views.GetOTP.as_view(), name='get-OTP'), #don't log
     path('auth-logout/', views.Logout.as_view(), name='logout'), #log
+    path('auth-reset-password/', views.ResetPassword.as_view()),
+    path('auth-change-password/',views.ChangePassword.as_view()),
+    path('csrf/', views.csrf),
 ]
 

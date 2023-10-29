@@ -170,29 +170,29 @@ class RegisterUserAPIView(APIView):
             "password": request.data["password"],
             "password2": request.data["password2"],
         }
-        recaptcha_response = request.data["recaptchaValue"]
-        verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
-        response = requests.post(
-            "https://www.google.com/recaptcha/api/siteverify", data=verification_data
-        )
-        recaptcha_result = response.json()
-        print(recaptcha_result)
-        if not recaptcha_result["success"]:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        else:
-            if request.data["organization"]:
-                success = AccountService.createOrganisation(data)
-            else:
-                birthday = datetime.strptime(
-                    request.data["birthday"], "%Y-%m-%d"
-                ).date()
-                success = AccountService.createNormalUser(data, birthday)
-            if success:
-                authLogger.debug("User {username} created.")
-                return Response(status=status.HTTP_200_OK)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        if request.data["organization"]:
+            success, errors = AccountService.createOrganisation(data)
+        else:
+            birthday = datetime.strptime(
+                request.data["birthday"], "%Y-%m-%d"
+            ).date()
+            success, errors = AccountService.createNormalUser(data, birthday)
+        if success != False:
+            recaptcha_response = request.data["recaptchaValue"]
+            verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
+            response = requests.post(
+                "https://www.google.com/recaptcha/api/siteverify", data=verification_data
+            )
+            recaptcha_result = response.json()
+            print(recaptcha_result)
+            if not recaptcha_result["success"]:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(status=status.HTTP_200_OK)
+        else:
+            print(errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateUserAPIView(APIView):
     def put(self, request):
@@ -356,17 +356,79 @@ class VerifyOtp(APIView):
         self.authService = AuthService()
         otp = request.data.get("OTP")
         uuid = request.session["temp_id"]
-        verifiedUser = self.authService.verifyOTP(
-            request=request, uuid=uuid, otpToken=otp
-        )
-        if verifiedUser:
-            request.session["role"] = AccountService.getUserRole(verifiedUser.id)
-            return Response({"detail": "LOGIN SUCCESS"}, status=200)
-        return Response({"detail": "WRONG OTP"}, status=401)
+        isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
+        if isVerifiedUser :
+            loginUser = self.authService.LoginUser(request)
+            if loginUser :
+                request.session["role"] = AccountService.getUserRole(loginUser.id)
+                return Response({"detail": "OTP is Correct"}, status=200)
+        return Response({"detail": "Something went wrong"}, status=401)
 
 
 class Logout(APIView):
-    def post(self, request):
-        AuthService.logout(request)
-        authLogger.debug("Username {request.data['user']} logged out.") #check back later
-        return Response({"detail": "LOGOUT SUCCESS"}, status=200)
+        def post(self,request):
+            AuthService.logout(request)
+            return Response({"detail": "LOGOUT SUCCESS"}, status=200)
+
+
+class ChangePassword(APIView):
+    def post(self,request):
+        auth = AuthService()
+        user = auth.getUserBySessionRequest(request)
+        if user:
+            auth.generateOTP(user.id)
+            return Response({"detail": "OTP HAS BEEN Sent"}, status=200)
+        return Response({"detail": "Invalid Permission"}, status=401)
+
+    def put(self, request):
+        
+        try:
+            currentPassword = request.data.get("currentPassword")
+            newPasswordConfirmation = request.data.get("newPasswordConfirmation")
+            newPassword = request.data.get("newPassword")
+            otp = request.data.get("OTP")
+            if None in [currentPassword, newPasswordConfirmation, newPassword, otp]:
+                return Response({"detail": "Missing fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+            authService = AuthService()
+            currentUser = authService.getUserBySessionRequest(request)
+            
+            if newPassword != newPasswordConfirmation:
+                return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+            if currentUser is None:
+                return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            userWithCorrectCredential = authService.authenticateUser(request, currentUser.email, currentPassword)
+            
+            if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id,otp):
+                if authService.changePassword(userWithCorrectCredential, newPassword):
+                    return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
+                
+            return Response({"detail": "Invalid current password"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        except Exception as e:
+            return Response({"detail": f"Something went wrong: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ResetPassword(APIView):
+    def post(self,request):
+        email = request.data.get("email")
+        auth = AuthService()
+        auth.requestOTPFroMEmail(email)
+        return Response({"detail": "email should be sent"}, status=200)
+
+    def put(self,request):
+        otp= request.data.get("OTP")
+        email = request.data.get("email")
+        newPasswordConfirmation = request.data.get("newPasswordConfirmation")
+        newPassword = request.data.get("newPassword")
+        auth = AuthService()
+        if newPassword != newPasswordConfirmation:
+            return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+        user = auth.getUserByEmail(email)
+        if user:
+            isOTPCorrect = auth.verifyOTP(user.id,otp)
+            if isOTPCorrect:
+                if auth.changePassword(user, newPassword):
+                    return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
+        return Response({"detail": "Something went wrong"}, status=status.HTTP_401_UNAUTHORIZED)
