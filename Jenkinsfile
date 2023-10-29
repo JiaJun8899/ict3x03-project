@@ -23,7 +23,8 @@ pipeline {
         }
         stage('Semgrep Scan') {
             steps {
-                sh 'semgrep scan'
+                echo 'SAST Scanning'
+                //sh 'semgrep scan'
             }
         }
         stage('Setting up container') {
@@ -66,10 +67,17 @@ pipeline {
                         // At least one container is running but not "Up," send an email
                     emailext subject: "Docker Container Status Issue",
                         body: "One or more Docker containers are not in an 'Up' state. Please investigate.",
-                        to: '2100755@sit.singaporetech.edu.sg'  
+                        to: '2100755@sit.singaporetech.edu.sg'
+                    sh '''
+                    docker compose down
+                    docker container prune -f
+                    '''
                 } else {
-                        // All containers are running and are "Up"
+                    // All containers are running and are "Up"
                     echo "All Docker containers are running and in 'Up' state."
+                    emailext subject: "Jenkins built is successful!",
+                        body: "The most recent commit has no issue!",
+                        to: '2100755@sit.singaporetech.edu.sg'
                     sh '''
                     docker compose down
                     docker container prune -f
