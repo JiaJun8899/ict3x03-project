@@ -43,7 +43,7 @@ export default function Page() {
     <div>
       <Suspense fallback={<p>Loading ...</p>}>
         {loading ? (
-          <p>Build dashboard...</p>
+          <p>Loading...</p>
         ) : (
           <CreateForm/>
         )}

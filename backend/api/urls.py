@@ -26,4 +26,6 @@ urlpatterns = [
     path('auth-reset-password/', views.ResetPassword.as_view()),
     path('auth-change-password/',views.ChangePassword.as_view()),
     path('csrf/', views.csrf),
+    path('check-auth', views.TestAPI.as_view()),
+    path('check-valid-organizer/<str:eid>',views.validEventOrg)
 ]
