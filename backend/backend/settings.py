@@ -59,8 +59,8 @@ INSTALLED_APPS = [
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ]
 }
 AUTH_USER_MODEL = 'api.GenericUser'
@@ -160,6 +160,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+
 CSRF_TRUSTED_ORIGINS=[
         'http://localhost:3000'
 ]
@@ -167,10 +168,13 @@ CSRF_TRUSTED_ORIGINS=[
 CORS_ALLOWED_ORIGINS = [
         'http://localhost:3000',
 ]
-SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
 # SECURE_SSL_REDIRECT = True
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
