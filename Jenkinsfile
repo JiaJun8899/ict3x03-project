@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Semgrep Scan') {
             steps {
-                sh 'SAST scan'
+                sh 'semgrep scan'
             }
         }
         stage('Setting up container') {
@@ -56,29 +56,24 @@ pipeline {
         //Only run docker compose down when the build is successful
         always {
             script {
-                // Check if Docker containers are running
-                def dockerStatus = sh(script: 'docker ps --format "{{.Status}}" | awk "{print$1}"')
-                
-                if (dockerStatus == 0) {
-                    // Containers are running, check their status
-                    def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nexjs_frontend', returnStatus: true).trim()
-                    def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend', returnStatus: true).trim()
-                    def dbContainer = sh(script: 'docker inspect -f "{{.State.Status}}" backend_database', returnStatus: true).trim()
-                    
-                    // Check if any container's status is not "Up"
-                    if (frontendContainer != 'running' || backendContainer != running || dbContainer != running) {
+                // Containers are running, check their status
+                def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nexjs_frontend', returnStatus: true).trim()
+                def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend', returnStatus: true).trim()
+                def dbContainer = sh(script: 'docker inspect -f "{{.State.Status}}" backend_database', returnStatus: true).trim()
+                echo '${frontendContainer}'
+                // Check if any container's status is not "Up"
+                if (frontendContainer != 'running' || backendContainer != 'running' || dbContainer != 'running') {
                         // At least one container is running but not "Up," send an email
-                        emailext subject: "Docker Container Status Issue",
-                                  body: "One or more Docker containers are not in an 'Up' state. Please investigate.",
-                                  to: '2100755@sit.singaporetech.edu.sg'  
-                    } else {
+                    emailext subject: "Docker Container Status Issue",
+                        body: "One or more Docker containers are not in an 'Up' state. Please investigate.",
+                        to: '2100755@sit.singaporetech.edu.sg'  
+                } else {
                         // All containers are running and are "Up"
-                        echo "All Docker containers are running and in 'Up' state."
-                        sh '''
-                        docker compose down
-                        docker container prune -f
-                        '''
-                    }
+                    echo "All Docker containers are running and in 'Up' state."
+                    sh '''
+                    docker compose down
+                    docker container prune -f
+                    '''
                 }
             }
         }
