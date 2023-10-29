@@ -29,6 +29,7 @@ class UserService:
         try:
             user = GenericUser.genericUserManager.getByUUID(eid)
             serializer = GenericUserSerializer(instance=user, data=data, partial=True)
+            # print("hi" +)
             if serializer.is_valid():
                 serializer.save()
                 return True
@@ -53,9 +54,9 @@ class UserService:
     @staticmethod
     def cancelSignUpEvent(data):
         try:
-            eventSerializer = EventSignUpParticipantSerializer(data=data)
-            if eventSerializer.is_valid():
-                print(data["participant"])
+            # eventSerializer = EventSignUpParticipantSerializer(data=data)            
+            signedup = EventParticipant.eventParticipantManager.getSingleUserEventmap(data["event"],data["participant"])
+            if list(signedup) != []:
                 EventParticipant.eventParticipantManager.deleteByUUID(data["participant"])
                 return True
         except Exception as e:

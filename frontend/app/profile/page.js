@@ -68,19 +68,32 @@ export default function ProfilePage() {
         // nric : response.data["profile"]["user"]["nric"],
         phoneNum: response.data["profile"]["user"]["phoneNum"],
         userName: response.data["profile"]["user"]["username"],
-        nokName: response.data["nok"]["name"],
         birthday: response.data["profile"]["birthday"],
-        nokPhone: response.data["nok"]["phoneNum"],
-        nokRelationship: response.data["nok"]["relationship"],
       });
+      if (response.data["nok"]){
+        setDetails({
+          ...details,
+          firstname: response.data["profile"]["user"]["first_name"],
+          email: response.data["profile"]["user"]["email"],
+          lastname: response.data["profile"]["user"]["last_name"],
+          phoneNum: response.data["profile"]["user"]["phoneNum"],
+          userName: response.data["profile"]["user"]["username"],
+          birthday: response.data["profile"]["birthday"],
+          nokName: response.data["nok"]["name"],
+          nokPhone: response.data["nok"]["phoneNum"],
+          nokRelationship: response.data["nok"]["relationship"],
+        });
+      }
+
+      
     } catch (error) {
       console.error("There was an fetching your profile", error);
     }
   }
   async function updateProfile() {
     const token = await getCsrfToken();
-    console.log(token);
-    console.log(details);
+    // console.log(token);
+    // console.log(details);
     var response = await axios
       .put(`${API_HOST}/update-user-details/`, details, {
         withCredentials: true,
@@ -90,6 +103,7 @@ export default function ProfilePage() {
         },
       })
       .then(function (response) {
+        console.log(response)
         toast({
           title: "Profile updated successful.",
           // description: "You are now logged in!",
@@ -99,6 +113,7 @@ export default function ProfilePage() {
         });
       })
       .catch(function (error) {
+        console.log(error)
         toast({
           title: "Profile update failed.",
           // description: await response.text(),
