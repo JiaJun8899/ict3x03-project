@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,7 +26,7 @@ EMAIL_USE_TLS = True  # Use TLS security
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER',os.environ.get('EMAIL_HOST_USER'))# Your email address
 EMAIL_HOST_PASSWORD =  os.getenv('EMAIL_HOST_PASSWORD',os.environ.get('EMAIL_HOST_PASSWORD'))# Your email password
 OTP_EMAIL_SENDER = EMAIL_HOST_USER
-OTP_EMAIL_TOKEN_VALIDITY=70
+OTP_EMAIL_TOKEN_VALIDITY=300
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -54,12 +53,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
-    'corsheaders'
+    'corsheaders',
+    'single_session',
+
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ]
 }
 AUTH_USER_MODEL = 'api.GenericUser'
@@ -159,6 +160,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+
 CSRF_TRUSTED_ORIGINS=[
         'http://localhost:3000'
 ]
@@ -166,8 +168,11 @@ CSRF_TRUSTED_ORIGINS=[
 CORS_ALLOWED_ORIGINS = [
         'http://localhost:3000',
 ]
-SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
 # SECURE_SSL_REDIRECT = True
 
 LOGGING = {
