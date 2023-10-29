@@ -23,11 +23,12 @@ pipeline {
         }
         stage('Semgrep Scan') {
             steps {
-                sh 'semgrep scan'
+                sh 'SAST scan'
             }
         }
         stage('Setting up container') {
             steps{
+                echo 'Setting up Container'
                 //sh '''
                 //docker compose up --build -d
                 //'''
