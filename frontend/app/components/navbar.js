@@ -4,7 +4,6 @@ import {
   Box,
   Flex,
   Avatar,
-  Text,
   Button,
   Menu,
   MenuButton,
@@ -22,6 +21,7 @@ import NextLink from "next/link";
 import axios from "axios";
 import { MoonIcon, SunIcon } from "../providers";
 import { API_HOST } from "@/app/utils/utils";
+import Cookie from "js-cookie";
 
 const NavLink = (props) => {
   const { children } = props;
@@ -43,55 +43,40 @@ const NavLink = (props) => {
   );
 };
 
-
-
 export default function Nav() {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  let _csrfToken = null;
   const toast = useToast();
 
-  async function getCsrfToken() {
-    if (_csrfToken === null) {
-      const response = await fetch(`${API_HOST}/csrf/`, {
-        credentials: "include",
-      });
-      const data = await response.json();
-      _csrfToken = data.csrfToken;
-    }
-    return _csrfToken;
-  }
-  
   async function logout() {
-    const token = await getCsrfToken();
-    var response = await axios
-      .post(`${API_HOST}/auth-logout/`,{}, {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": token,
-        },
-      })
-      .then(function (response) {
-        console.log(response);
-        toast({
-          title: "Logout successful.",
-          // description: "You are now logged in!",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-      })
-      .catch(function (error) {
-        console.log(error);
-        toast({
-          title: "Logout failed.",
-          // description: await response.text(),
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
+    try {
+      const response = await axios.post(
+        `${API_HOST}/auth-logout/`,
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": Cookie.get("csrftoken"),
+          },
+        }
+      );
+      console.log(response);
+      toast({
+        title: "Logout successful.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
       });
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Logout failed.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   }
 
   return (
@@ -141,7 +126,7 @@ export default function Nav() {
                     <MenuItem>Account Settings</MenuItem>
                   </NextLink>
                   <NextLink href={`/login/`}>
-                  <MenuItem onClick={logout}>Logout</MenuItem>
+                    <MenuItem onClick={logout}>Logout</MenuItem>
                   </NextLink>
                 </MenuList>
               </Menu>

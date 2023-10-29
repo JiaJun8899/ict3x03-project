@@ -38,7 +38,6 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { API_HOST, convertTime } from "@/app/utils/utils";
 import Cookie from "js-cookie";
-import { DateTime } from "luxon";
 
 async function deleteEvent(eId) {
   const response = await axios.delete(API_HOST + "/get-event-byorg/", {
@@ -93,8 +92,8 @@ function DeleteModal(eventData) {
 }
 
 function ParticpantRow({ particpant, index }) {
-    const userInfo = particpant.participant.user;
-    console.log(particpant.participant.user)
+  const userInfo = particpant.participant.user;
+  console.log(particpant.participant.user);
   return (
     <Tr>
       <Td>{userInfo.first_name}</Td>
@@ -114,13 +113,13 @@ function CreateEventRow(participantData) {
 function ViewParticipantModal(participantData) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const participantList = participantData.participantData;
-  console.log(participantList)
+  console.log(participantList);
   return (
     <>
-      <Button variant={'ghost'} onClick={onOpen}>
+      <Button variant={"ghost"} onClick={onOpen}>
         View Participants List
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose} size={'full'}>
+      <Modal isOpen={isOpen} onClose={onClose} size={"full"}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Particpant List</ModalHeader>
@@ -160,7 +159,7 @@ export default function ViewEventDetails({ searchParams }) {
     eventDesc: "",
     eventImage: undefined,
   });
-  const [participant, setParticipants] = useState([])
+  const [participant, setParticipants] = useState([]);
   const router = useRouter();
   async function getEvent() {
     try {
@@ -186,7 +185,7 @@ export default function ViewEventDetails({ searchParams }) {
         }
       );
       console.log(response.data);
-      setParticipants(response.data)
+      setParticipants(response.data);
     } catch (error) {
       console.error("There was an fetching your profile", error);
     }

@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
 import {
   Flex,
   Box,
@@ -17,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import Cookie from "js-cookie";
 import axios from "axios";
-import { API_HOST } from "@/app/utils/utils";
+import { API_HOST, CSRF_TOKEN} from "@/app/utils/utils";
 
 export default function LoginPage() {
   const [otp, setOtp] = useState("");
