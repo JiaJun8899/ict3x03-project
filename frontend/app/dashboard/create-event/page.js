@@ -1,184 +1,53 @@
 "use client";
-
-import {
-  Flex,
-  Box,
-  FormControl,
-  FormLabel,
-  Input,
-  HStack,
-  Stack,
-  Button,
-  Heading,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
-import React, { useState } from "react";
+import { Suspense } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import { API_HOST } from "@/app/utils/utils";
 
-export default function SignupCard() {
-  const router = useRouter();
-  const [form, setForm] = useState({
-    eventName: "",
-    startDate: "",
-    endDate: "",
-    noVol: "",
-    eventDesc: "",
-    eventImage: undefined,
-  });
-  let _csrfToken = null;
-  async function getCsrfToken() {
-    if (_csrfToken === null) {
-      const response = await fetch(`${API_HOST}/csrf/`, {
-        credentials: "include",
-      });
-      const data = await response.json();
-      _csrfToken = data.csrfToken;
-    }
-    return _csrfToken;
-  }
+const CreateEvent = dynamic(() => import("./EventForm"), {
+  ssr: false,
+});
 
-  function updateForm(value) {
-    return setForm((prev) => {
-      console.log(form);
-      return { ...prev, ...value };
-    });
-  }
-
-  async function onSubmit(e) {
-    const token = await getCsrfToken();
-    await axios
-      .post(`${API_HOST}/get-event-byorg/`, form, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          "X-CSRFToken": token,
-        },
+export default function Page() {
+  const [userRole, setUserRole] = useState("none");
+  const [loading, setLoading] = useState(true);
+  async function getRole() {
+    try {
+      const response = await axios.get(`${API_HOST}/check-auth`, {
         withCredentials: true,
-      })
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((error) => {
-        console.log(error);
       });
-    router.replace("/dashboard");
+      console.log(response.data);
+      setUserRole(response.data);
+    } catch (error) {
+      console.error("There was an fetching your profile", error);
+    } finally {
+      setLoading(false);
+    }
   }
+  function CreateForm() {
+    const role = userRole.role;
+    console.log(role);
+    if (role === "Organizer") {
+      return <CreateEvent />;
+    } else {
+      return notFound();
+    }
+  }
+  useEffect(() => {
+    getRole();
+  }, []);
+
   return (
-    <Flex
-      minH={"100vh"}
-      align={"center"}
-      justify={"center"}
-      bg={useColorModeValue("gray.50", "gray.800")}
-    >
-      <Stack spacing={8} mx={"auto"} py={12} px={6}>
-        <Stack align={"center"}>
-          <Heading fontSize={"4xl"} textAlign={"center"}>
-            Sign up
-          </Heading>
-          <Text fontSize={"lg"} color={"gray.600"}>
-            to enjoy all of our cool features ✌️
-          </Text>
-        </Stack>
-        <Box
-          rounded={"lg"}
-          bg={useColorModeValue("white", "gray.700")}
-          boxShadow={"lg"}
-          p={8}
-        >
-          <Stack spacing={4}>
-            <HStack>
-              <Box>
-                <FormControl id="eventName" isRequired>
-                  <FormLabel>Event Name</FormLabel>
-                  <Input
-                    type="text"
-                    value={form.eventName}
-                    onChange={(e) => {
-                      updateForm({ eventName: e.target.value });
-                    }}
-                  />
-                </FormControl>
-              </Box>
-              <Box>
-                <FormControl id="noVol" isRequired>
-                  <FormLabel>Volunteers Needed</FormLabel>
-                  <Input
-                    type="number"
-                    value={form.noVol}
-                    onChange={(e) => {
-                      updateForm({ noVol: e.target.value });
-                    }}
-                  />
-                </FormControl>
-              </Box>
-            </HStack>
-            <HStack>
-              <Box>
-                <FormControl id="startDate" isRequired>
-                  <FormLabel>Start Date</FormLabel>
-                  <Input
-                    type="datetime-local"
-                    min={new Date().toISOString().substring(0, 16)}
-                    value={form.startDate}
-                    onChange={(e) => {
-                      updateForm({ startDate: e.target.value });
-                    }}
-                  />
-                </FormControl>
-              </Box>
-              <Box>
-                <FormControl id="endDate">
-                  <FormLabel>End Date</FormLabel>
-                  <Input
-                    type="datetime-local"
-                    min={form.startDate}
-                    value={form.endDate}
-                    onChange={(e) => {
-                      updateForm({ endDate: e.target.value });
-                    }}
-                  />
-                </FormControl>
-              </Box>
-            </HStack>
-            <FormControl id="email" isRequired>
-              <FormLabel>Event Image</FormLabel>
-              <Input
-                type="file"
-                accept="image/png, image/jpeg"
-                onChange={(e) => {
-                  updateForm({ eventImage: e.target.files[0] });
-                }}
-              />
-            </FormControl>
-            <FormControl id="eventDesc" isRequired>
-              <FormLabel>Event Description</FormLabel>
-              <Input
-                type="text"
-                value={form.eventDesc}
-                onChange={(e) => {
-                  updateForm({ eventDesc: e.target.value });
-                }}
-              />
-            </FormControl>
-            <Stack spacing={10} pt={2}>
-              <Button
-                loadingText="Submitting"
-                size="lg"
-                bg={"blue.400"}
-                color={"white"}
-                _hover={{
-                  bg: "blue.500",
-                }}
-                onClick={onSubmit}
-              >
-                Create Event
-              </Button>
-            </Stack>
-          </Stack>
-        </Box>
-      </Stack>
-    </Flex>
+    <div>
+      <Suspense fallback={<p>Loading ...</p>}>
+        {loading ? (
+          <p>Build dashboard...</p>
+        ) : (
+          <CreateForm/>
+        )}
+      </Suspense>
+    </div>
   );
 }
