@@ -29,9 +29,9 @@ pipeline {
         stage('Setting up container') {
             steps{
                 echo 'Setting up Container'
-                sh '''
-                docker compose up --build -d
-                '''
+                //sh '''
+                //docker compose up --build -d
+                //'''
             }
         }
         stage('Check OWASP') {
@@ -57,9 +57,9 @@ pipeline {
         always {
             script {
                 // Containers are running, check their status
-                def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nexjs_frontend', returnStatus: true).trim()
-                def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend', returnStatus: true).trim()
-                def dbContainer = sh(script: 'docker inspect -f "{{.State.Status}}" backend_database', returnStatus: true).trim()
+                def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nextjs_frontend_prod', returnStatus: true).trim()
+                def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend_prod', returnStatus: true).trim()
+                def dbContainer = sh(script: 'docker inspect -f "{{.State.Status}}" backend_database_prod', returnStatus: true).trim()
                 echo '${frontendContainer}'
                 // Check if any container's status is not "Up"
                 if (frontendContainer != 'running' || backendContainer != 'running' || dbContainer != 'running') {
