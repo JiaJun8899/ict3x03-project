@@ -150,6 +150,11 @@ class EventSingleByOrganizationAPI(APIView):
         eventsByOrg = EventService.getEventByID(organization_id, event_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
+class EventParticipantAPI(APIView):
+    def get(self, request, event_id):
+        organization_id = request.session["_auth_user_id"]
+        eventsByOrg = EventService.getParticipantsByEvent(organization_id, event_id)
+        return Response(eventsByOrg, status=status.HTTP_200_OK)
 
 class RegisterUserAPIView(APIView):
     def post(self, request):

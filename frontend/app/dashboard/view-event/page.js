@@ -26,26 +26,16 @@ import {
   ModalCloseButton,
   useDisclosure,
 } from "@chakra-ui/react";
-import { DateTime } from "luxon";
 import React,{useState, useEffect} from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { API_HOST } from "@/app/utils/utils";
+import { API_HOST, convertTime } from "@/app/utils/utils";
 
-function convertTime(time) {
-  const convertedTime = DateTime.fromISO(time)
-    .toJSDate()
-    .toLocaleString("en-SG");
-  return convertedTime;
-}
+
 async function deleteEvent(eId) {
-  const token = await getCsrfToken();
   const response = await axios.delete(API_HOST + "/get-event-byorg/", {
     data: {
       eid: eId,
-    },
-    headers: {
-      "X-CSRFToken": token,
     },
     withCredentials: true,
   });
