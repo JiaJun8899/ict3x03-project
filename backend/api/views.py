@@ -21,6 +21,15 @@ RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
 def csrf(request):
     return JsonResponse({"csrfToken": get_token(request)})
 
+def validEventOrg(request, eid):
+    organization_id = request.session["_auth_user_id"]
+    print(organization_id)
+    checkValid = EventService.checkValid(organization_id, eid)
+    if checkValid:
+        return JsonResponse({"valid": True})
+    else:
+        return JsonResponse({"valid": False})
+
 class TestAPI(APIView):
     def get(self, request):
         if "_auth_user_id" in request.session:
@@ -131,7 +140,7 @@ class EventsByOrganizationAPI(APIView):
             success = EventService.updateEvent(data, request.data["eid"])
             if success:
                 return Response({"status": status.HTTP_200_OK})
-        return Response({"status": status.HTTP_400_BAD_REQUEST})
+        return Response({"status": status.HTTP_401_UNAUTHORIZED})
 
     def delete(self, request):
         """Delete Event and Mapping"""
@@ -151,6 +160,11 @@ class EventSingleByOrganizationAPI(APIView):
         eventsByOrg = EventService.getEventByID(organization_id, event_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
+class EventParticipantAPI(APIView):
+    def get(self, request, event_id):
+        organization_id = request.session["_auth_user_id"]
+        eventsByOrg = EventService.getParticipantsByEvent(organization_id, event_id)
+        return Response(eventsByOrg, status=status.HTTP_200_OK)
 
 class RegisterUserAPIView(APIView):
     def post(self, request):
@@ -351,16 +365,79 @@ class VerifyOtp(APIView):
         self.authService = AuthService()
         otp = request.data.get("OTP")
         uuid = request.session["temp_id"]
-        verifiedUser = self.authService.verifyOTP(
-            request=request, uuid=uuid, otpToken=otp
-        )
-        if verifiedUser:
-            request.session["role"] = AccountService.getUserRole(verifiedUser.id)
-            return Response({"detail": "LOGIN SUCCESS"}, status=200)
-        return Response({"detail": "WRONG OTP"}, status=401)
+        isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
+        if isVerifiedUser :
+            loginUser = self.authService.LoginUser(request)
+            if loginUser :
+                request.session["role"] = AccountService.getUserRole(loginUser.id)
+                return Response({"detail": "OTP is Correct"}, status=200)
+        return Response({"detail": "Something went wrong"}, status=401)
 
 
 class Logout(APIView):
-    def post(self, request):
-        AuthService.logout(request)
-        return Response({"detail": "LOGOUT SUCCESS"}, status=200)
+        def post(self,request):
+            AuthService.logout(request)
+            return Response({"detail": "LOGOUT SUCCESS"}, status=200)
+
+
+class ChangePassword(APIView):
+    def post(self,request):
+        auth = AuthService()
+        user = auth.getUserBySessionRequest(request)
+        if user:
+            auth.generateOTP(user.id)
+            return Response({"detail": "OTP HAS BEEN Sent"}, status=200)
+        return Response({"detail": "Invalid Permission"}, status=401)
+
+    def put(self, request):
+        
+        try:
+            currentPassword = request.data.get("currentPassword")
+            newPasswordConfirmation = request.data.get("newPasswordConfirmation")
+            newPassword = request.data.get("newPassword")
+            otp = request.data.get("OTP")
+            if None in [currentPassword, newPasswordConfirmation, newPassword, otp]:
+                return Response({"detail": "Missing fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+            authService = AuthService()
+            currentUser = authService.getUserBySessionRequest(request)
+            
+            if newPassword != newPasswordConfirmation:
+                return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+            if currentUser is None:
+                return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            userWithCorrectCredential = authService.authenticateUser(request, currentUser.email, currentPassword)
+            
+            if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id,otp):
+                if authService.changePassword(userWithCorrectCredential, newPassword):
+                    return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
+                
+            return Response({"detail": "Invalid current password"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        except Exception as e:
+            return Response({"detail": f"Something went wrong: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ResetPassword(APIView):
+    def post(self,request):
+        email = request.data.get("email")
+        auth = AuthService()
+        auth.requestOTPFroMEmail(email)
+        return Response({"detail": "email should be sent"}, status=200)
+
+    def put(self,request):
+        otp= request.data.get("OTP")
+        email = request.data.get("email")
+        newPasswordConfirmation = request.data.get("newPasswordConfirmation")
+        newPassword = request.data.get("newPassword")
+        auth = AuthService()
+        if newPassword != newPasswordConfirmation:
+            return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+        user = auth.getUserByEmail(email)
+        if user:
+            isOTPCorrect = auth.verifyOTP(user.id,otp)
+            if isOTPCorrect:
+                if auth.changePassword(user, newPassword):
+                    return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
+        return Response({"detail": "Something went wrong"}, status=status.HTTP_401_UNAUTHORIZED)

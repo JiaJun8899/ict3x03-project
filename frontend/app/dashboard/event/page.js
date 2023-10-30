@@ -31,21 +31,12 @@ import { DateTime } from "luxon";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_HOST } from "@/app/utils/utils";
+import { API_HOST, convertTime} from "@/app/utils/utils";
+import Cookie from "js-cookie";
 
-let _csrfToken = null;
-
-function convertTime(time) {
-  const convertedTime = DateTime.fromISO(time)
-    .toJSDate()
-    .toLocaleString("en-SG");
-  console.log(convertedTime.substring(0, 16));
-  return convertedTime;
-}
-const DeleteModal = ({ eventData, cancelSignup }) => {
+const WithdrawModal = ({ eventData, cancelSignup }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const event = eventData;
-  const router = useRouter();
   return (
     <>
       <Button colorScheme="red" onClick={onOpen}>
@@ -98,16 +89,6 @@ export default function Page() {
     fetchEvent();
   }, []);
 
-  async function getCsrfToken() {
-    if (_csrfToken === null) {
-      const response = await fetch(`${API_HOST}/csrf/`, {
-        credentials: "include",
-      });
-      const data = await response.json();
-      _csrfToken = data.csrfToken;
-    }
-    return _csrfToken;
-  }
 
   async function fetchEvent() {
     try {
@@ -122,7 +103,6 @@ export default function Page() {
   }
 
   const signup = async () => {
-    const token = await getCsrfToken();
     const response = await axios
       .post(
         `${API_HOST}/sign-up-event/`,
@@ -131,7 +111,7 @@ export default function Page() {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": token,
+            "X-CSRFToken": Cookie.get("csrftoken"),
           },
         }
       )
@@ -155,14 +135,13 @@ export default function Page() {
       });
   };
   const cancelSignup = async () => {
-    const token = await getCsrfToken();
     // console.log('cancel signup')
     const response = await axios
       .delete(`${API_HOST}/cancel-sign-up-event/`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": token,
+          "X-CSRFToken": Cookie.get("csrftoken"),
         },
         data: { eid: search },
       })
@@ -278,7 +257,7 @@ export default function Page() {
                   </ListItem>
                   <ButtonGroup>
                     <Button onClick={signup}>Sign Up Event</Button>
-                    <DeleteModal
+                    <WithdrawModal
                       eventData={event}
                       cancelSignup={cancelSignup}
                     />

@@ -54,15 +54,12 @@ class EventOrganizerMappingCreate(serializers.ModelSerializer):
         fields = '__all__'
 
 class EventParticipantSerializer(serializers.ModelSerializer):
-    event = EventSerializer()
     participant = NormalUserSerializer()
     class Meta:
         model = EventParticipant
-        fields = ['event','participant']
+        fields = ['participant']
 
 class EventSignUpParticipantSerializer(serializers.ModelSerializer):
-    # event = EventSerializer()
-    # participant = NormalUserSerializer()
     class Meta:
         model = EventParticipant
         fields = ['event','participant']

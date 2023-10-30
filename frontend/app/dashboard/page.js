@@ -18,14 +18,13 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   async function getRole() {
     try {
-      const response = await axios.get(`${API_HOST}/test`, {
+      const response = await axios.get(`${API_HOST}/check-auth`, {
         withCredentials: true,
       });
       console.log(response.data);
       setUserRole(response.data);
     } catch (error) {
       console.error("There was an fetching your profile", error);
-      return notFound();
     } finally {
       setLoading(false);
     }
@@ -49,7 +48,7 @@ export default function Page() {
     <div>
       <Suspense fallback={<p>Loading ...</p>}>
         {loading ? (
-          <p>Build dashboard...</p>
+          <p>Building dashboard...</p>
         ) : (
           <Dashboard userRole={userRole} />
         )}

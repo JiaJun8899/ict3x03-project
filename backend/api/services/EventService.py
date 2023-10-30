@@ -1,4 +1,4 @@
-from api.models import EventOrganizerMapping, Organizer, Event, EventParticipant
+from api.models import EventOrganizerMapping, Organizer, Event, EventParticipant, NormalUser
 from api.serializer import (
     EventOrganizerMappingSerializer,
     EventSerializer,
@@ -36,8 +36,11 @@ class EventService:
         eventMapInstance = (
             EventOrganizerMapping.eventMapperManager.getMapByOrgEventUUID(orgid, eid)
         )
-        print(eventMapInstance.id)
-        return eventMapInstance
+        if eventMapInstance:
+            print(eventMapInstance.id)
+            return eventMapInstance
+        else:
+            return None
 
     def updateEvent(data, eid):
         eventInstance = Event.eventManager.getByUUID(eid)
@@ -71,9 +74,7 @@ class EventService:
         )
         if eventInstance is None:
             return None
-        particpants = (
-            EventParticipant.eventParticipantManager.getParticipantsByEventUUID(eid)
-        )
+        particpants = (EventParticipant.eventParticipantManager.getParticipantsByEventUUID(eid))
         serializer = EventParticipantSerializer(particpants, many=True)
         return serializer.data
 
