@@ -15,22 +15,29 @@ class AuthService:
 
     def authenticateUser(self, request, username, password):
         self.user = authenticate(request = request, username=username, password=password)
-        if self.user:
-            self.emailDevice = EmailDevice.objects.get_or_create(user=self.user, email=self.user.email,name="EMAIL")[0]
         return self.user
 
-    def generateOTP(self, uuid=None):
-        self.user = self.user or self.getUserByUUID(uuid)
-        self.emailDevice = EmailDevice.objects.get_or_create(user=self.user, email=self.user.email,name="EMAIL")[0]
+    def generateChallenge(self):
+        self.setEmailDevice()
+        self.emailDevice.generate_challenge()
+
+    def setEmailDevice(self):
         if self.user:
-            self.emailDevice.generate_challenge()
+            self.emailDevice = EmailDevice.objects.get_or_create(user=self.user, email=self.user.email,name="EMAIL")[0]
+
+    def generateOTP(self, uuid=None):
+        self.user = self.getUserByUUID(uuid)
+        if self.user:
+            self.generateChallenge()
             return True
         return False
 
     def verifyOTP(self,uuid,otpToken):
         self.user = self.getUserByUUID(uuid)
-        self.emailDevice = EmailDevice.objects.get_or_create(user=self.user, email=self.user.email)[0]
-        isVerified = self.emailDevice.verify_token(otpToken)
+        isVerified = False
+        if self.user:
+            self.setEmailDevice()
+            isVerified = self.emailDevice.verify_token(otpToken)
         return isVerified
 
     def LoginUser(self, request):
