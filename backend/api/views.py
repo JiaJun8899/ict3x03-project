@@ -14,6 +14,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import requests
 from dotenv import load_dotenv
 from django.db import transaction
+import hashlib
 
 load_dotenv()
 RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
@@ -99,14 +100,13 @@ class EventsByOrganizationAPI(APIView):
 
     def get(self, request):
         organization_id = request.session["_auth_user_id"]
-        print(organization_id)
+        # print(organization_id)
         eventsByOrg = EventService.getEventByOrg(organization_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
     def post(self, request):
         """Create Event"""
         organization_id = request.session["_auth_user_id"]
-        print(request.data)
         data = {
             "eventName": request.data["eventName"],
             "startDate": request.data["startDate"],
@@ -117,13 +117,12 @@ class EventsByOrganizationAPI(APIView):
         }
         success = EventService.createEvent(data, organization_id)
         if success:
-            return Response({"status": status.HTTP_200_OK})
+            return Response(status=status.HTTP_200_OK)
         else:
-            return Response({"status": status.HTTP_400_BAD_REQUEST})
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
         """Update event"""
-        print(request.data)
         organization_id = request.session["_auth_user_id"]
         checkValid = EventService.checkValid(
             organization_id, request.data["eid"]
@@ -139,19 +138,20 @@ class EventsByOrganizationAPI(APIView):
             print(data)
             success = EventService.updateEvent(data, request.data["eid"])
             if success:
-                return Response({"status": status.HTTP_200_OK})
-        return Response({"status": status.HTTP_401_UNAUTHORIZED})
+                return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def delete(self, request):
         """Delete Event and Mapping"""
         # print(request.data)
         organization_id = request.session["_auth_user_id"]
-        success = EventService.deleteEvent(request.data["eid"])
-        success = True
-        if success:
-            return Response({"status": status.HTTP_200_OK})
-        else:
-            return Response({"status": status.HTTP_400_BAD_REQUEST})
+        checkValid = EventService.checkValid(organization_id, request.data["eid"])
+        if checkValid:
+            success = EventService.deleteEvent(request.data["eid"])
+            success = True
+            if success:
+                return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class EventSingleByOrganizationAPI(APIView):
@@ -168,6 +168,21 @@ class EventParticipantAPI(APIView):
 
 class RegisterUserAPIView(APIView):
     def post(self, request):
+        if request.data["SECRET_KEY"]:
+            inputKey = request.data["SECRET_KEY"]
+            sha256 = hashlib.sha256()
+            sha256.update(inputKey.encode('utf-8'))
+            hashed_input_key = sha256.hexdigest()
+            key = os.getenv("TEST_KEY", os.environ.get("TEST_KEY"))
+            if hashed_input_key == key:
+                RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY_TEST", os.environ.get("RECAPTCHA_KEY_TEST"))
+        recaptcha_response = request.data["recaptchaValue"]
+        verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
+        response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=verification_data)
+        recaptcha_result = response.json()
+        print(recaptcha_result)
+        if not recaptcha_result["success"]:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         data = {
             "username": request.data["email"],
             "email": request.data["email"],
@@ -178,7 +193,6 @@ class RegisterUserAPIView(APIView):
             "password": request.data["password"],
             "password2": request.data["password2"],
         }
-
         if request.data["organization"]:
             success, errors = AccountService.createOrganisation(data)
         else:
@@ -186,18 +200,8 @@ class RegisterUserAPIView(APIView):
                 request.data["birthday"], "%Y-%m-%d"
             ).date()
             success, errors = AccountService.createNormalUser(data, birthday)
-        if success != False:
-            recaptcha_response = request.data["recaptchaValue"]
-            verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
-            response = requests.post(
-                "https://www.google.com/recaptcha/api/siteverify", data=verification_data
-            )
-            recaptcha_result = response.json()
-            print(recaptcha_result)
-            if not recaptcha_result["success"]:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(status=status.HTTP_200_OK)
+        if success:
+            return Response(status=status.HTTP_200_OK)
         else:
             print(errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
@@ -304,21 +308,6 @@ class GetUpcomingEvents(APIView):
             return Response(events, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
-class GetAllEvent(APIView):
-    def get(self, request):
-        eventService = EventService()
-        events = eventService.getAllEvents()
-
-        if events != None:
-            # Assuming that the returned organizers is a QuerySet or list of Organizer instances
-            return Response({"data": events})
-        else:
-            return Response(
-                {"Failed to retrieve organizers."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
 class GetPastEventsByParticipant(APIView):
     def get(self, request):
         id = UUID(request.session["_auth_user_id"]).hex
@@ -370,22 +359,6 @@ class GetEvent(APIView):
                 {"Failed to retrieve event."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-
-class GetAllEvent(APIView):
-    def get(self, request):
-        eventService = EventService()
-        events = eventService.getAllEvents()
-
-        if events != None:
-            # Assuming that the returned organizers is a QuerySet or list of Organizer instances
-            return Response({"data": events})
-        else:
-            return Response(
-                {"Failed to retrieve organizers."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
 
 class Login(APIView):
     def post(self, request):
