@@ -10,7 +10,7 @@ services:
       - ./backend/database:/var/lib/mysql 
       - ./backend/script/CreateUser.sh:/CreateUser.sh
     ports:
-      - "3306:3306"
+      - "3306"
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 1m30s
@@ -24,7 +24,7 @@ services:
       dockerfile: ./frontend/Dockerfile
     command: npm run dev
     ports:
-      - "3000:3000"
+      - "3000"
     environment:
       NODE_ENV: development
     restart: unless-stopped
@@ -36,7 +36,7 @@ services:
       context: .
       dockerfile: ./backend/Dockerfile
     ports:
-      - 8000:8000
+      - "8000"
     volumes:
       - ./backend:/app/backend
     env_file: ./docker.env
