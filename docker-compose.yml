@@ -1,14 +1,18 @@
+
 version: "3.4"
+
+networks:
+  production:
+    driver: bridge
 
 services:
   database:
     image: mariadb
-    container_name: backend_database
+    container_name: backend_database_prod
     env_file: ./docker.env
     restart: always
     volumes:
-      - ./backend/database:/var/lib/mysql 
-      - ./backend/script/CreateUser.sh:/CreateUser.sh
+      - ./backend/database:/var/lib/mysql
     ports:
       - "3306"
     healthcheck:
@@ -17,8 +21,10 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5m
+    networks:
+      - production
   frontend:
-    container_name: nexjs_frontend
+    container_name: nextjs_frontend_prod
     build:
       context: .
       dockerfile: ./frontend/Dockerfile
@@ -30,8 +36,10 @@ services:
     restart: unless-stopped
     volumes:
       - ./frontend:/app/frontend
+    networks:
+      - production
   backend:
-    container_name: django_backend
+    container_name: django_backend_prod
     build:
       context: .
       dockerfile: ./backend/Dockerfile
@@ -40,10 +48,10 @@ services:
     volumes:
       - ./backend:/app/backend
     env_file: ./docker.env
-    # command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-
     command: bash -c "python manage.py migrate; if [[ $$? -ne 0 ]]; then sleep infinity; else python manage.py runserver 0.0.0.0:8000; fi"
     restart: unless-stopped
     depends_on:
       database:
         condition: service_healthy
+    networks:
+      - production
