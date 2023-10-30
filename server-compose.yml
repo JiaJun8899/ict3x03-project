@@ -1,5 +1,11 @@
 version: "3.4"
 
+networks:
+  production:
+    external: true
+  jenkins_network:
+    driver: bridge
+
 services:
   nginx:
     container_name: nginx_server
@@ -11,15 +17,23 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/certs:/etc/nginx/certs
       - ./nginx/config:/etc/nginx/config
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - production
+      - jenkins_network
   jenkins:
     container_name: jenkins_container
     build:
       context: .
       dockerfile: ./jenkins/Dockerfile
-    ports:
-      - "8443:8443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./jenkins/jenkins_home:/var/jenkins_home
+      - ./docker.env:/home/docker.env
     environment:
      - JENKINS_OPTS=--prefix=/jenkins --httpsPort=8443 
+    networks:
+      - jenkins_network
