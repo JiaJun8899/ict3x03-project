@@ -144,6 +144,15 @@ export default function RegularDashboard(props) {
           </Button>
         </FormControl>
       </Stack>
+      <Stack m={8}
+      direction={"row"}>
+        <NextLink href={`/dashboard/upcoming-event/`}>
+        <Button variant={"link"}>Upcoming Events</Button>
+        </NextLink>
+        <NextLink href={`/dashboard/past-event/`}>
+        <Button variant={"link"}>Past Events</Button>
+        </NextLink>
+      </Stack>
       <Stack>
         <TableContainer spacing={8} mx={8} shadow="md" borderWidth="1px">
           <Heading fontSize="xl" p={5}>

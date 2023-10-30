@@ -43,7 +43,14 @@ const NavLink = (props) => {
   );
 };
 
-export default function Nav() {
+export default function Nav({userRole}) {
+  // const role = userRole.role;
+  console.log(userRole)
+  if(userRole === 'none'){
+    return(
+      <></>
+    )
+  }
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();

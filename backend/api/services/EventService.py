@@ -6,6 +6,8 @@ from api.serializer import (
     EventParticipantSerializer,
 )
 import os
+from datetime import datetime
+import pytz
 
 
 class EventService:
@@ -53,6 +55,19 @@ class EventService:
             eventSerializer.save()
             return True
         return False
+    
+    def checkPastEvent(self,eid):
+        eventInstance = Event.eventManager.getByUUID(eid) 
+        serializer = EventSerializer(eventInstance)
+        # print(serializer.data["startDate"])  
+        timestamp = datetime.fromisoformat(serializer.data["startDate"])
+        current_time = datetime.now(pytz.timezone('Asia/Singapore'))  # Use the appropriate timezone
+
+        # Compare the timestamps
+        if timestamp < current_time:
+            return True
+        return False
+          
 
     def deleteEvent(eid):
         try:

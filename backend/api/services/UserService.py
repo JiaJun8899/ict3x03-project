@@ -55,10 +55,15 @@ class UserService:
     def cancelSignUpEvent(data):
         try:
             # eventSerializer = EventSignUpParticipantSerializer(data=data)            
-            signedup = EventParticipant.eventParticipantManager.getSingleUserEventmap(data["event"],data["participant"])
-            if list(signedup) != []:
-                EventParticipant.eventParticipantManager.deleteByUUID(data["participant"])
-                return True
+            signedup = EventParticipant.eventParticipantManager.deleteSingleUserEventmap(data["event"],data["participant"])
+            # record = EventParticipant.objects.filter(event_id=data["event"],participant_id=data["participant"]).delete()
+            print(signedup)
+            # if list(signedup) != []:
+            #     EventParticipant.objects.filter(event_id=data["event"],participant_id=data["participant"])
+                # must delete by pid and eid, if not all data gone
+                
+                # EventParticipant.eventParticipantManager.deleteByUUID(data["participant"])
+            return True
         except Exception as e:
             print(e)
             return False

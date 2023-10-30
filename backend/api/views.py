@@ -289,6 +289,20 @@ class SearchEvents(APIView):
         if events != None:
             return Response(events, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+class GetPastEvents(APIView):
+    def post(self, request):
+        events = EventService.searchEvent(request.data["name"])
+        if events != None:
+            return Response(events, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+class GetUpcomingEvents(APIView):
+    def post(self, request):
+        events = EventService.searchEvent(request.data["name"])
+        if events != None:
+            return Response(events, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetAllEvent(APIView):
@@ -302,6 +316,43 @@ class GetAllEvent(APIView):
         else:
             return Response(
                 {"Failed to retrieve organizers."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+class GetPastEventsByParticipant(APIView):
+    def get(self, request):
+        id = UUID(request.session["_auth_user_id"]).hex
+        eventParticipantService = EventParticipantService()
+        eventService = EventService()
+        events = eventParticipantService.getParticipatedEvents(id)
+        pastEvent = []
+        if events != None:        
+            # need to check if past current date
+            for event in events:
+                if(eventService.checkPastEvent(event["event"])):
+                    pastEvent.append(eventService.userGetEventById(event["event"]))
+            return Response(pastEvent)
+        else:
+            return Response(
+                {"Failed to participated events."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+class GetUpcomingEventsByParticipant(APIView):
+    def get(self, request):
+        id = UUID(request.session["_auth_user_id"]).hex
+        eventParticipantService = EventParticipantService()
+        eventService = EventService()
+        events = eventParticipantService.getParticipatedEvents(id)
+        upcomingEvent = []
+        if events != None:        
+            for event in events:
+                if(not eventService.checkPastEvent(event["event"])):
+                    upcomingEvent.append(eventService.userGetEventById(event["event"]))
+            return Response(upcomingEvent)
+        else:
+            return Response(
+                {"Failed to upcoming events."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -353,10 +404,11 @@ class Login(APIView):
 class GetOTP(APIView):
     def post(self, request):
         self.authService = AuthService()
-        id = request.session["temp_id"]
-        isOtpSent = self.authService.generateOTP(id)
-        if isOtpSent:
-            return Response({"detail": "Credentials are correct"}, status=200)
+        uuid = request.session.get("temp_id", None)
+        if uuid != None:
+            isOtpSent = self.authService.generateOTP(uuid)
+            if isOtpSent:
+                return Response({"detail": "Credentials are correct"}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)
 
 
@@ -364,13 +416,14 @@ class VerifyOtp(APIView):
     def post(self, request):
         self.authService = AuthService()
         otp = request.data.get("OTP")
-        uuid = request.session["temp_id"]
-        isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
-        if isVerifiedUser :
-            loginUser = self.authService.LoginUser(request)
-            if loginUser :
-                request.session["role"] = AccountService.getUserRole(loginUser.id)
-                return Response({"detail": "OTP is Correct"}, status=200)
+        uuid = request.session.get("temp_id", None)
+        if uuid != None:
+            isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
+            if isVerifiedUser :
+                loginUser = self.authService.LoginUser(request)
+                if loginUser :
+                    request.session["role"] = AccountService.getUserRole(loginUser.id)
+                    return Response({"detail": "OTP is Correct"}, status=200)
         return Response({"detail": "Something went wrong"}, status=401)
 
 
