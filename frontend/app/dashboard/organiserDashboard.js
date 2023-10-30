@@ -29,33 +29,20 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_HOST } from "@/app/utils/utils";
+import { API_HOST} from "@/app/utils/utils";
+import Cookie from "js-cookie";
 
 async function deleteEvent(eId) {
-  const token = await getCsrfToken();
   const response = await axios.delete(API_HOST + "/get-event-byorg/", {
     data: {
       eid: eId,
     },
     headers: {
-      "X-CSRFToken": token,
+      "X-CSRFToken": Cookie.get("csrftoken"),
     },
     withCredentials: true,
   });
   return response.data;
-}
-
-let _csrfToken = null;
-
-async function getCsrfToken() {
-  if (_csrfToken === null) {
-    const response = await fetch(`${API_HOST}/csrf/`, {
-      credentials: "include",
-    });
-    const data = await response.json();
-    _csrfToken = data.csrfToken;
-  }
-  return _csrfToken;
 }
 
 function DeleteModal(eventData) {

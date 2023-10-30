@@ -140,7 +140,7 @@ class EventsByOrganizationAPI(APIView):
             success = EventService.updateEvent(data, request.data["eid"])
             if success:
                 return Response({"status": status.HTTP_200_OK})
-        return Response({"status": status.HTTP_400_BAD_REQUEST})
+        return Response({"status": status.HTTP_401_UNAUTHORIZED})
 
     def delete(self, request):
         """Delete Event and Mapping"""

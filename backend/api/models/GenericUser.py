@@ -9,7 +9,7 @@ class GenericUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nricRegex = RegexValidator(
         regex=r'^[A-Za-z]\d{7}[A-Za-z]$',
-        message="NRIC must start with an alphabet character, followed by 8 digits, and ending with an alphabet character."
+        message="NRIC must start with an alphabet character, followed by 7 digits, and ending with an alphabet character."
     )
 
     phoneNumRegex = RegexValidator(

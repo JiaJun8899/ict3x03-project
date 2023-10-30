@@ -16,6 +16,7 @@ import {
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_HOST } from "@/app/utils/utils";
+import Cookie from "js-cookie";
 
 export default function ProfilePage() {
   const [details, setDetails] = useState({
@@ -38,22 +39,10 @@ export default function ProfilePage() {
     });
   };
 
-  let _csrfToken = null;
   const toast = useToast();
   useEffect(() => {
     getProfile();
   }, []);
-
-  async function getCsrfToken() {
-    if (_csrfToken === null) {
-      const response = await fetch(`${API_HOST}/csrf/`, {
-        credentials: "include",
-      });
-      const data = await response.json();
-      _csrfToken = data.csrfToken;
-    }
-    return _csrfToken;
-  }
 
   async function getProfile() {
     try {
@@ -65,12 +54,11 @@ export default function ProfilePage() {
         firstname: response.data["profile"]["user"]["first_name"],
         email: response.data["profile"]["user"]["email"],
         lastname: response.data["profile"]["user"]["last_name"],
-        // nric : response.data["profile"]["user"]["nric"],
         phoneNum: response.data["profile"]["user"]["phoneNum"],
         userName: response.data["profile"]["user"]["username"],
         birthday: response.data["profile"]["birthday"],
       });
-      if (response.data["nok"]){
+      if (response.data["nok"]) {
         setDetails({
           ...details,
           firstname: response.data["profile"]["user"]["first_name"],
@@ -84,44 +72,39 @@ export default function ProfilePage() {
           nokRelationship: response.data["nok"]["relationship"],
         });
       }
-
-      
     } catch (error) {
       console.error("There was an fetching your profile", error);
     }
   }
   async function updateProfile() {
-    const token = await getCsrfToken();
-    // console.log(token);
-    // console.log(details);
-    var response = await axios
-      .put(`${API_HOST}/update-user-details/`, details, {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": token,
-        },
-      })
-      .then(function (response) {
-        console.log(response)
-        toast({
-          title: "Profile updated successful.",
-          // description: "You are now logged in!",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-      })
-      .catch(function (error) {
-        console.log(error)
-        toast({
-          title: "Profile update failed.",
-          // description: await response.text(),
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
+    try {
+      const response = await axios.put(
+        `${API_HOST}/update-user-details/`,
+        details,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": Cookie.get("csrftoken"),
+          },
+        }
+      );
+      console.log(response);
+      toast({
+        title: "Profile updated successful.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
       });
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Profile update failed.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   }
   return (
     <Flex
@@ -194,7 +177,6 @@ export default function ProfilePage() {
                 align={"start"}
                 justify={"space-between"}
               >
-                {/* <Checkbox>I am an Organisation</Checkbox> */}
                 <FormControl id="email">
                   <FormLabel>Birthday</FormLabel>
                   <Input

@@ -21,19 +21,7 @@ import React, { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import axios from "axios";
 import { API_HOST } from "@/app/utils/utils";
-
-let _csrfToken = null;
-
-async function getCsrfToken() {
-  if (_csrfToken === null) {
-    const response = await fetch(`${API_HOST}/csrf/`, {
-      credentials: "include",
-    });
-    const data = await response.json();
-    _csrfToken = data.csrfToken;
-  }
-  return _csrfToken;
-}
+import Cookie from "js-cookie";
 
 function Feature({ title, desc, ...rest }) {
   return (
@@ -92,18 +80,16 @@ function EventRow({ event, index }) {
   );
 }
 
-async function submitSearch(x, setAllEvents) {
-  const token = await getCsrfToken();
-  console.log(x);
+async function submitSearch(searchText, setAllEvents) {
   try {
     const response = await axios.post(
       `${API_HOST}/search-events/`,
-      { name: x },
+      { name: searchText },
       {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": token,
+          "X-CSRFToken": Cookie.get("csrftoken"),
         },
       }
     );
