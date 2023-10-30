@@ -353,10 +353,11 @@ class Login(APIView):
 class GetOTP(APIView):
     def post(self, request):
         self.authService = AuthService()
-        id = request.session["temp_id"]
-        isOtpSent = self.authService.generateOTP(id)
-        if isOtpSent:
-            return Response({"detail": "Credentials are correct"}, status=200)
+        uuid = request.session.get("temp_id", None)
+        if uuid != None:
+            isOtpSent = self.authService.generateOTP(uuid)
+            if isOtpSent:
+                return Response({"detail": "Credentials are correct"}, status=200)
         return Response({"detail": "Invalid credentials."}, status=401)
 
 
@@ -364,13 +365,14 @@ class VerifyOtp(APIView):
     def post(self, request):
         self.authService = AuthService()
         otp = request.data.get("OTP")
-        uuid = request.session["temp_id"]
-        isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
-        if isVerifiedUser :
-            loginUser = self.authService.LoginUser(request)
-            if loginUser :
-                request.session["role"] = AccountService.getUserRole(loginUser.id)
-                return Response({"detail": "OTP is Correct"}, status=200)
+        uuid = request.session.get("temp_id", None)
+        if uuid != None:
+            isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
+            if isVerifiedUser :
+                loginUser = self.authService.LoginUser(request)
+                if loginUser :
+                    request.session["role"] = AccountService.getUserRole(loginUser.id)
+                    return Response({"detail": "OTP is Correct"}, status=200)
         return Response({"detail": "Something went wrong"}, status=401)
 
 
