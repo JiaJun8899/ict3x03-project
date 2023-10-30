@@ -8,7 +8,7 @@ networks:
 services:
   database:
     image: mariadb
-    container_name: backend_database_prod
+    container_name: backend_database
     env_file: ./docker.env
     restart: always
     volumes:
@@ -24,7 +24,7 @@ services:
     networks:
       - production
   frontend:
-    container_name: nextjs_frontend_prod
+    container_name: nexjs_frontend
     build:
       context: .
       dockerfile: ./frontend/Dockerfile
@@ -39,7 +39,7 @@ services:
     networks:
       - production
   backend:
-    container_name: django_backend_prod
+    container_name: django_backend
     build:
       context: .
       dockerfile: ./backend/Dockerfile
