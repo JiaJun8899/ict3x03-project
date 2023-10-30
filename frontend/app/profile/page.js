@@ -14,10 +14,13 @@ import {
   useToast,
 } from "../providers";
 import { useState, useEffect } from "react";
+import ErrorPage from "next/error";
 import axios from "axios";
 import { API_HOST } from "@/app/utils/utils";
+import { notFound } from "next/navigation";
 
 export default function ProfilePage() {
+  const [userRole, setUserRole] = useState("none");
   const [details, setDetails] = useState({
     firstname: "",
     email: "",
@@ -30,6 +33,7 @@ export default function ProfilePage() {
     nokRelationship: "",
     birthday: "",
   });
+  const [loading, setLoading] = useState(true);  
 
   const updateDetails = (field, data) => {
     setDetails({
@@ -54,7 +58,6 @@ export default function ProfilePage() {
     }
     return _csrfToken;
   }
-
   async function getProfile() {
     try {
       const response = await axios.get(`${API_HOST}/profile/`, {
@@ -70,7 +73,7 @@ export default function ProfilePage() {
         userName: response.data["profile"]["user"]["username"],
         birthday: response.data["profile"]["birthday"],
       });
-      if (response.data["nok"]){
+      if (response.data["nok"]) {
         setDetails({
           ...details,
           firstname: response.data["profile"]["user"]["first_name"],
@@ -84,16 +87,12 @@ export default function ProfilePage() {
           nokRelationship: response.data["nok"]["relationship"],
         });
       }
-
-      
     } catch (error) {
       console.error("There was an fetching your profile", error);
     }
   }
   async function updateProfile() {
     const token = await getCsrfToken();
-    // console.log(token);
-    // console.log(details);
     var response = await axios
       .put(`${API_HOST}/update-user-details/`, details, {
         withCredentials: true,
@@ -103,7 +102,7 @@ export default function ProfilePage() {
         },
       })
       .then(function (response) {
-        console.log(response)
+        console.log(response);
         toast({
           title: "Profile updated successful.",
           // description: "You are now logged in!",
@@ -113,7 +112,7 @@ export default function ProfilePage() {
         });
       })
       .catch(function (error) {
-        console.log(error)
+        console.log(error);
         toast({
           title: "Profile update failed.",
           // description: await response.text(),
