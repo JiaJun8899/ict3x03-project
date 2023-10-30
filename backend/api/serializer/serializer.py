@@ -57,7 +57,7 @@ class EventParticipantSerializer(serializers.ModelSerializer):
     participant = NormalUserSerializer()
     class Meta:
         model = EventParticipant
-        fields = ['participant']
+        fields = '__all__'
 
 class EventSignUpParticipantSerializer(serializers.ModelSerializer):
     class Meta:

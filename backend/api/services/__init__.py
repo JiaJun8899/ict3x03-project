@@ -6,3 +6,4 @@ from .EventCommonService import *
 from .NokService import *
 from .UserService import *
 from .OrganizerAdminService import *
+from .EventParticipantService import *
