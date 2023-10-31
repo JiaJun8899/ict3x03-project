@@ -1,19 +1,18 @@
-from django_otp.decorators import otp_required
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from api.services import *
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from datetime import datetime
-from django.http import JsonResponse
-from django.middleware.csrf import get_token
 from uuid import UUID
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import requests
 from dotenv import load_dotenv
 from django.db import transaction
+import hashlib
+from django.utils.html import escape
+import re
 
 import logging
 
@@ -22,23 +21,32 @@ generalLogger = logging.getLogger("backend.api.views.general")
 authLogger = logging.getLogger("backend.api.views.auth")
 
 load_dotenv()
-RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
 
-def csrf(request):
-    return JsonResponse({"csrfToken": get_token(request)})
+def sanitiseString(stringInput):
+    return escape(stringInput.strip())
 
-def validEventOrg(request, eid):
-    organization_id = request.session["_auth_user_id"]
-    print(organization_id)
-    checkValid = EventService.checkValid(organization_id, eid)
-    if checkValid:
-        return JsonResponse({"valid": True})
-    else:
-        return JsonResponse({"valid": False})
+def checkDataValid(data):
+    pattern = r"^[a-zA-Z0-9 ]*$"
+    keysAlnum = ["first_name", "last_name", "nric"]
+    for key, value in data.items():
+        if key in keysAlnum:
+            if not re.match(pattern, value.strip()):
+                return False
+    return True
 
-class TestAPI(APIView):
+class CheckValidEventOrg(APIView):
+    def get(request, eid):
+        organization_id = request.session["_auth_user_id"]
+        print(organization_id)
+        checkValid = EventService.checkValid(organization_id, eid)
+        if checkValid:
+            return Response({"valid": True}, status=status.HTTP_200_OK)
+        else:
+            return Response({"valid": False}, status=status.HTTP_403_FORBIDDEN)
+
+class CheckAuth(APIView):
     def get(self, request):
-        if "_auth_user_id" in request.session:
+        if "_auth_user_id" and "role" in request.session:
             return Response(
                 {
                     "id": request.session["_auth_user_id"],
@@ -49,52 +57,7 @@ class TestAPI(APIView):
         return Response({"role": None}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-class UpdateOrganizerStatus(APIView):
-    def put(self, request):
-        organizerAdminService = OrganizerAdminService()
-        success = organizerAdminService.updateOrganizer(
-            organizer_uuid=request.data["user"],
-            status=request.data["validOrganisation"],
-        )
-        if success:
-            adminLogger.warning("Organizer {organizer_uuid} updated ... okay try this one later")
-            return Response(
-                {"message": "Organizer status updated successfully."},
-                status=status.HTTP_200_OK,
-            )
-        else:
-            return Response(
-                {"message": "Failed to update organizer status."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-
-class GetAllOrganizers(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        organizerAdminService = OrganizerAdminService()
-        organizers = organizerAdminService.getAllOrganizers()
-
-        if organizers != None:
-            # Assuming that the returned organizers is a QuerySet or list of Organizer instances
-            return Response({"data": organizers})
-        else:
-            return Response(
-                {"status": "error", "message": "Failed to retrieve organizers."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-
 class EventAPI(APIView):
-    """1. Create Event
-    2. Update Event
-    3. Get all Event
-    4. Get Event by Organiser
-    5. Delete Event
-    6. Change approval status"""
-
     def get(self, request):
         """Gets all the events"""
         allEvents = EventService.getAllEvent()
@@ -106,31 +69,28 @@ class EventsByOrganizationAPI(APIView):
 
     def get(self, request):
         organization_id = request.session["_auth_user_id"]
-        print(organization_id)
         eventsByOrg = EventService.getEventByOrg(organization_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
     def post(self, request):
         """Create Event"""
         organization_id = request.session["_auth_user_id"]
-        print(request.data)
         data = {
-            "eventName": request.data["eventName"],
+            "eventName": sanitiseString(request.data["eventName"]),
             "startDate": request.data["startDate"],
             "endDate": request.data["endDate"],
             "noVol": request.data["noVol"],
-            "eventDesc": request.data["eventDesc"],
+            "eventDesc": sanitiseString(request.data["eventDesc"]),
             "eventImage": request.data["eventImage"],
         }
         success = EventService.createEvent(data, organization_id)
         if success:
-            return Response({"status": status.HTTP_200_OK})
+            return Response(status=status.HTTP_200_OK)
         else:
-            return Response({"status": status.HTTP_400_BAD_REQUEST})
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
         """Update event"""
-        print(request.data)
         organization_id = request.session["_auth_user_id"]
         checkValid = EventService.checkValid(
             organization_id, request.data["eid"]
@@ -141,24 +101,27 @@ class EventsByOrganizationAPI(APIView):
                 if key == "eventImage" and not isinstance(value, InMemoryUploadedFile):
                     pass
                 else:
+                    if key == "eventName" or key == "eventDesc":
+                        value = sanitiseString(value)
                     data[key] = value
             data["eventStatus"] = "open"
             print(data)
             success = EventService.updateEvent(data, request.data["eid"])
             if success:
-                return Response({"status": status.HTTP_200_OK})
-        return Response({"status": status.HTTP_400_BAD_REQUEST})
+                return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def delete(self, request):
         """Delete Event and Mapping"""
         # print(request.data)
         organization_id = request.session["_auth_user_id"]
-        success = EventService.deleteEvent(request.data["eid"])
-        success = True
-        if success:
-            return Response({"status": status.HTTP_200_OK})
-        else:
-            return Response({"status": status.HTTP_400_BAD_REQUEST})
+        checkValid = EventService.checkValid(organization_id, request.data["eid"])
+        if checkValid:
+            success = EventService.deleteEvent(request.data["eid"])
+            success = True
+            if success:
+                return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 class EventSingleByOrganizationAPI(APIView):
@@ -174,7 +137,25 @@ class EventParticipantAPI(APIView):
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
 class RegisterUserAPIView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
+        if "SECRET_KEY" in request.data:
+            inputKey = request.data["SECRET_KEY"]
+            sha256 = hashlib.sha256()
+            sha256.update(inputKey.encode('utf-8'))
+            hashed_input_key = sha256.hexdigest()
+            key = os.getenv("TEST_KEY", os.environ.get("TEST_KEY"))
+            if hashed_input_key == key:
+                RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY_TEST", os.environ.get("RECAPTCHA_KEY_TEST"))
+        else:
+            RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
+        recaptcha_response = request.data["recaptchaValue"]
+        verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
+        response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=verification_data)
+        recaptcha_result = response.json()
+        print(recaptcha_result)
+        if not recaptcha_result["success"]:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         data = {
             "username": request.data["email"],
             "email": request.data["email"],
@@ -185,7 +166,9 @@ class RegisterUserAPIView(APIView):
             "password": request.data["password"],
             "password2": request.data["password2"],
         }
-
+        if not checkDataValid(data):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        print(data)
         if request.data["organization"]:
             success, errors = AccountService.createOrganisation(data)
         else:
@@ -193,18 +176,8 @@ class RegisterUserAPIView(APIView):
                 request.data["birthday"], "%Y-%m-%d"
             ).date()
             success, errors = AccountService.createNormalUser(data, birthday)
-        if success != False:
-            recaptcha_response = request.data["recaptchaValue"]
-            verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
-            response = requests.post(
-                "https://www.google.com/recaptcha/api/siteverify", data=verification_data
-            )
-            recaptcha_result = response.json()
-            print(recaptcha_result)
-            if not recaptcha_result["success"]:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(status=status.HTTP_200_OK)
+        if success:
+            return Response(status=status.HTTP_200_OK)
         else:
             print(errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
@@ -225,7 +198,10 @@ class UpdateUserAPIView(APIView):
                 "phoneNum": request.data["phoneNum"],
                 "username": request.data["userName"],
             }
+            if not checkDataValid(data):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
         # print("this is emergency before ")
+        success = UserService.updateUserProfile(data, id)
         emergency = EmergencyContactService.getContactById(id)
         if emergency:
             nokData = {
@@ -233,8 +209,9 @@ class UpdateUserAPIView(APIView):
                 "relationship": request.data["nokRelationship"],
                 "phoneNum": request.data["nokPhone"],
             }
-            nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])
-            success = UserService.updateUserProfile(data, id)
+            if not checkDataValid(nokData):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])            
         else:
             # create a nok here pls
             with transaction.atomic():
@@ -265,10 +242,11 @@ class GetProfileDetailsAPIView(APIView):
 class SignUpEventAPIView(APIView):
     def post(self, request):
         id = UUID(request.session["_auth_user_id"]).hex
+        eid = request.data['eid']
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
         if validUser != None and validEvent != None:
-            data = {"event": request.data["eid"], "participant": id}
+            data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
             print(success)
         if success:
@@ -296,54 +274,65 @@ class SearchEvents(APIView):
         if events != None:
             return Response(events, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-class GetAllEvent(APIView):
-    def get(self, request):
-        eventService = EventService()
-        events = eventService.getAllEvents()
-
+    
+class GetPastEvents(APIView):
+    def post(self, request):
+        events = EventService.searchEvent(request.data["name"])
         if events != None:
-            # Assuming that the returned organizers is a QuerySet or list of Organizer instances
-            return Response({"data": events})
+            return Response(events, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+class GetUpcomingEvents(APIView):
+    def post(self, request):
+        events = EventService.searchEvent(request.data["name"])
+        if events != None:
+            return Response(events, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class GetPastEventsByParticipant(APIView):
+    def get(self, request):
+        id = UUID(request.session["_auth_user_id"]).hex
+        eventParticipantService = EventParticipantService()
+        eventService = EventService()
+        events = eventParticipantService.getParticipatedEvents(id)
+        pastEvent = []
+        if events != None:        
+            # need to check if past current date
+            for event in events:
+                if(eventService.checkPastEvent(event["event"])):
+                    pastEvent.append(eventService.userGetEventById(event["event"]))
+            return Response(pastEvent, status=status.HTTP_200_OK)
         else:
-            return Response(
-                {"Failed to retrieve organizers."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"Failed to participated events."}, status=status.HTTP_400_BAD_REQUEST,)
+
+class GetUpcomingEventsByParticipant(APIView):
+    def get(self, request):
+        id = UUID(request.session["_auth_user_id"]).hex
+        eventParticipantService = EventParticipantService()
+        eventService = EventService()
+        events = eventParticipantService.getParticipatedEvents(id)
+        upcomingEvent = []
+        if events != None:        
+            for event in events:
+                if(not eventService.checkPastEvent(event["event"])):
+                    upcomingEvent.append(eventService.userGetEventById(event["event"]))
+            return Response(upcomingEvent, status=status.HTTP_200_OK)
+        else:
+            return Response({"Failed to upcoming events."},status=status.HTTP_400_BAD_REQUEST,)
 
 
 class GetEvent(APIView):
     def get(self, request, eid):
         eventService = EventService()
         events = eventService.userGetEventById(eid)
-
         if events != None:
             # Assuming that the returned organizers is a QuerySet or list of Organizer instances
             return Response({"data": events})
         else:
-            return Response(
-                {"Failed to retrieve event."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-
-class GetAllEvent(APIView):
-    def get(self, request):
-        eventService = EventService()
-        events = eventService.getAllEvents()
-
-        if events != None:
-            # Assuming that the returned organizers is a QuerySet or list of Organizer instances
-            return Response({"data": events})
-        else:
-            return Response(
-                {"Failed to retrieve organizers."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
+            return Response({"Failed to retrieve event."},status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
 
 class Login(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         print(request.__dict__)
         username = request.data.get("username")
@@ -355,40 +344,44 @@ class Login(APIView):
         if userWithCorrectCredential:
             request.session["temp_id"] = str(userWithCorrectCredential.id)
             authLogger.info(f"views.Login | insert_IP_here | {{'User' : '{username}', 'credentials' : 'VALID'}}") #relook message later
-            return Response({"detail": "Credentials are correct"}, status=200)
+            return Response({"detail": "Credentials are correct"}, status=status.HTTP_200_OK)
         
         authLogger.info(f"views.Login | insert_IP_here | {{'User' : '{username}', 'credentials' : 'INVALID'}}") #relook message later
-        return Response({"detail": "Invalid credentials."}, status=401)
+        return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class GetOTP(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         self.authService = AuthService()
-        id = request.session["temp_id"]
-        isOtpSent = self.authService.generateOTP(id)
-        if isOtpSent:
-            return Response({"detail": "Credentials are correct"}, status=200)
-        return Response({"detail": "Invalid credentials."}, status=401)
+        uuid = request.session.get("temp_id", None)
+        if uuid != None:
+            isOtpSent = self.authService.generateOTP(uuid)
+            if isOtpSent:
+                return Response({"detail": "Credentials are correct"}, status=status.HTTP_200_OK)
+        return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class VerifyOtp(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         self.authService = AuthService()
         otp = request.data.get("OTP")
-        uuid = request.session["temp_id"]
-        isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
-        if isVerifiedUser :
-            loginUser = self.authService.LoginUser(request)
-            if loginUser :
-                request.session["role"] = AccountService.getUserRole(loginUser.id)
-                return Response({"detail": "OTP is Correct"}, status=200)
-        return Response({"detail": "Something went wrong"}, status=401)
+        uuid = request.session.get("temp_id", None)
+        if uuid != None:
+            isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
+            if isVerifiedUser :
+                loginUser = self.authService.LoginUser(request)
+                if loginUser :
+                    request.session["role"] = AccountService.getUserRole(loginUser.id)
+                    return Response({"detail": "OTP is Correct"}, status=status.HTTP_200_OK)
+        return Response({"detail": "Something went wrong"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class Logout(APIView):
-        def post(self,request):
-            AuthService.logout(request)
-            return Response({"detail": "LOGOUT SUCCESS"}, status=200)
+    def post(self,request):
+        AuthService.logout(request)
+        return Response({"detail": "LOGOUT SUCCESS"}, status=status.HTTP_200_OK)
 
 
 class ChangePassword(APIView):
@@ -401,7 +394,6 @@ class ChangePassword(APIView):
         return Response({"detail": "Invalid Permission"}, status=401)
 
     def put(self, request):
-        
         try:
             currentPassword = request.data.get("currentPassword")
             newPasswordConfirmation = request.data.get("newPasswordConfirmation")
@@ -425,9 +417,9 @@ class ChangePassword(APIView):
                     return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
                 
             return Response({"detail": "Invalid current password"}, status=status.HTTP_401_UNAUTHORIZED)
-            
+
         except Exception as e:
-            return Response({"detail": f"Something went wrong: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"detail": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ResetPassword(APIView):
@@ -435,7 +427,7 @@ class ResetPassword(APIView):
         email = request.data.get("email")
         auth = AuthService()
         auth.requestOTPFroMEmail(email)
-        return Response({"detail": "email should be sent"}, status=200)
+        return Response({"detail": "email should be sent"}, status=status.HTTP_200_OK)
 
     def put(self,request):
         otp= request.data.get("OTP")

@@ -17,35 +17,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { API_HOST } from "@/app/utils/utils";
+import Cookie from "js-cookie";
 
-let _csrfToken = null;
-
-async function onSubmit(data) {
-  console.log(data);
-  const token = await getCsrfToken();
-
-  const response = await axios.put(`${API_HOST}/get-event-byorg/`, data, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-      "X-CSRFToken": token,
-    },
-    withCredentials: true,
-  });
-  console.log(response.data);
-  return response.data;
-}
-async function getCsrfToken() {
-  if (_csrfToken === null) {
-    const response = await fetch(`${API_HOST}/csrf/`, {
-      credentials: "include",
-    });
-    const data = await response.json();
-    _csrfToken = data.csrfToken;
-  }
-  return _csrfToken;
-}
 export default function EditEvent({ searchParams }) {
-  // console.log(searchParams);
   const [form, setForm] = useState({
     eventName: "",
     startDate: "",
@@ -81,7 +55,7 @@ export default function EditEvent({ searchParams }) {
     }
   }
   useEffect(() => {
-    console.log(searchParams)
+    console.log(searchParams);
     getEvent();
   }, [searchParams]);
 
@@ -91,7 +65,18 @@ export default function EditEvent({ searchParams }) {
       return { ...prev, ...value };
     });
   }
-
+  async function onSubmit(data) {
+    console.log(data);
+    const response = await axios.put(`${API_HOST}/get-event-byorg/`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "X-CSRFToken": Cookie.get("csrftoken"),
+      },
+      withCredentials: true,
+    });
+    console.log(response.data);
+    return response.data;
+  }
   return (
     <Flex
       minH={"100vh"}

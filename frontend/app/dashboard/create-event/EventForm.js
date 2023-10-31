@@ -17,6 +17,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { API_HOST } from "@/app/utils/utils";
+import Cookie from "js-cookie"
 
 export default function SignupCard() {
   const router = useRouter();
@@ -28,17 +29,6 @@ export default function SignupCard() {
     eventDesc: "",
     eventImage: undefined,
   });
-  let _csrfToken = null;
-  async function getCsrfToken() {
-    if (_csrfToken === null) {
-      const response = await fetch(`${API_HOST}/csrf/`, {
-        credentials: "include",
-      });
-      const data = await response.json();
-      _csrfToken = data.csrfToken;
-    }
-    return _csrfToken;
-  }
 
   function updateForm(value) {
     return setForm((prev) => {
@@ -48,12 +38,11 @@ export default function SignupCard() {
   }
 
   async function onSubmit(e) {
-    const token = await getCsrfToken();
     await axios
       .post(`${API_HOST}/get-event-byorg/`, form, {
         headers: {
           "Content-Type": "multipart/form-data",
-          "X-CSRFToken": token,
+          "X-CSRFToken": Cookie.get("csrftoken"),
         },
         withCredentials: true,
       })
