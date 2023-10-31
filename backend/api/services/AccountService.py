@@ -40,5 +40,7 @@ class AccountService:
     def getUserRole(userId):
         if Organizer.organizerManager.getByUUID(userId):
             return "Organizer"
-        else:
+        if NormalUser.normalUserManager.getByUUID(userId):
             return "Normal"
+        else:
+            return None

@@ -34,6 +34,11 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = '__all__'
+    def validate(self, attrs):
+        if 'endDate' and 'startDate' in attrs:
+            if attrs['endDate'] <= attrs['startDate']:
+                raise serializers.ValidationError({"Start Date": "Start Date cannot be more than end date"})
+        return attrs
 
 class EmergencyContactsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,15 +59,12 @@ class EventOrganizerMappingCreate(serializers.ModelSerializer):
         fields = '__all__'
 
 class EventParticipantSerializer(serializers.ModelSerializer):
-    event = EventSerializer()
     participant = NormalUserSerializer()
     class Meta:
         model = EventParticipant
-        fields = ['event','participant']
+        fields = '__all__'
 
 class EventSignUpParticipantSerializer(serializers.ModelSerializer):
-    # event = EventSerializer()
-    # participant = NormalUserSerializer()
     class Meta:
         model = EventParticipant
         fields = ['event','participant']

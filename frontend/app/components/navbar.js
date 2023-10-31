@@ -4,7 +4,6 @@ import {
   Box,
   Flex,
   Avatar,
-  Text,
   Button,
   Menu,
   MenuButton,
@@ -16,8 +15,13 @@ import {
   Stack,
   useColorMode,
   Center,
+  useToast,
 } from "../providers";
+import NextLink from "next/link";
+import axios from "axios";
 import { MoonIcon, SunIcon } from "../providers";
+import { API_HOST } from "@/app/utils/utils";
+import Cookie from "js-cookie";
 
 const NavLink = (props) => {
   const { children } = props;
@@ -39,14 +43,57 @@ const NavLink = (props) => {
   );
 };
 
-export default function Nav() {
+export default function Nav({userRole}) {
+  // const role = userRole.role;
+  console.log(userRole)
+  if(userRole === 'none'){
+    return(
+      <></>
+    )
+  }
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const toast = useToast();
+
+  async function logout() {
+    try {
+      const response = await axios.post(
+        `${API_HOST}/auth-logout/`,
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": Cookie.get("csrftoken"),
+          },
+        }
+      );
+      console.log(response);
+      toast({
+        title: "Logout successful.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Logout failed.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }
+
   return (
     <>
       <Box bg={useColorModeValue("gray.100", "gray.900")} px={4}>
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
-          <Box>Logo</Box>
+          {/* <Box>Logo</Box> */}
+          <NextLink href={`/dashboard/`}>
+            <Button variant={"link"}>Dashboard</Button>
+          </NextLink>
 
           <Flex alignItems={"center"}>
             <Stack direction={"row"} spacing={7}>
@@ -81,9 +128,13 @@ export default function Nav() {
                   </Center>
                   <br />
                   <MenuDivider />
-                  <MenuItem>Your Servers</MenuItem>
-                  <MenuItem>Account Settings</MenuItem>
-                  <MenuItem>Logout</MenuItem>
+                  {/* <MenuItem>Your Servers</MenuItem> */}
+                  <NextLink href={`/profile/`}>
+                    <MenuItem>Account Settings</MenuItem>
+                  </NextLink>
+                  <NextLink href={`/login/`}>
+                    <MenuItem onClick={logout}>Logout</MenuItem>
+                  </NextLink>
                 </MenuList>
               </Menu>
             </Stack>

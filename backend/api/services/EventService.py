@@ -1,4 +1,4 @@
-from api.models import EventOrganizerMapping, Organizer, Event, EventParticipant
+from api.models import EventOrganizerMapping, Organizer, Event, EventParticipant, NormalUser
 from api.serializer import (
     EventOrganizerMappingSerializer,
     EventSerializer,
@@ -6,6 +6,8 @@ from api.serializer import (
     EventParticipantSerializer,
 )
 import os
+from datetime import datetime, timezone
+import pytz
 
 
 class EventService:
@@ -36,11 +38,28 @@ class EventService:
         eventMapInstance = (
             EventOrganizerMapping.eventMapperManager.getMapByOrgEventUUID(orgid, eid)
         )
-        print(eventMapInstance.id)
-        return eventMapInstance
+        if eventMapInstance:
+            print(eventMapInstance.id)
+            return eventMapInstance
+        else:
+            return None
 
     def updateEvent(data, eid):
         eventInstance = Event.eventManager.getByUUID(eid)
+        print(data)
+        if 'startDate' in data:
+            data['startDate'] = datetime.fromisoformat(data['startDate'])
+            data['startDate'] = data['startDate'].astimezone(timezone.utc)
+        if 'endDate' in data:
+            data['endDate'] = datetime.fromisoformat(data['endDate'])
+            data['endDate'] = data['endDate'].astimezone(timezone.utc)
+        if 'startDate' not in data:
+            print("Should add start")
+            data["startDate"] = eventInstance.startDate
+        if 'endDate' not in data:
+            data["endDate"] = eventInstance.endDate
+        print("Should have ma")
+        print(data)
         eventSerializer = EventSerializer(
             instance=eventInstance, data=data, partial=True
         )
@@ -50,6 +69,19 @@ class EventService:
             eventSerializer.save()
             return True
         return False
+    
+    def checkPastEvent(self,eid):
+        eventInstance = Event.eventManager.getByUUID(eid) 
+        serializer = EventSerializer(eventInstance)
+        # print(serializer.data["startDate"])  
+        timestamp = datetime.fromisoformat(serializer.data["startDate"])
+        current_time = datetime.now(pytz.timezone('Asia/Singapore'))  # Use the appropriate timezone
+
+        # Compare the timestamps
+        if timestamp < current_time:
+            return True
+        return False
+          
 
     def deleteEvent(eid):
         try:
@@ -71,9 +103,7 @@ class EventService:
         )
         if eventInstance is None:
             return None
-        particpants = (
-            EventParticipant.eventParticipantManager.getParticipantsByEventUUID(eid)
-        )
+        particpants = (EventParticipant.eventParticipantManager.getParticipantsByEventUUID(eid))
         serializer = EventParticipantSerializer(particpants, many=True)
         return serializer.data
 

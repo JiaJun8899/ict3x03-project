@@ -15,13 +15,14 @@ import {
   Image,
   Input,
   FormControl,
-} from "../providers";
+} from "../../providers"
 import NextLink from "next/link";
 import React, { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import axios from "axios";
 import { API_HOST } from "@/app/utils/utils";
 import Cookie from "js-cookie";
+// import { Providers } from "@/app/providers";
 
 function Feature({ title, desc, ...rest }) {
   return (
@@ -72,7 +73,7 @@ function EventRow({ event, index }) {
       <Td>{endDate}</Td>
       <Td>{event.eventStatus}</Td>
       <Td>
-        <NextLink href={`dashboard/event?eid=${event.eid}`}>
+        <NextLink href={`/dashboard/event?eid=${event.eid}`}>
           <Button variant={"link"}>Details</Button>
         </NextLink>
       </Td>
@@ -100,7 +101,7 @@ async function submitSearch(searchText, setAllEvents) {
   }
 }
 
-export default function RegularDashboard(props) {
+export default function Page(props) {
   // var allEvents = props.data;
   // const setEvent  = (event)=>{
   //   props.callback(event)
@@ -108,10 +109,11 @@ export default function RegularDashboard(props) {
   const [events, setEvents] = useState([]);
   async function getAllData() {
     try {
-      const API_HOST = "http://localhost:8000/api";
-      const response = await axios.get(`${API_HOST}/get-all-events/`);
+      const response = await axios.get(`${API_HOST}/get-past-events/`,
+      {withCredentials:true});
+      console.log(response);
       setEvents(response.data);
-      // console.log(response);
+      
     } catch (error) {
       console.log(error);
     }
@@ -143,16 +145,7 @@ export default function RegularDashboard(props) {
             Search
           </Button>
         </FormControl>
-      </Stack>
-      <Stack m={8}
-      direction={"row"}>
-        <NextLink href={`/dashboard/upcoming-event/`}>
-        <Button variant={"link"}>Upcoming Events</Button>
-        </NextLink>
-        <NextLink href={`/dashboard/past-event/`}>
-        <Button variant={"link"}>Past Events</Button>
-        </NextLink>
-      </Stack>
+      </Stack>     
       <Stack>
         <TableContainer spacing={8} mx={8} shadow="md" borderWidth="1px">
           <Heading fontSize="xl" p={5}>

@@ -49,8 +49,15 @@ pipeline {
         }
         stage('Testing Stage'){
             steps {
-                echo 'TBD -> Test cases by SE'
+                sh '''
+                docker exec django_backend python manage.py test
+                '''
             }
+        }
+        // If the build has failed, send an email to notify
+        failure {
+            script {
+                emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: '2100755@sit.singaporetech.edu.sg'   
         }
     }
     post {
@@ -68,8 +75,7 @@ pipeline {
                         body: "One or more Docker containers are not in an 'Up' state. Please investigate.",
                         to: '2100755@sit.singaporetech.edu.sg'
                     sh '''
-                    docker compose down
-                    docker container prune -f
+                    docker ps -a
                     '''
                 } else {
                     // All containers are running and are "Up"
@@ -90,5 +96,6 @@ pipeline {
                 emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: '2100755@sit.singaporetech.edu.sg'   
         }
     }
+}
 }
 }
