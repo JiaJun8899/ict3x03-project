@@ -12,39 +12,12 @@ pipeline {
                 '''
             }
         }
-        stage('Installing dependencies on NextJS') {
-            steps {
-                dir('frontend') {
-                    sh '''
-                    npm install
-                    '''
-                }
-            }
-        }
         stage('Semgrep Scan') {
             steps {
                 echo 'SAST Scanning'
                 sh 'semgrep scan'
             }
         }
-		stage('Pulling code') {
-			steps {
-				echo 'Pulling code from github'
-				script {
-					dir('/home/production_2') {
-						git branch:'jenkins-test', url:'https://github.com/JiaJun8899/ict3x03-project.git'
-					}
-				}
-			}
-		}
-        //stage('Setting up container') {
-        //    steps{
-        //        echo 'Setting up Container'
-        //        sh '''
-        //        docker compose up --build -d
-        //        '''
-        //    }
-        //}
 		stage('Check OWASP') {
             steps {
                 echo 'Check OWASP Stage'
@@ -55,6 +28,35 @@ pipeline {
                      -f 'ALL' 
                      --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
                 dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
+            }
+        }
+		stage('Static checks done, pulling code to production_2') {
+			steps {
+				echo 'Pulling code from github'
+				script {
+					dir('/home/production_2') {
+						git branch:'jenkins-test', url:'https://github.com/JiaJun8899/ict3x03-project.git'
+					}
+				}
+			}
+		}
+		stage('Installing dependencies on NextJS') {
+            steps {
+                dir('/home/production_2/frontend') {
+                    sh '''
+                    npm install
+                    '''
+                }
+            }
+        }
+        stage('Setting up container') {
+            steps{
+				dir('/home/production_2') {
+					echo 'Setting up Container'
+					sh '''
+					docker compose -f docker-compose.yml up --build -d
+					'''
+				}
             }
         }
         //stage('Testing Stage'){
