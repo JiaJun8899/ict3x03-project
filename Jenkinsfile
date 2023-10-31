@@ -28,7 +28,7 @@ pipeline {
             }
         }
 		stage('Pulling code') {
-			script {
+			steps {
 				sh 'cd /home/production_2 && git pull origin jenkins-test'
 			}
 		}
