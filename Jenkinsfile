@@ -49,7 +49,9 @@ pipeline {
         }
         stage('Testing Stage'){
             steps {
-                echo 'TBD -> Test cases by SE'
+                sh '''
+                docker exec -it django_backend python manage.py test
+                '''
             }
         }
     }
