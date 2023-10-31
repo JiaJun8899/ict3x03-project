@@ -29,7 +29,12 @@ pipeline {
         }
 		stage('Pulling code') {
 			steps {
-				sh 'cd /home/production_2 && git pull origin jenkins-test'
+				echo 'Pulling code from github'
+				script {
+					dir('/home/production_2') {
+						git branch:'jenkins-test', url:'https://github.com/JiaJun8899/ict3x03-project.git'
+					}
+				}
 			}
 		}
         //stage('Setting up container') {
