@@ -58,8 +58,9 @@ pipeline {
         failure {
             script {
                 emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: '2100755@sit.singaporetech.edu.sg'   
-        }
-    }
+			}
+		}
+	}
     post {
         //Only run docker compose down when the build is successful
         always {
@@ -98,5 +99,5 @@ pipeline {
 		}
 	}
 }
-}
-}
+
+
