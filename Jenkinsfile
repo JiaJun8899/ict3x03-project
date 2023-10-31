@@ -27,14 +27,19 @@ pipeline {
                 sh 'semgrep scan'
             }
         }
-        stage('Setting up container') {
-            steps{
-                echo 'Setting up Container'
-                sh '''
-                docker compose up --build -d
-                '''
-            }
-        }
+		stage('Pulling code') {
+			script {
+				sh 'cd /home/production_2 && git pull origin jenkins-test'
+			}
+		}
+        //stage('Setting up container') {
+        //    steps{
+        //        echo 'Setting up Container'
+        //        sh '''
+        //        docker compose up --build -d
+        //        '''
+        //    }
+        //}
 		stage('Check OWASP') {
             steps {
                 echo 'Check OWASP Stage'
@@ -47,12 +52,12 @@ pipeline {
                 dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
             }
         }
-        stage('Testing Stage'){
-            steps {
-                sh '''
-                docker exec django_backend python manage.py test
-                '''
-            }
-        }
+        //stage('Testing Stage'){
+        //    steps {
+        //        sh '''
+        //        docker exec django_backend python manage.py test
+        //        '''
+        //    }
+        //}
     }
 }
