@@ -7,7 +7,7 @@ from PIL import Image
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from api.models import Event, GenericUser, Organizer, EventOrganizerMapping, NormalUser, EventParticipant
+from api.models import Event, GenericUser, Organizer, EventOrganizerMapping, NormalUser, EventParticipant, NOK, EmergencyContacts
 from api.models.GenericUser import GenericUser
 from django_otp.plugins.otp_email.models import EmailDevice
 from django.utils import timezone
@@ -423,25 +423,30 @@ class NormalUserTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_profile(self):
+        nok = NOK.objects.create(name="bro", relationship="brother",phoneNum="84839585")
+        
         url = reverse('profile')
-        response = self.client.get(url)
-        print(response.data)
+        response = self.client.get(url)    
         data ={
-            "profile":{
-                'user':{
-                    "first_name": "John",
-                    "last_name": "Doe",
-                    "email": response.data['profile']['user']["email"],
-                    "phoneNum": response.data['profile']['user']["phoneNum"],
-                    "username": response.data['profile']['user']["username"],
-                },
-                "birthday":response.data['profile']["birthday"]
-            }           
+            "firstname": "John",
+            "lastname": "Doe",
+            "email": response.data['profile']['user']["email"],
+            "phoneNum": response.data['profile']['user']["phoneNum"],
+            "userName": response.data['profile']['user']["username"],
+            "nokName":nok.name,
+            "nokRelationship":nok.relationship,
+            "nokPhone":nok.phoneNum                
         }
         url = reverse('update-user-details')
-        response = self.client.post(url,data=data,format='json')    
+        response = self.client.put(url,data=data,format='json')    
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         url = reverse('profile')
         response = self.client.get(url)
-        self.assertEqual(response.data['profile']['user']['first_name'],"John")
-        self.assertEqual(response.data['profile']['user']["last_name"],"Doe")
+        self.assertEqual(response.data['nok']['name'],"bro")
+        self.assertEqual(response.data['profile']['user']["first_name"],"John")
+        # url = reverse('update-user-details')
+        # response = self.client.put(url,data=data,format='json')    
+        # self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # url = reverse('profile')
+        # response = self.client.get(url)
+        

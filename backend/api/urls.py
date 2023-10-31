@@ -18,13 +18,12 @@ urlpatterns = [
     path('get-past-events/',views.GetPastEventsByParticipant.as_view(), name="get-past-events"),
     path('get-upcoming-events/',views.GetUpcomingEventsByParticipant.as_view(),name="get-upcoming-events"),
     #Authentication
-    path('auth-login/', views.Login.as_view(), name='auth-login'),
-    path('check-auth', views.TestAPI.as_view(), name='check-auth'),
-    path('check-valid-organizer/<str:eid>',views.validEventOrg),
-    path('auth-verify-OTP/', views.VerifyOtp.as_view(), name='auth-verify-OTP'),
-    path('auth-get-OTP/', views.GetOTP.as_view(), name='auth-get-OTP'),
-    path('auth-logout/', views.Logout.as_view(), name='auth-logout'),
-    path('auth-reset-password/', views.ResetPassword.as_view(), name='auth-reset-password'),
-    path('auth-change-password/',views.ChangePassword.as_view(), name='auth-change-password'),
-    path('csrf/', views.csrf),
+    path("auth-login/", views.Login.as_view(), name="auth-login"),
+    path("check-auth", views.CheckAuth.as_view(), name="check-auth"),
+    path("check-valid-organizer/<str:eid>", views.CheckValidEventOrg.as_view(), name="check-org-event"),
+    path("auth-verify-OTP/", views.VerifyOtp.as_view(), name="auth-verify-OTP"),
+    path("auth-get-OTP/", views.GetOTP.as_view(), name="auth-get-OTP"),
+    path("auth-logout/", views.Logout.as_view(), name="auth-logout"),
+    path("auth-reset-password/",views.ResetPassword.as_view(),name="auth-reset-password"),
+    path("auth-change-password/",views.ChangePassword.as_view(),name="auth-change-password")
 ]
