@@ -7,7 +7,7 @@ from PIL import Image
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from api.models import Event, GenericUser, Organizer, EventOrganizerMapping, NormalUser
+from api.models import Event, GenericUser, Organizer, EventOrganizerMapping, NormalUser, EventParticipant, NOK, EmergencyContacts
 from api.models.GenericUser import GenericUser
 from django_otp.plugins.otp_email.models import EmailDevice
 from django.utils import timezone
@@ -337,3 +337,116 @@ class LoginAPITests(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data['detail'], 'Something went wrong')  # Replace with your actual error message
+class NormalUserTest(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        event1 = Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
+        event2 = Event.eventManager.create(eventName="test Event2", startDate="2023-11-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
+        event3 = Event.eventManager.create(eventName="test Event1", startDate="2023-12-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
+        norm_generic = GenericUser.objects.create_user(
+            username='test@normal1.com',
+            email='test@normal1.com',
+            first_name='test1',
+            last_name='test1',
+            phoneNum='91234568',
+            nric='S1234568H',
+            password='testiepassword',
+        )
+        norm_user =  NormalUser.normalUserManager.create(user_id=norm_generic.id, birthday="2001-03-12")
+        signup1 = EventParticipant.eventParticipantManager.create(event=event1, participant=norm_user)
+        signup2 = EventParticipant.eventParticipantManager.create(event=event2,participant=norm_user)
+        
+        self.client.login(username="test@normal1.com", password="testiepassword")
+        session = self.client.session
+        session['role'] = "normal"
+        session.save()
+    
+    def test_get_profile(self):
+        url = reverse('profile')
+        response = self.client.get(url)    
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['profile']['user']['username'],"test@normal1.com")
+        self.assertEqual(response.data['profile']['birthday'],"2001-03-12")
+        self.assertEqual(response.data['profile']['user']["phoneNum"],"91234568")
+    
+    def test_get_all_events(self):
+        url = reverse('get-all-events')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data),3)
+        
+    def test_get_past_events(self):
+        url = reverse('get-past-events')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data),1)
+
+    def test_get_upcoming_events(self):
+        url = reverse('get-upcoming-events')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data),1)
+
+    def test_signup_event(self):
+        event = Event.eventManager.filter(eventName="test Event1")
+        url = reverse("event-sign-up")
+        data = {
+            'eid' :event.first().eid,
+        }
+        response = self.client.post(url,data=data,format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # response2 = self.client.post(url,data=data,format='json')
+        # self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+        url = reverse('get-upcoming-events')
+        response = self.client.get(url)
+        self.assertEqual(len(response.data),2)
+
+    def test_cancel_event(self):
+        url = reverse('get-upcoming-events')
+        response = self.client.get(url)
+        self.assertEqual(len(response.data),1)
+        event = Event.eventManager.filter(eventName="test Event2")
+        url = reverse("cancel-sign-up-event")
+        data = {
+            'eid' : event.first().eid,
+        }
+        response = self.client.delete(url,data=data,format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        url = reverse('get-upcoming-events')
+        response = self.client.get(url)
+        self.assertEqual(len(response.data),0)
+        
+    def test_get_event(self):
+        event = Event.eventManager.filter(eventName="test Event1").first()
+        url = reverse('get-event',args=[event.eid])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_profile(self):
+        nok = NOK.objects.create(name="bro", relationship="brother",phoneNum="84839585")
+        
+        url = reverse('profile')
+        response = self.client.get(url)    
+        data ={
+            "firstname": "John",
+            "lastname": "Doe",
+            "email": response.data['profile']['user']["email"],
+            "phoneNum": response.data['profile']['user']["phoneNum"],
+            "userName": response.data['profile']['user']["username"],
+            "nokName":nok.name,
+            "nokRelationship":nok.relationship,
+            "nokPhone":nok.phoneNum                
+        }
+        url = reverse('update-user-details')
+        response = self.client.put(url,data=data,format='json')    
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        url = reverse('profile')
+        response = self.client.get(url)
+        self.assertEqual(response.data['nok']['name'],"bro")
+        self.assertEqual(response.data['profile']['user']["first_name"],"John")
+        # url = reverse('update-user-details')
+        # response = self.client.put(url,data=data,format='json')    
+        # self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # url = reverse('profile')
+        # response = self.client.get(url)
+        
