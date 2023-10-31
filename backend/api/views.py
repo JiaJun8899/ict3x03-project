@@ -236,10 +236,11 @@ class GetProfileDetailsAPIView(APIView):
 class SignUpEventAPIView(APIView):
     def post(self, request):
         id = UUID(request.session["_auth_user_id"]).hex
+        eid = request.data['eid']
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
         if validUser != None and validEvent != None:
-            data = {"event": request.data["eid"], "participant": id}
+            data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
             print(success)
         if success:
