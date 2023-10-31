@@ -6,7 +6,7 @@ from api.serializer import (
     EventParticipantSerializer,
 )
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 import pytz
 
 
@@ -46,6 +46,20 @@ class EventService:
 
     def updateEvent(data, eid):
         eventInstance = Event.eventManager.getByUUID(eid)
+        print(data)
+        if 'startDate' in data:
+            data['startDate'] = datetime.fromisoformat(data['startDate'])
+            data['startDate'] = data['startDate'].astimezone(timezone.utc)
+        if 'endDate' in data:
+            data['endDate'] = datetime.fromisoformat(data['endDate'])
+            data['endDate'] = data['endDate'].astimezone(timezone.utc)
+        if 'startDate' not in data:
+            print("Should add start")
+            data["startDate"] = eventInstance.startDate
+        if 'endDate' not in data:
+            data["endDate"] = eventInstance.endDate
+        print("Should have ma")
+        print(data)
         eventSerializer = EventSerializer(
             instance=eventInstance, data=data, partial=True
         )

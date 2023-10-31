@@ -34,6 +34,11 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = '__all__'
+    def validate(self, attrs):
+        if 'endDate' and 'startDate' in attrs:
+            if attrs['endDate'] <= attrs['startDate']:
+                raise serializers.ValidationError({"Start Date": "Start Date cannot be more than end date"})
+        return attrs
 
 class EmergencyContactsSerializer(serializers.ModelSerializer):
     class Meta:
