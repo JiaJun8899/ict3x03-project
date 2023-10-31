@@ -78,6 +78,8 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
     ],
 }
+if DEBUG:
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append("rest_framework.renderers.BrowsableAPIRenderer")
 AUTH_USER_MODEL = "api.GenericUser"
 
 MIDDLEWARE = [
@@ -185,8 +187,8 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
-
-# SECURE_SSL_REDIRECT = True
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
 
 LOGGING = {
     "version": 1,
