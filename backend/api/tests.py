@@ -422,12 +422,26 @@ class NormalUserTest(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-
-    # def test_update_profile(self):
-    #     url = reverse('update-user-details')
-    #     response = self.client.post(url)    
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     print(response.data)
-    #     self.assertEqual(response.data['profile']['user']['username'],"test@normal1.com")
-    #     self.assertEqual(response.data['profile']['birthday'],"2001-03-12")
-    #     self.assertEqual(response.data['profile']['user']["phoneNum"],"91234568")
+    def test_update_profile(self):
+        url = reverse('profile')
+        response = self.client.get(url)
+        print(response.data)
+        data ={
+            "profile":{
+                'user':{
+                    "first_name": "John",
+                    "last_name": "Doe",
+                    "email": response.data['profile']['user']["email"],
+                    "phoneNum": response.data['profile']['user']["phoneNum"],
+                    "username": response.data['profile']['user']["username"],
+                },
+                "birthday":response.data['profile']["birthday"]
+            }           
+        }
+        url = reverse('update-user-details')
+        response = self.client.post(url,data=data,format='json')    
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        url = reverse('profile')
+        response = self.client.get(url)
+        self.assertEqual(response.data['profile']['user']['first_name'],"John")
+        self.assertEqual(response.data['profile']['user']["last_name"],"Doe")
