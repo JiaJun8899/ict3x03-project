@@ -190,7 +190,8 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
 
-LOGGING = {
+if not DEBUG:
+    LOGGING = {
     "version": 1,
     "disable_existing_loggers": True, #limit loggers to only the ones defined here for more security
     "filters": {

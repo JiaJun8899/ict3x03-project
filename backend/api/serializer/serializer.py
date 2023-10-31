@@ -10,6 +10,19 @@ class AdminSerializer(serializers.ModelSerializer):
         model = Admin
         fields = '__all__'
 
+class GenericUserPasswordSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+
+    class Meta:
+        model = GenericUser
+        fields = ['password']
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
+    
+
 class GenericUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = GenericUser
