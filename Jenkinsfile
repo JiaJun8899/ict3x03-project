@@ -50,7 +50,7 @@ pipeline {
         stage('Testing Stage'){
             steps {
                 sh '''
-                docker exec -it django_backend python manage.py test
+                docker exec django_backend python manage.py test
                 '''
             }
         }
