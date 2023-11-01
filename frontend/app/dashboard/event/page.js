@@ -104,7 +104,9 @@ export default function Page() {
 
   async function fetchEvent() {
     try {
-      const response = await axios.get(`${API_HOST}/get-event/${search}`);
+      const response = await axios.get(`${API_HOST}/get-event/${search}`,{
+        withCredentials:true
+      });
       // console.log(response.data)
       console.log(response.data.data);
       setEvent(response.data.data);

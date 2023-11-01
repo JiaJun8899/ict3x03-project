@@ -10,17 +10,6 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
   const [userRole, setUserRole] = useState("none");
   const [loading, setLoading] = useState(true);
-  // async function getRole() {
-  //   try {
-  //     const response = await axios.get(`${API_HOST}/test`, {
-  //       withCredentials: true,
-  //     });
-  //     // console.log(response.data);
-  //     setUserRole(response.data);
-  //   } catch (error) {
-  //     console.error("There was an fetching your profile", error);
-  //   }
-  // }
 
   useEffect(() => {
     getRole(setUserRole, setLoading);

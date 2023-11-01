@@ -110,7 +110,7 @@ class EventService:
         return serializer.data
 
     def searchEvent(name):
-        events = Event.eventManager.searchEvent(name)
+        events = Event.eventManager.searchEvent(name).filter(eventStatus="open")
         print(events)
         serializer = EventSerializer(events, many=True)
         return serializer.data

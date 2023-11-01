@@ -256,7 +256,7 @@ class SignUpEventAPIView(APIView):
         eid = request.data['eid']
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
-        if validUser != None and validEvent != None:
+        if validUser != None and validEvent.eventStatus == "open" and validEvent != None:
             data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
             print(success)
@@ -269,7 +269,6 @@ class SignUpEventAPIView(APIView):
 
 class CancelSignUpEventAPIView(APIView):
     def delete(self, request):
-        # print(request.session.value())
         id = UUID(request.session["_auth_user_id"]).hex
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])

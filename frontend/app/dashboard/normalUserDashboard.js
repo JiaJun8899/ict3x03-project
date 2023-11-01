@@ -108,8 +108,10 @@ export default function RegularDashboard(props) {
   const [events, setEvents] = useState([]);
   async function getAllData() {
     try {
-      const API_HOST = "http://localhost:8000/api";
-      const response = await axios.get(`${API_HOST}/get-all-events/`);
+      const response = await axios.get(`${API_HOST}/get-all-events/`,{
+        withCredentials:true
+      });
+      console.log(response.data)
       setEvents(response.data);
       // console.log(response);
     } catch (error) {
