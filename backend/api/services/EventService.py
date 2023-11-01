@@ -8,11 +8,15 @@ from api.serializer import (
 import os
 from datetime import datetime, timezone
 import pytz
-
+import django.utils as du
 
 class EventService:
     def __init__(self):
         pass
+    
+    def updateEventStatus():
+        events = Event.eventManager.getAllRecords().filter(endDate__lt=du.timezone.now())
+        events.update(eventStatus='closed')
 
     def createEvent(data, organization_id):
         eventSerializer = EventSerializer(data=data)
@@ -28,9 +32,7 @@ class EventService:
         return False
 
     def getEventByOrg(organizer_id):
-        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(
-            organizer_id=organizer_id
-        )
+        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(organizer_id=organizer_id, approval="accepted",event__endDate__gte=du.timezone.now(), event__eventStatus='open')
         serializer = EventOrganizerMappingSerializer(events, many=True)
         return serializer.data
 
@@ -108,7 +110,7 @@ class EventService:
         return serializer.data
 
     def searchEvent(name):
-        events = Event.eventManager.searchEvent(name)
+        events = Event.eventManager.searchEvent(name).filter(eventStatus="open")
         print(events)
         serializer = EventSerializer(events, many=True)
         return serializer.data
@@ -129,7 +131,6 @@ class EventService:
         return serializer.data
     
     def getAllEvent():
-        events = Event.eventManager.getAllRecords()
+        events = Event.eventManager.getAllRecords().filter(eventStatus= "open")
         serializer = EventSerializer(events,many=True)
         return serializer.data
-

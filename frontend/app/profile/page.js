@@ -28,7 +28,7 @@ export default function ProfilePage() {
   
   function EditProfile(){
     const role = userRole.role;
-    if(role !== 'Organizer' && role !== "Normal"){
+    if(role !== "Normal"){
       return notFound();
     }
     const [details, setDetails] = useState({

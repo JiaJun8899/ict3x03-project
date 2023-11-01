@@ -36,7 +36,7 @@ def checkDataValid(data):
     return True
 
 class CheckValidEventOrg(APIView):
-    def get(request, eid):
+    def get(self, request, eid):
         organization_id = request.session["_auth_user_id"]
         print(organization_id)
         checkValid = EventService.checkValid(organization_id, eid)
@@ -61,7 +61,9 @@ class CheckAuth(APIView):
 class EventAPI(APIView):
     def get(self, request):
         """Gets all the events"""
+        EventService.updateEventStatus()
         allEvents = EventService.getAllEvent()
+        print(allEvents)
         return Response(allEvents, status=status.HTTP_200_OK)
 
 
@@ -70,6 +72,7 @@ class EventsByOrganizationAPI(APIView):
 
     def get(self, request):
         organization_id = request.session["_auth_user_id"]
+        EventService.updateEventStatus()
         eventsByOrg = EventService.getEventByOrg(organization_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
@@ -253,7 +256,8 @@ class SignUpEventAPIView(APIView):
         eid = request.data['eid']
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
-        if validUser != None and validEvent != None:
+        print(validEvent)
+        if validUser != None and validEvent["eventStatus"] == "open" and validEvent != None:
             data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
             print(success)
@@ -266,7 +270,6 @@ class SignUpEventAPIView(APIView):
 
 class CancelSignUpEventAPIView(APIView):
     def delete(self, request):
-        # print(request.session.value())
         id = UUID(request.session["_auth_user_id"]).hex
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
@@ -386,9 +389,10 @@ class VerifyOtp(APIView):
         otp = request.data.get("OTP")
         uuid = request.session.get("temp_id", None)
         if uuid != None:
+            del request.session['temp_id']
             isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
             if isVerifiedUser :
-                loginUser = self.authService.LoginUser(request)
+                loginUser = self.authService.LoginUser(request,uuid)
                 if loginUser :
                     request.session["role"] = AccountService.getUserRole(loginUser.id)
                     authLogger.info(f"views.VerifyOtp insert_IP_here {{'user' : '{username}', 'otp' : 'VALID'}}") 
@@ -410,8 +414,8 @@ class ChangePassword(APIView):
         auth = AuthService()
         user = auth.getUserBySessionRequest(request)
         if user:
-            auth.generateOTP(user.id)
-            return Response({"detail": "OTP HAS BEEN Sent"}, status=200)
+            if auth.generateOTP(user.id):
+                return Response({"detail": "OTP HAS BEEN Sent"}, status=200)
         return Response({"detail": "Invalid Permission"}, status=401)
 
     def put(self, request):
@@ -425,20 +429,22 @@ class ChangePassword(APIView):
 
             authService = AuthService()
             currentUser = authService.getUserBySessionRequest(request)
-            
-            if newPassword != newPasswordConfirmation:
-                return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
             if currentUser is None:
                 return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
+            if newPassword != newPasswordConfirmation:
+                return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+
             userWithCorrectCredential = authService.authenticateUser(request, currentUser.email, currentPassword)
-            
             if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id,otp):
                 if authService.changePassword(userWithCorrectCredential, newPassword):
                     username = request.user.get_username()
                     authLogger.info(f"views.ChangePassword insert_IP_here {{'user' : '{username}', 'message' : 'Password changed successfully.'}}")
+                isSuccessful, errorMessages = authService.changePassword(userWithCorrectCredential, newPassword)
+                if isSuccessful:
                     return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
-                
+                else:
+                    return Response({"detail": str(errorMessages)}, status=status.HTTP_400_BAD_REQUEST)
             return Response({"detail": "Invalid current password"}, status=status.HTTP_401_UNAUTHORIZED)
 
         except Exception as e:
@@ -446,6 +452,7 @@ class ChangePassword(APIView):
 
 
 class ResetPassword(APIView):
+    permission_classes = [AllowAny]
     def post(self,request):
         email = request.data.get("email")
         auth = AuthService()

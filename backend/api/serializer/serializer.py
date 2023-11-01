@@ -3,11 +3,25 @@ from api.models import *
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
+from django.utils import timezone
 
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admin
         fields = '__all__'
+
+class GenericUserPasswordSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+
+    class Meta:
+        model = GenericUser
+        fields = ['password']
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
+    
 
 class GenericUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -52,6 +66,7 @@ class EventOrganizerMappingSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventOrganizerMapping
         fields = ["event", "organizer"]
+
 
 class EventOrganizerMappingCreate(serializers.ModelSerializer):
     class Meta:
