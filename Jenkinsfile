@@ -39,16 +39,16 @@ pipeline {
                 dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
             }
         }
-        stage('Setting up container') {
-            steps{
+        //stage('Setting up container') {
+        //    steps{
 				//dir('/home/production_2') {
-					echo 'Setting up Container'
-					sh '''
-					docker compose -f docker-compose.yml up --build -d
-					'''
+		//			echo 'Setting up Container'
+		//			sh '''
+		//			docker compose -f docker-compose.yml up --build -d
+		//			'''
 				//}
-            }
-        }
+        //    }
+        //}
         //stage('Testing Stage'){
         //    steps {
         //        sh '''
