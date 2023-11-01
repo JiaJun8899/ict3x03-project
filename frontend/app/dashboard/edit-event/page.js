@@ -21,7 +21,6 @@ export default function Page({ searchParams }) {
           withCredentials: true,
         }
       );
-      console.log(response.data);
       setValidEvent(response.data);
     } catch (error) {
       console.error("There was an fetching your profile", error);
@@ -31,7 +30,6 @@ export default function Page({ searchParams }) {
   }
   function CreateForm() {
     const valid = validEvent.valid;
-    console.log(valid);
     if (valid) {
       return <CreateEvent searchParams={searchParams} />;
     } else {

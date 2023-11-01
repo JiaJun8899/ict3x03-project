@@ -100,7 +100,6 @@ export default function ProfilePage() {
             },
           }
         );
-        console.log(response);
         toast({
           title: "Profile updated successful.",
           status: "success",

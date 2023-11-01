@@ -45,7 +45,6 @@ export default function EditEvent({ searchParams }) {
       );
       response.data.startDate = response.data.startDate.substring(0, 16);
       response.data.endDate = response.data.endDate.substring(0, 16);
-      console.log(response.data);
       setForm(response.data);
       if (response.data.eventImage) {
         setImgPreview("http://localhost:8000" + response.data.eventImage);
@@ -55,18 +54,15 @@ export default function EditEvent({ searchParams }) {
     }
   }
   useEffect(() => {
-    console.log(searchParams);
     getEvent();
   }, [searchParams]);
 
   function updateForm(value) {
     return setForm((prev) => {
-      console.log(form);
       return { ...prev, ...value };
     });
   }
   async function onSubmit(data) {
-    console.log(data);
     const response = await axios.put(`${API_HOST}/get-event-byorg/`, data, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -74,7 +70,6 @@ export default function EditEvent({ searchParams }) {
       },
       withCredentials: true,
     });
-    console.log(response.data);
     return response.data;
   }
   return (

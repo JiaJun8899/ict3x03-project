@@ -1,11 +1,10 @@
 "use client";
 import { DateTime } from "luxon";
 import axios from "axios";
-export const API_HOST = "http://localhost:8000/api";
+export const API_HOST = "https://silly-borg.cloud/api";
 
 export function updateForm(value, setter, theUse) {
   return setter((prev) => {
-    console.log(theUse);
     return { ...prev, ...value };
   });
 }
