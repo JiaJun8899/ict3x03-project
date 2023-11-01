@@ -29,7 +29,7 @@ def checkDataValid(data):
     return True
 
 class CheckValidEventOrg(APIView):
-    def get(request, eid):
+    def get(self, request, eid):
         organization_id = request.session["_auth_user_id"]
         print(organization_id)
         checkValid = EventService.checkValid(organization_id, eid)
