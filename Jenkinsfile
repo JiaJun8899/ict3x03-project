@@ -31,7 +31,7 @@ pipeline {
             steps{
                 echo 'Setting up Container'
                 sh '''
-                docker compose up --build -d
+                docker compose -f docker-compose.yml up --build -d
                 '''
             }
         }
