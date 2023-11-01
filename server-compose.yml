@@ -33,6 +33,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./jenkins/jenkins_home:/var/jenkins_home
       - ./docker.env:/home/docker.env
+      - ./frontend:/home/to_production/frontend
+      - ./backend:/home/to_production/backend
+      - ./docker-compose.yml:/home/to_production/docker-compose.yml
+      - ./server-compose.yml:/home/to_production/server-compose.yml
+      - ./requirements.txt:/home/to_production/requirements.txt
     environment:
      - JENKINS_OPTS=--prefix=/jenkins --httpsPort=8443 
     networks:
