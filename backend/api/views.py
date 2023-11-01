@@ -54,7 +54,9 @@ class CheckAuth(APIView):
 class EventAPI(APIView):
     def get(self, request):
         """Gets all the events"""
+        EventService.updateEventStatus()
         allEvents = EventService.getAllEvent()
+        print(allEvents)
         return Response(allEvents, status=status.HTTP_200_OK)
 
 
@@ -63,6 +65,7 @@ class EventsByOrganizationAPI(APIView):
 
     def get(self, request):
         organization_id = request.session["_auth_user_id"]
+        EventService.updateEventStatus()
         eventsByOrg = EventService.getEventByOrg(organization_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 

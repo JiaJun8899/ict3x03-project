@@ -3,6 +3,7 @@ from api.models import *
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
+from django.utils import timezone
 
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
@@ -52,6 +53,7 @@ class EventOrganizerMappingSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventOrganizerMapping
         fields = ["event", "organizer"]
+
 
 class EventOrganizerMappingCreate(serializers.ModelSerializer):
     class Meta:
