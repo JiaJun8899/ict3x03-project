@@ -21,13 +21,16 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5m
+    security_opt:
+      - no-new-privileges:true
     networks:
       - production
   frontend:
-    container_name: nexjs_frontend
+    container_name: nextjs_frontend
     build:
       context: .
       dockerfile: ./frontend/Dockerfile
+    read_only: true
     command: npm run dev
     ports:
       - "3000"
@@ -48,10 +51,11 @@ services:
     volumes:
       - ./backend:/app/backend
     env_file: ./docker.env
-    command: bash -c "python manage.py migrate; if [[ $$? -ne 0 ]]; then sleep infinity; else python manage.py runserver 0.0.0.0:8000; fi"
+    command: bash -c "python manage.py migrate; if [[ $$? -ne 0 ]]; then sleep infinity; else python manage.py runserver 0.0.>
     restart: unless-stopped
     depends_on:
       database:
         condition: service_healthy
     networks:
       - production
+

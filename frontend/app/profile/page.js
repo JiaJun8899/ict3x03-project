@@ -32,11 +32,11 @@ export default function ProfilePage() {
       return notFound();
     }
     const [details, setDetails] = useState({
-      firstname: "",
+      first_name: "",
       email: "",
-      lastname: "",
+      last_name: "",
       phoneNum: "",
-      userName: "",
+      username: "",
       nric: "",
       nokName: "",
       nokPhone: "",
@@ -62,21 +62,21 @@ export default function ProfilePage() {
         });
         setDetails({
           ...details,
-          firstname: response.data["profile"]["user"]["first_name"],
+          first_name: response.data["profile"]["user"]["first_name"],
           email: response.data["profile"]["user"]["email"],
-          lastname: response.data["profile"]["user"]["last_name"],
+          last_name: response.data["profile"]["user"]["last_name"],
           phoneNum: response.data["profile"]["user"]["phoneNum"],
-          userName: response.data["profile"]["user"]["username"],
+          username: response.data["profile"]["user"]["username"],
           birthday: response.data["profile"]["birthday"],
         });
         if (response.data["nok"]) {
           setDetails({
             ...details,
-            firstname: response.data["profile"]["user"]["first_name"],
+            first_name: response.data["profile"]["user"]["first_name"],
             email: response.data["profile"]["user"]["email"],
-            lastname: response.data["profile"]["user"]["last_name"],
+            last_name: response.data["profile"]["user"]["last_name"],
             phoneNum: response.data["profile"]["user"]["phoneNum"],
-            userName: response.data["profile"]["user"]["username"],
+            username: response.data["profile"]["user"]["username"],
             birthday: response.data["profile"]["birthday"],
             nokName: response.data["nok"]["name"],
             nokPhone: response.data["nok"]["phoneNum"],

@@ -49,7 +49,9 @@ pipeline {
         }
         stage('Testing Stage'){
             steps {
-                echo 'TBD -> Test cases by SE'
+                sh '''
+                docker exec django_backend python manage.py test
+                '''
             }
         }
     }
@@ -68,8 +70,7 @@ pipeline {
                         body: "One or more Docker containers are not in an 'Up' state. Please investigate.",
                         to: '2100755@sit.singaporetech.edu.sg'
                     sh '''
-                    docker compose down
-                    docker container prune -f
+                    docker ps -a
                     '''
                 } else {
                     // All containers are running and are "Up"

@@ -198,6 +198,7 @@ class UpdateUserAPIView(APIView):
             if not checkDataValid(data):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         # print("this is emergency before ")
+        success = UserService.updateUserProfile(data, id)
         emergency = EmergencyContactService.getContactById(id)
         if emergency:
             nokData = {
@@ -207,8 +208,7 @@ class UpdateUserAPIView(APIView):
             }
             if not checkDataValid(nokData):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])
-            success = UserService.updateUserProfile(data, id)
+            nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])            
         else:
             # create a nok here pls
             with transaction.atomic():
@@ -239,10 +239,11 @@ class GetProfileDetailsAPIView(APIView):
 class SignUpEventAPIView(APIView):
     def post(self, request):
         id = UUID(request.session["_auth_user_id"]).hex
+        eid = request.data['eid']
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
         if validUser != None and validEvent != None:
-            data = {"event": request.data["eid"], "participant": id}
+            data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
             print(success)
         if success:
