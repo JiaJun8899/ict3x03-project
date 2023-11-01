@@ -59,6 +59,12 @@ pipeline {
 		stage('Deploying Stage'){
 			steps {
 				echo 'Deploying'
+<<<<<<< Updated upstream
+=======
+				script {
+                    input message: 'Code has been pulled from GitHub, please deploy', ok: 'OK'
+                }
+>>>>>>> Stashed changes
 				// script{
 				//	dir('/home/to_production/') {
 				//		git branch: 'jenkins-test', url: 'https://github.com/JiaJun8899/ict3x03-project.git'
@@ -66,6 +72,14 @@ pipeline {
 				//}
 			} 
 		}
+<<<<<<< Updated upstream
+=======
+		stage('Finishing Stage'){
+			steps {
+				echo 'Finished'
+			} 
+		}
+>>>>>>> Stashed changes
     }
     // post {
         //Only run docker compose down when the build is successful
