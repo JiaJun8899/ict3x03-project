@@ -15,11 +15,11 @@ pipeline {
         stage('Installing dependencies on NextJS') {
             steps {
 				echo 'Installing dependencies'
-                // dir('frontend') {
-                //    sh '''
-                //    npm install
-                //    '''
-                // }
+                dir('frontend') {
+                    sh '''
+                    npm install
+                    '''
+                }
             }
         }
         stage('Semgrep Scan') {
@@ -39,13 +39,13 @@ pipeline {
         stage('Check OWASP') {
             steps {
                 echo 'Check OWASP Stage'
-                // Add your OWASP Dependency-Check configuration here if needed
-                //dependencyCheck additionalArguments: ''' 
-                //     -o './'
-                //     -s './'
-                //     -f 'ALL' 
-                //     --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-                //dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
+                Add your OWASP Dependency-Check configuration here if needed
+                dependencyCheck additionalArguments: ''' 
+                     -o './'
+                     -s './'
+                     -f 'ALL' 
+                     --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
             }
         }
         stage('Testing Stage'){
