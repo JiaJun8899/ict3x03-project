@@ -21,7 +21,6 @@ export default function Page() {
       const response = await axios.get(`${API_HOST}/check-auth`, {
         withCredentials: true,
       });
-      console.log(response.data);
       setUserRole(response.data);
     } catch (error) {
       console.error("There was an fetching your profile", error);
@@ -31,7 +30,6 @@ export default function Page() {
   }
   function Dashboard() {
     const role = userRole.role;
-    console.log(role);
     if (role === "Organizer") {
       return <OrganiserDashboard />;
     } else if (role === "Normal") {

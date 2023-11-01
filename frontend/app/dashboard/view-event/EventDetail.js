@@ -93,7 +93,6 @@ function DeleteModal(eventData) {
 
 function ParticpantRow({ particpant, index }) {
   const userInfo = particpant.participant.user;
-  console.log(particpant.participant.user);
   return (
     <Tr>
       <Td>{userInfo.first_name}</Td>
@@ -113,7 +112,6 @@ function CreateEventRow(participantData) {
 function ViewParticipantModal(participantData) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const participantList = participantData.participantData;
-  console.log(participantList);
   return (
     <>
       <Button variant={"ghost"} onClick={onOpen}>
@@ -169,7 +167,6 @@ export default function ViewEventDetails({ searchParams }) {
           withCredentials: true,
         }
       );
-      console.log(response.data);
       setEvent(response.data);
     } catch (error) {
       console.error("There was an fetching your profile", error);
@@ -184,7 +181,6 @@ export default function ViewEventDetails({ searchParams }) {
           withCredentials: true,
         }
       );
-      console.log(response.data);
       setParticipants(response.data);
     } catch (error) {
       console.error("There was an fetching your profile", error);
