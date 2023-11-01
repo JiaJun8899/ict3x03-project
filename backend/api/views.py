@@ -388,9 +388,10 @@ class VerifyOtp(APIView):
         otp = request.data.get("OTP")
         uuid = request.session.get("temp_id", None)
         if uuid != None:
+            del request.session['temp_id']
             isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
             if isVerifiedUser :
-                loginUser = self.authService.LoginUser(request)
+                loginUser = self.authService.LoginUser(request,uuid)
                 if loginUser :
                     request.session["role"] = AccountService.getUserRole(loginUser.id)
                     authLogger.info(f"views.VerifyOtp insert_IP_here {{'user' : '{username}', 'otp' : 'VALID'}}") 
@@ -412,8 +413,8 @@ class ChangePassword(APIView):
         auth = AuthService()
         user = auth.getUserBySessionRequest(request)
         if user:
-            auth.generateOTP(user.id)
-            return Response({"detail": "OTP HAS BEEN Sent"}, status=200)
+            if auth.generateOTP(user.id):
+                return Response({"detail": "OTP HAS BEEN Sent"}, status=200)
         return Response({"detail": "Invalid Permission"}, status=401)
 
     def put(self, request):
@@ -427,20 +428,22 @@ class ChangePassword(APIView):
 
             authService = AuthService()
             currentUser = authService.getUserBySessionRequest(request)
-            
-            if newPassword != newPasswordConfirmation:
-                return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
             if currentUser is None:
                 return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
+            if newPassword != newPasswordConfirmation:
+                return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+
             userWithCorrectCredential = authService.authenticateUser(request, currentUser.email, currentPassword)
-            
             if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id,otp):
                 if authService.changePassword(userWithCorrectCredential, newPassword):
                     username = request.user.get_username()
                     authLogger.info(f"views.ChangePassword insert_IP_here {{'user' : '{username}', 'message' : 'Password changed successfully.'}}")
+                isSuccessful, errorMessages = authService.changePassword(userWithCorrectCredential, newPassword)
+                if isSuccessful:
                     return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
-                
+                else:
+                    return Response({"detail": str(errorMessages)}, status=status.HTTP_400_BAD_REQUEST)
             return Response({"detail": "Invalid current password"}, status=status.HTTP_401_UNAUTHORIZED)
 
         except Exception as e:
