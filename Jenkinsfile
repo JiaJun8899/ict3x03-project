@@ -39,7 +39,7 @@ pipeline {
         stage('Check OWASP') {
             steps {
                 echo 'Check OWASP Stage'
-                Add your OWASP Dependency-Check configuration here if needed
+                // Add your OWASP Dependency-Check configuration here if needed
                 dependencyCheck additionalArguments: ''' 
                      -o './'
                      -s './'
