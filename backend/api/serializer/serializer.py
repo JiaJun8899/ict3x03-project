@@ -53,12 +53,6 @@ class EventOrganizerMappingSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventOrganizerMapping
         fields = ["event", "organizer"]
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.filter(event__endDate__gte=timezone.now())
-        print(queryset)
-        return queryset
 
 
 class EventOrganizerMappingCreate(serializers.ModelSerializer):
