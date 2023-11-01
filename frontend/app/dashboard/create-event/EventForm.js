@@ -32,7 +32,6 @@ export default function SignupCard() {
 
   function updateForm(value) {
     return setForm((prev) => {
-      console.log(form);
       return { ...prev, ...value };
     });
   }
@@ -47,7 +46,6 @@ export default function SignupCard() {
         withCredentials: true,
       })
       .then((res) => {
-        console.log(res);
       })
       .catch((error) => {
         console.log(error);

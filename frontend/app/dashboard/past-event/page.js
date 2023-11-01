@@ -17,10 +17,11 @@ import {
   FormControl,
 } from "../../providers"
 import NextLink from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,Suspense } from "react";
 import { DateTime } from "luxon";
 import axios from "axios";
-import { API_HOST } from "@/app/utils/utils";
+import { API_HOST,getRole } from "@/app/utils/utils";
+import { notFound } from "next/navigation";
 import Cookie from "js-cookie";
 // import { Providers } from "@/app/providers";
 
@@ -49,7 +50,6 @@ function StackEx() {
 }
 
 function EventRow({ event, index }) {
-  // console.log(event);
   const startDate = DateTime.fromISO(event.startDate)
     .toJSDate()
     .toLocaleString("en-SG");
@@ -95,40 +95,45 @@ async function submitSearch(searchText, setAllEvents) {
       }
     );
     setAllEvents(response.data);
-    console.log(response.data);
   } catch (error) {
     console.log(error);
   }
 }
 
 export default function Page(props) {
-  // var allEvents = props.data;
-  // const setEvent  = (event)=>{
-  //   props.callback(event)
-  // }
-  const [events, setEvents] = useState([]);
-  async function getAllData() {
-    try {
-      const response = await axios.get(`${API_HOST}/get-past-events/`,
-      {withCredentials:true});
-      console.log(response);
-      setEvents(response.data);
-      
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  const [userRole, setUserRole] = useState("none");
+  const [loading, setLoading] = useState(true);    
   useEffect(() => {
-    getAllData();
+    getRole(setUserRole,setLoading);
   }, []);
-  const [searchText, setSearchText] = useState("");
-  function CreateEventRow() {
-    return events.map((event, index) => {
-      return <EventRow event={event} key={index} />;
-    });
-  }
-  return (
-    <>
+
+  function PastEvent(){
+    const role = userRole.role;
+    if(role !== "Normal"){
+      return notFound();
+    }
+    const [events, setEvents] = useState([]);
+    async function getAllData() {
+      try {
+        const response = await axios.get(`${API_HOST}/get-past-events/`,
+        {withCredentials:true});
+        setEvents(response.data);
+        
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    useEffect(() => {
+      getAllData();
+    }, []);
+    const [searchText, setSearchText] = useState("");
+    function CreateEventRow() {
+      return events.map((event, index) => {
+        return <EventRow event={event} key={index} />;
+      });
+    }
+    return(
+      <>
       <StackEx />
       <Stack m={8} direction="row">
         <FormControl id="search">
@@ -168,5 +173,18 @@ export default function Page(props) {
         </TableContainer>
       </Stack>
     </>
+    )
+  }
+  
+  return (
+    <div>
+      <Suspense fallback={<p>Loading ...</p>}>
+        {loading ? (
+          <p>Building dashboard...</p>
+        ) : (
+          <PastEvent userRole={userRole} />
+        )}
+      </Suspense>
+    </div>
   );
 }

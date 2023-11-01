@@ -8,11 +8,15 @@ from api.serializer import (
 import os
 from datetime import datetime, timezone
 import pytz
-
+import django.utils as du
 
 class EventService:
     def __init__(self):
         pass
+    
+    def updateEventStatus():
+        events = Event.eventManager.getAllRecords().filter(endDate__lt=du.timezone.now())
+        events.update(eventStatus='closed')
 
     def createEvent(data, organization_id):
         eventSerializer = EventSerializer(data=data)
@@ -28,9 +32,7 @@ class EventService:
         return False
 
     def getEventByOrg(organizer_id):
-        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(
-            organizer_id=organizer_id
-        )
+        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(organizer_id=organizer_id, approval="accepted",event__endDate__gte=du.timezone.now(), event__eventStatus='open')
         serializer = EventOrganizerMappingSerializer(events, many=True)
         return serializer.data
 
@@ -39,14 +41,12 @@ class EventService:
             EventOrganizerMapping.eventMapperManager.getMapByOrgEventUUID(orgid, eid)
         )
         if eventMapInstance:
-            print(eventMapInstance.id)
             return eventMapInstance
         else:
             return None
 
     def updateEvent(data, eid):
         eventInstance = Event.eventManager.getByUUID(eid)
-        print(data)
         if 'startDate' in data:
             data['startDate'] = datetime.fromisoformat(data['startDate'])
             data['startDate'] = data['startDate'].astimezone(timezone.utc)
@@ -54,17 +54,12 @@ class EventService:
             data['endDate'] = datetime.fromisoformat(data['endDate'])
             data['endDate'] = data['endDate'].astimezone(timezone.utc)
         if 'startDate' not in data:
-            print("Should add start")
             data["startDate"] = eventInstance.startDate
         if 'endDate' not in data:
             data["endDate"] = eventInstance.endDate
-        print("Should have ma")
-        print(data)
         eventSerializer = EventSerializer(
             instance=eventInstance, data=data, partial=True
         )
-        print(eventSerializer.is_valid())
-        print(eventSerializer.errors)
         if eventSerializer.is_valid():
             eventSerializer.save()
             return True
@@ -73,7 +68,6 @@ class EventService:
     def checkPastEvent(self,eid):
         eventInstance = Event.eventManager.getByUUID(eid) 
         serializer = EventSerializer(eventInstance)
-        # print(serializer.data["startDate"])  
         timestamp = datetime.fromisoformat(serializer.data["startDate"])
         current_time = datetime.now(pytz.timezone('Asia/Singapore'))  # Use the appropriate timezone
 
@@ -88,7 +82,6 @@ class EventService:
             eventInstance = Event.eventManager.getByUUID(eid)
             if eventInstance.eventImage:
                 if os.path.isfile(eventInstance.eventImage.path):
-                    # print("here")
                     os.remove(eventInstance.eventImage.path)
             Event.eventManager.deleteByUUID(eid)
             return True
@@ -108,8 +101,7 @@ class EventService:
         return serializer.data
 
     def searchEvent(name):
-        events = Event.eventManager.searchEvent(name)
-        print(events)
+        events = Event.eventManager.searchEvent(name).filter(eventStatus="open")
         serializer = EventSerializer(events, many=True)
         return serializer.data
 
@@ -129,7 +121,6 @@ class EventService:
         return serializer.data
     
     def getAllEvent():
-        events = Event.eventManager.getAllRecords()
+        events = Event.eventManager.getAllRecords().filter(eventStatus= "open")
         serializer = EventSerializer(events,many=True)
         return serializer.data
-

@@ -9,7 +9,7 @@ class GenericUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nricRegex = RegexValidator(
         regex=r'^\d{3}[A-Za-z]$',
-        message="NRIC should be last digits and the ending character"
+        message="NRIC should be last 3 digits and the ending character"
     )
 
     phoneNumRegex = RegexValidator(

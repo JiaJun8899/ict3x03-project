@@ -24,6 +24,5 @@ class OrganizerAdminService:
             serializer = OrganizerSerializer(organizers, many=True)
             return serializer.data
         except Exception as e:
-            print(e)
             return None
 
