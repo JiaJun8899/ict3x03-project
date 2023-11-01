@@ -14,6 +14,13 @@ import hashlib
 from django.utils.html import escape
 import re
 
+import logging
+
+adminLogger = logging.getLogger("backend.api.views.admin")
+authLogger = logging.getLogger("backend.api.views.auth")
+registerLogger = logging.getLogger("backend.api.views.register")
+generalLogger = logging.getLogger("backend.api.views.general")
+
 load_dotenv()
 
 def sanitiseString(stringInput):
@@ -164,6 +171,7 @@ class RegisterUserAPIView(APIView):
             "password2": request.data["password2"],
         }
         if not checkDataValid(data):
+            registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'message' : 'Invalid registration attempt.'}}")
             return Response(status=status.HTTP_400_BAD_REQUEST)
         print(data)
         if request.data["organization"]:
@@ -174,9 +182,15 @@ class RegisterUserAPIView(APIView):
             ).date()
             success, errors = AccountService.createNormalUser(data, birthday)
         if success:
+            username = request.data["email"]
+            if request.data["organization"]:
+                registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'user' : '{username}', 'accType' : 'Organizer', 'message' : 'Account created.'}}")
+            else:
+                registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'user' : '{username}', 'accType' : 'GenericUser', 'message' : 'Account created.'}}")
             return Response(status=status.HTTP_200_OK)
         else:
             print(errors)
+            registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'message' : '{errors}'}}")
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateUserAPIView(APIView):
@@ -247,6 +261,8 @@ class SignUpEventAPIView(APIView):
             success = UserService.signUpEvent(data=data)
             print(success)
         if success:
+            username = request.user.get_username()
+            generalLogger.info(f"views.SignUpEventAPIView insert_IP_here {{'user' : '{username}', 'event' : '{eid}', 'message' : 'Signed up for event.'}}")
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -261,6 +277,9 @@ class CancelSignUpEventAPIView(APIView):
             data = {"event": request.data["eid"], "participant": id}
             success = UserService.cancelSignUpEvent(data=data)
             if success:
+                username = request.user.get_username()
+                eid = request.data['eid']
+                generalLogger.info(f"views.CancelSignUpEventAPIView insert_IP_here {{'user' : '{username}', 'event' : '{eid}', 'message' : 'Canceled event sign up.'}}")
                 return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -269,6 +288,9 @@ class SearchEvents(APIView):
     def post(self, request):
         events = EventService.searchEvent(request.data["name"])
         if events != None:
+            username = request.user.get_username()
+            search = request.data["name"]
+            generalLogger.info(f"views.SearchEvents insert_IP_here {{'user' : '{username}', 'message' : '{search}'}}")
             return Response(events, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
     
@@ -331,6 +353,7 @@ class GetEvent(APIView):
 class Login(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
+        print(request.__dict__)
         username = request.data.get("username")
         password = request.data.get("password")
         authService = AuthService()
@@ -339,7 +362,10 @@ class Login(APIView):
         )
         if userWithCorrectCredential:
             request.session["temp_id"] = str(userWithCorrectCredential.id)
+            authLogger.info(f"views.Login insert_IP_here {{'user' : '{username}', 'credentials' : 'VALID'}}") 
             return Response({"detail": "Credentials are correct"}, status=status.HTTP_200_OK)
+        
+        authLogger.info(f"views.Login insert_IP_here {{'user' : '{username}', 'credentials' : 'INVALID'}}")
         return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -358,6 +384,7 @@ class GetOTP(APIView):
 class VerifyOtp(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
+        username = request.user.get_username()
         self.authService = AuthService()
         otp = request.data.get("OTP")
         uuid = request.session.get("temp_id", None)
@@ -367,13 +394,17 @@ class VerifyOtp(APIView):
                 loginUser = self.authService.LoginUser(request)
                 if loginUser :
                     request.session["role"] = AccountService.getUserRole(loginUser.id)
+                    authLogger.info(f"views.VerifyOtp insert_IP_here {{'user' : '{username}', 'otp' : 'VALID'}}") 
                     return Response({"detail": "OTP is Correct"}, status=status.HTTP_200_OK)
+        authLogger.info(f"views.VerifyOtp insert_IP_here {{'user' : '{username}', 'otp' : 'INVALID'}}")
         return Response({"detail": "Something went wrong"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class Logout(APIView):
     def post(self,request):
+        username = request.user.get_username()
         AuthService.logout(request)
+        authLogger.info(f"views.Logout insert_IP_here {{'user' : '{username}', 'message' : 'Logged out.'}}")
         return Response({"detail": "LOGOUT SUCCESS"}, status=status.HTTP_200_OK)
 
 
@@ -407,6 +438,8 @@ class ChangePassword(APIView):
             
             if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id,otp):
                 if authService.changePassword(userWithCorrectCredential, newPassword):
+                    username = request.user.get_username()
+                    authLogger.info(f"views.ChangePassword insert_IP_here {{'user' : '{username}', 'message' : 'Password changed successfully.'}}")
                     return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
                 
             return Response({"detail": "Invalid current password"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -420,6 +453,7 @@ class ResetPassword(APIView):
         email = request.data.get("email")
         auth = AuthService()
         auth.requestOTPFroMEmail(email)
+        authLogger.info(f"views.ResetPassword insert_IP_here {{'user' : '{email}', 'message' : 'Password reset request has been sent.'}}")
         return Response({"detail": "email should be sent"}, status=status.HTTP_200_OK)
 
     def put(self,request):
@@ -435,5 +469,6 @@ class ResetPassword(APIView):
             isOTPCorrect = auth.verifyOTP(user.id,otp)
             if isOTPCorrect:
                 if auth.changePassword(user, newPassword):
+                    authLogger.info(f"views.ResetPassword insert_IP_here {{'user' : '{email}', 'message' : 'Password reset successfully.'}}")
                     return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
         return Response({"detail": "Something went wrong"}, status=status.HTTP_401_UNAUTHORIZED)

@@ -17,14 +17,14 @@ export function convertTime(time) {
   return convertedTime;
 }
 
-export async function getRole(setUserRole,setLoading) {
+export async function getRole(setUserRole, setLoading) {
   try {
     const response = await axios.get(`${API_HOST}/check-auth`, {
       withCredentials: true,
     });
     setUserRole(response.data);
   } catch (error) {
-    console.error("There was an fetching your role", error);
+    console.error("There was an fetching your role");
   } finally {
     setLoading(false);
   }
