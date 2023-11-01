@@ -14,7 +14,6 @@ export default function RootLayout({ children }) {
   useEffect(() => {
     getRole(setUserRole, setLoading);
   }, []);
-  console.log(userRole)
   return (
     <html lang="en">
       <body>

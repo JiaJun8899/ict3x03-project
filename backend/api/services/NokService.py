@@ -13,11 +13,9 @@ class NokService:
     def getNokById(id):
         try:
             nok = NOK.objects.get(id=id)      
-            serializer = NOKSerializer(nok)
-            print(serializer)                  
+            serializer = NOKSerializer(nok)                 
             return serializer.data
         except Exception as e:
-            print(e)
             return False   
         
     @staticmethod
@@ -32,7 +30,6 @@ class NokService:
             serializer  = NOKSerializer(newNok)
             return serializer.data
         except Exception as e:
-            print(e)
             return False
 
         
@@ -44,32 +41,5 @@ class NokService:
             if serializer.is_valid():
                 serializer.save()
                 return True
-            # print(serializer.errors)
         except Exception as e:
-            print(e)
             return False
-        
-    # @staticmethod
-    # def createUpdateNok(name,relationship,phoneNum,id):
-    #     with transaction.atomic():
-    #         try:
-    #             newNok = NOK.objects.create(
-    #             name=name,
-    #             relationship=relationship,
-    #             phoneNum=phoneNum,
-    #             )
-    #             serializer  = NOKSerializer(newNok)
-    #             user = NOK.objects.get(id=id) 
-    #             serializer = NOKSerializer(instance=user, data=serializer.data["id"])
-    #             if serializer.is_valid():
-    #                 serializer.save()
-    #                 return True
-    #         except Exception as e:
-    #             print(e)
-    #             return False
-        
-
-
-            
-
-

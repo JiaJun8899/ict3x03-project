@@ -45,7 +45,6 @@ const NavLink = (props) => {
 
 export default function Nav({userRole}) {
   // const role = userRole.role;
-  console.log(userRole)
   if(userRole === 'none'){
     return(
       <></>
@@ -68,7 +67,6 @@ export default function Nav({userRole}) {
           },
         }
       );
-      console.log(response);
       toast({
         title: "Logout successful.",
         status: "success",

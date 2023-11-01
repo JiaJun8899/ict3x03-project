@@ -164,7 +164,6 @@ export default function OrganiserDashboard() {
       const response = await axios.get(`${API_HOST}/get-event-byorg/`, {
         withCredentials: true,
       });
-      console.log(response.data);
       setAllEvents(response.data);
     } catch (error) {
       console.error("There was an fetching your profile", error);

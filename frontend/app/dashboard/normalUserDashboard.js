@@ -48,7 +48,6 @@ function StackEx() {
 }
 
 function EventRow({ event, index }) {
-  // console.log(event);
   const startDate = DateTime.fromISO(event.startDate)
     .toJSDate()
     .toLocaleString("en-SG");
@@ -94,7 +93,6 @@ async function submitSearch(searchText, setAllEvents) {
       }
     );
     setAllEvents(response.data);
-    console.log(response.data);
   } catch (error) {
     console.log(error);
   }
@@ -111,9 +109,7 @@ export default function RegularDashboard(props) {
       const response = await axios.get(`${API_HOST}/get-all-events/`,{
         withCredentials:true
       });
-      console.log(response.data)
       setEvents(response.data);
-      // console.log(response);
     } catch (error) {
       console.log(error);
     }

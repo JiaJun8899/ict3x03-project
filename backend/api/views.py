@@ -23,6 +23,15 @@ generalLogger = logging.getLogger("backend.api.views.general")
 
 load_dotenv()
 
+def get_client_ip_address(request):
+    req_headers = request.META
+    x_forwarded_for_value = req_headers.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for_value:
+        ip_addr = x_forwarded_for_value.split(',')[-1].strip()
+    else:
+        ip_addr = req_headers.get('REMOTE_ADDR')
+    return ip_addr
+
 def sanitiseString(stringInput):
     return escape(stringInput.strip())
 
@@ -38,7 +47,6 @@ def checkDataValid(data):
 class CheckValidEventOrg(APIView):
     def get(self, request, eid):
         organization_id = request.session["_auth_user_id"]
-        print(organization_id)
         checkValid = EventService.checkValid(organization_id, eid)
         if checkValid:
             return Response({"valid": True}, status=status.HTTP_200_OK)
@@ -63,7 +71,6 @@ class EventAPI(APIView):
         """Gets all the events"""
         EventService.updateEventStatus()
         allEvents = EventService.getAllEvent()
-        print(allEvents)
         return Response(allEvents, status=status.HTTP_200_OK)
 
 
@@ -79,6 +86,9 @@ class EventsByOrganizationAPI(APIView):
     def post(self, request):
         """Create Event"""
         organization_id = request.session["_auth_user_id"]
+        clientIP = get_client_ip_address(request)
+        if request.data["eventImage"].size > 20 * 1024 * 1024:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         data = {
             "eventName": sanitiseString(request.data["eventName"]),
             "startDate": request.data["startDate"],
@@ -89,8 +99,11 @@ class EventsByOrganizationAPI(APIView):
         }
         success = EventService.createEvent(data, organization_id)
         if success:
+            eventName = sanitiseString(request.data["eventName"])
+            generalLogger.info(f"views.EventsByOrganizationAPI.post {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eventName}', 'message' : 'Created event.'}}")
             return Response(status=status.HTTP_200_OK)
         else:
+            generalLogger.info(f"views.EventsByOrganizationAPI.post {clientIP} {{'organizer' : '{organization_id}', 'message' : 'Failed to create event'}}")
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
@@ -99,32 +112,41 @@ class EventsByOrganizationAPI(APIView):
         checkValid = EventService.checkValid(
             organization_id, request.data["eid"]
         )  # Should be able to remove and just use under updateEvent
+        eid = request.data["eid"]
+        clientIP = get_client_ip_address(request)
         if checkValid:
             data = {}
             for key, value in request.data.items():
-                if key == "eventImage" and not isinstance(value, InMemoryUploadedFile):
-                    pass
+                if key == "eventImage":
+                    if not isinstance(value, InMemoryUploadedFile):
+                        pass
+                    elif value.size > 20 * 1024 * 1024:
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
                 else:
                     if key == "eventName" or key == "eventDesc":
                         value = sanitiseString(value)
                     data[key] = value
             data["eventStatus"] = "open"
-            print(data)
             success = EventService.updateEvent(data, request.data["eid"])
             if success:
+                generalLogger.info(f"views.EventsByOrganizationAPI.put {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Updated event.'}}")
                 return Response(status=status.HTTP_200_OK)
+        generalLogger.info(f"views.EventsByOrganizationAPI.put {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Failed to update event.'}}")
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def delete(self, request):
         """Delete Event and Mapping"""
-        # print(request.data)
         organization_id = request.session["_auth_user_id"]
         checkValid = EventService.checkValid(organization_id, request.data["eid"])
+        eid = request.data["eid"]
+        clientIP = get_client_ip_address(request)
         if checkValid:
             success = EventService.deleteEvent(request.data["eid"])
             success = True
             if success:
+                generalLogger.info(f"views.EventsByOrganizationAPI.delete {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Deleted event.'}}")
                 return Response(status=status.HTTP_200_OK)
+        generalLogger.warning(f"views.EventsByOrganizationAPI.delete {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Failed to delete event.'}}")
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -157,8 +179,9 @@ class RegisterUserAPIView(APIView):
         verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
         response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=verification_data)
         recaptcha_result = response.json()
-        print(recaptcha_result)
+        clientIP = get_client_ip_address(request)
         if not recaptcha_result["success"]:
+            registerLogger.warning(f"views.RegisterUserAPIView {clientIP} {{'message' : 'Invalid registration attempt.'}}")
             return Response(status=status.HTTP_400_BAD_REQUEST)
         data = {
             "username": request.data["email"],
@@ -171,9 +194,7 @@ class RegisterUserAPIView(APIView):
             "password2": request.data["password2"],
         }
         if not checkDataValid(data):
-            registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'message' : 'Invalid registration attempt.'}}")
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        print(data)
         if request.data["organization"]:
             success, errors = AccountService.createOrganisation(data)
         else:
@@ -182,15 +203,14 @@ class RegisterUserAPIView(APIView):
             ).date()
             success, errors = AccountService.createNormalUser(data, birthday)
         if success:
-            username = request.data["email"]
+            user_id = request.session["_auth_user_id"]
             if request.data["organization"]:
-                registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'user' : '{username}', 'accType' : 'Organizer', 'message' : 'Account created.'}}")
+                registerLogger.info(f"views.RegisterUserAPIView {clientIP} {{'user' : '{user_id}', 'accType' : 'Organizer', 'message' : 'Account created.'}}")
             else:
-                registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'user' : '{username}', 'accType' : 'GenericUser', 'message' : 'Account created.'}}")
+                registerLogger.info(f"views.RegisterUserAPIView {clientIP} {{'user' : '{user_id}', 'accType' : 'GenericUser', 'message' : 'Account created.'}}")
             return Response(status=status.HTTP_200_OK)
         else:
-            print(errors)
-            registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'message' : '{errors}'}}")
+            registerLogger.warning(f"views.RegisterUserAPIView {clientIP} {{'message' : '{errors}'}}")
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateUserAPIView(APIView):
@@ -211,7 +231,6 @@ class UpdateUserAPIView(APIView):
             }
             if not checkDataValid(data):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-        # print("this is emergency before ")
         success = UserService.updateUserProfile(data, id)
         emergency = EmergencyContactService.getContactById(id)
         if emergency:
@@ -224,12 +243,9 @@ class UpdateUserAPIView(APIView):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])            
         else:
-            # create a nok here pls
             with transaction.atomic():
                 newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
-                emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)
-                # print(newNok)
-                # print(emergencySuccess)        
+                emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)     
         if ((success and nokUpdateSuccess) or emergencySuccess):        
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -256,14 +272,15 @@ class SignUpEventAPIView(APIView):
         eid = request.data['eid']
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
-        if validUser != None and validEvent.eventStatus == "open" and validEvent != None:
+        user_id = request.session["_auth_user_id"]
+        clientIP = get_client_ip_address(request)
+        if validUser != None and validEvent["eventStatus"] == "open" and validEvent != None:
             data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
-            print(success)
         if success:
-            username = request.user.get_username()
-            generalLogger.info(f"views.SignUpEventAPIView insert_IP_here {{'user' : '{username}', 'event' : '{eid}', 'message' : 'Signed up for event.'}}")
+            generalLogger.info(f"views.SignUpEventAPIView {clientIP} {{'user' : '{user_id}', 'event' : '{eid}', 'message' : 'Signed up for event.'}}")
             return Response(status=status.HTTP_200_OK)
+        generalLogger.warning(f"views.SignUpEventAPIView {clientIP} {{'user' : '{user_id}', 'event' : '{eid}', 'message' : 'Failed to sign up for event.'}}")
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -272,14 +289,16 @@ class CancelSignUpEventAPIView(APIView):
         id = UUID(request.session["_auth_user_id"]).hex
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
+        user_id = request.session["_auth_user_id"]
+        eid = request.data['eid']
+        clientIP = get_client_ip_address(request)
         if validUser != None and validEvent != None:
             data = {"event": request.data["eid"], "participant": id}
             success = UserService.cancelSignUpEvent(data=data)
             if success:
-                username = request.user.get_username()
-                eid = request.data['eid']
-                generalLogger.info(f"views.CancelSignUpEventAPIView insert_IP_here {{'user' : '{username}', 'event' : '{eid}', 'message' : 'Canceled event sign up.'}}")
+                generalLogger.info(f"views.CancelSignUpEventAPIView {clientIP} {{'user' : '{user_id}', 'event' : '{eid}', 'message' : 'Canceled event sign up.'}}")
                 return Response(status=status.HTTP_200_OK)
+        generalLogger.warning(f"views.CancelSignUpEventAPIView {clientIP} {{'user' : '{user_id}', 'event' : '{eid}', 'message' : 'Failed to canceled event sign up.'}}")
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -287,9 +306,10 @@ class SearchEvents(APIView):
     def post(self, request):
         events = EventService.searchEvent(request.data["name"])
         if events != None:
-            username = request.user.get_username()
+            user_id = request.session["_auth_user_id"]
             search = request.data["name"]
-            generalLogger.info(f"views.SearchEvents insert_IP_here {{'user' : '{username}', 'message' : '{search}'}}")
+            clientIP = get_client_ip_address(request)
+            generalLogger.info(f"views.SearchEvents {clientIP} {{'user' : '{user_id}', 'message' : '{search}'}}")
             return Response(events, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
     
@@ -352,19 +372,20 @@ class GetEvent(APIView):
 class Login(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        print(request.__dict__)
         username = request.data.get("username")
         password = request.data.get("password")
         authService = AuthService()
         userWithCorrectCredential = authService.authenticateUser(
             request, username, password
         )
+        clientIP = get_client_ip_address(request)
         if userWithCorrectCredential:
             request.session["temp_id"] = str(userWithCorrectCredential.id)
-            authLogger.info(f"views.Login insert_IP_here {{'user' : '{username}', 'credentials' : 'VALID'}}") 
+            user_id = userWithCorrectCredential.id
+            authLogger.info(f"views.Login {clientIP} {{'user' : '{user_id}', 'credentials' : 'VALID'}}") 
             return Response({"detail": "Credentials are correct"}, status=status.HTTP_200_OK)
         
-        authLogger.info(f"views.Login insert_IP_here {{'user' : '{username}', 'credentials' : 'INVALID'}}")
+        authLogger.info(f"views.Login {clientIP} {{'user' : '{user_id}', 'credentials' : 'INVALID'}}")
         return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -383,10 +404,10 @@ class GetOTP(APIView):
 class VerifyOtp(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        username = request.user.get_username()
         self.authService = AuthService()
         otp = request.data.get("OTP")
         uuid = request.session.get("temp_id", None)
+        clientIP = get_client_ip_address(request)
         if uuid != None:
             del request.session['temp_id']
             isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
@@ -394,17 +415,18 @@ class VerifyOtp(APIView):
                 loginUser = self.authService.LoginUser(request,uuid)
                 if loginUser :
                     request.session["role"] = AccountService.getUserRole(loginUser.id)
-                    authLogger.info(f"views.VerifyOtp insert_IP_here {{'user' : '{username}', 'otp' : 'VALID'}}") 
+                    authLogger.info(f"views.VerifyOtp {clientIP} {{'user' : '{uuid}', 'otp' : 'VALID'}}") 
                     return Response({"detail": "OTP is Correct"}, status=status.HTTP_200_OK)
-        authLogger.info(f"views.VerifyOtp insert_IP_here {{'user' : '{username}', 'otp' : 'INVALID'}}")
+        authLogger.info(f"views.VerifyOtp {clientIP} {{'user' : '{uuid}', 'otp' : 'INVALID'}}")
         return Response({"detail": "Something went wrong"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class Logout(APIView):
     def post(self,request):
-        username = request.user.get_username()
         AuthService.logout(request)
-        authLogger.info(f"views.Logout insert_IP_here {{'user' : '{username}', 'message' : 'Logged out.'}}")
+        user_id = request.session["_auth_user_id"]
+        clientIP = get_client_ip_address(request)
+        authLogger.info(f"views.Logout {clientIP} {{'user' : '{user_id}', 'message' : 'Logged out.'}}")
         return Response({"detail": "LOGOUT SUCCESS"}, status=status.HTTP_200_OK)
 
 
@@ -428,7 +450,11 @@ class ChangePassword(APIView):
 
             authService = AuthService()
             currentUser = authService.getUserBySessionRequest(request)
+            user_id = request.session["_auth_user_id"]
+
+            clientIP = get_client_ip_address(request)
             if currentUser is None:
+                authLogger.warning(f"views.ChangePassword {clientIP} {{'user' : '{user_id}', 'message' : 'Unauthorized attempt to change password.'}}")
                 return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
             if newPassword != newPasswordConfirmation:
@@ -436,14 +462,15 @@ class ChangePassword(APIView):
 
             userWithCorrectCredential = authService.authenticateUser(request, currentUser.email, currentPassword)
             if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id,otp):
-                if authService.changePassword(userWithCorrectCredential, newPassword):
-                    username = request.user.get_username()
-                    authLogger.info(f"views.ChangePassword insert_IP_here {{'user' : '{username}', 'message' : 'Password changed successfully.'}}")
                 isSuccessful, errorMessages = authService.changePassword(userWithCorrectCredential, newPassword)
                 if isSuccessful:
+                    authLogger.warning(f"views.ChangePassword {clientIP} {{'user' : '{user_id}', 'message' : 'Password changed successfully.'}}")
                     return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
                 else:
+                    error = str(errorMessages)
+                    authLogger.warning(f"views.ChangePassword {clientIP} {{'user' : '{user_id}', 'message' : 'Password changed unsuccessful.', 'error' : '{error}' }}")
                     return Response({"detail": str(errorMessages)}, status=status.HTTP_400_BAD_REQUEST)
+            authLogger.warning(f"views.ChangePassword {clientIP} {{'user' : '{user_id}', 'message' : 'Invalid current password.'}}")    
             return Response({"detail": "Invalid current password"}, status=status.HTTP_401_UNAUTHORIZED)
 
         except Exception as e:
@@ -451,11 +478,13 @@ class ChangePassword(APIView):
 
 
 class ResetPassword(APIView):
+    permission_classes = [AllowAny]
     def post(self,request):
         email = request.data.get("email")
         auth = AuthService()
         auth.requestOTPFroMEmail(email)
-        authLogger.info(f"views.ResetPassword insert_IP_here {{'user' : '{email}', 'message' : 'Password reset request has been sent.'}}")
+        clientIP = get_client_ip_address(request)
+        authLogger.info(f"views.ResetPassword {clientIP} {{'user' : '{email}', 'message' : 'Password reset request has been sent.'}}")
         return Response({"detail": "email should be sent"}, status=status.HTTP_200_OK)
 
     def put(self,request):
@@ -467,10 +496,11 @@ class ResetPassword(APIView):
         if newPassword != newPasswordConfirmation:
             return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
         user = auth.getUserByEmail(email)
+        clientIP = get_client_ip_address(request)
         if user:
             isOTPCorrect = auth.verifyOTP(user.id,otp)
             if isOTPCorrect:
                 if auth.changePassword(user, newPassword):
-                    authLogger.info(f"views.ResetPassword insert_IP_here {{'user' : '{email}', 'message' : 'Password reset successfully.'}}")
+                    authLogger.warning(f"views.ResetPassword {clientIP} {{'user' : '{email}', 'message' : 'Password reset successfully.'}}")
                     return Response({"detail": "Password changed successfully"}, status=status.HTTP_200_OK)
         return Response({"detail": "Something went wrong"}, status=status.HTTP_401_UNAUTHORIZED)

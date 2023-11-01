@@ -80,7 +80,6 @@ export default function Page() {
   
   function Event(){
     const role = userRole.role;
-    console.log(role)
     if(role !== 'Organizer' && role !== "Normal"){
       return notFound();
     }
@@ -107,12 +106,9 @@ export default function Page() {
       const response = await axios.get(`${API_HOST}/get-event/${search}`,{
         withCredentials:true
       });
-      // console.log(response.data)
-      console.log(response.data.data);
       setEvent(response.data.data);
       // return response
     } catch (error) {
-      console.log(error);
     }
   }
 
@@ -130,7 +126,6 @@ export default function Page() {
         }
       )
       .then(function (response) {
-        console.log(response);
         toast({
           title: "Signup successful.",
           status: "success",
@@ -149,7 +144,6 @@ export default function Page() {
       });
   };
   const cancelSignup = async () => {
-    // console.log('cancel signup')
     const response = await axios
       .delete(`${API_HOST}/cancel-sign-up-event/`, {
         withCredentials: true,
@@ -160,7 +154,6 @@ export default function Page() {
         data: { eid: search },
       })
       .then(function (response) {
-        console.log(response);
         toast({
           title: "Withdraw successful.",
           status: "success",
@@ -177,7 +170,6 @@ export default function Page() {
           isClosable: true,
         });
       });
-    console.log(response);
   };
     return (
       <>
