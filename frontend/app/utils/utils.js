@@ -1,7 +1,7 @@
 "use client";
 import { DateTime } from "luxon";
 import axios from "axios";
-export const API_HOST = "http://localhost:62613/api";
+export const API_HOST = "http://localhost:8000/api";
 
 export function updateForm(value, setter, theUse) {
   return setter((prev) => {
@@ -17,14 +17,14 @@ export function convertTime(time) {
   return convertedTime;
 }
 
-export async function getRole(setUserRole,setLoading) {
+export async function getRole(setUserRole, setLoading) {
   try {
     const response = await axios.get(`${API_HOST}/check-auth`, {
       withCredentials: true,
     });
     setUserRole(response.data);
   } catch (error) {
-    console.error("There was an fetching your role", error);
+    console.error("There was an fetching your role");
   } finally {
     setLoading(false);
   }

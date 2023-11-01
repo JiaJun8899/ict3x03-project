@@ -40,7 +40,7 @@ export default function SignupCard() {
     organization: false,
     password: "",
     password2: "",
-    email: ""
+    email: "",
   });
   const [recaptchaValue, setRecaptchaValue] = useState(null);
   const toast = useToast();
@@ -48,20 +48,21 @@ export default function SignupCard() {
   async function handleForm(form) {
     form.recaptchaValue = recaptchaValue;
     try {
-      await axios.post(API_HOST + "/register/", form);
+      await axios.post(API_HOST + "/register", form);
       router.replace("/");
     } catch (error) {
-      const values = Object.values(error.response.data)
-      if (values[0] != "<"){
-        toast({
-          title: "Login failed",
-          description: values[0],
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      }
-      else {
+      if ("response" in error) {
+        const values = Object.values(error.response.data);
+        if (values[0] != "<") {
+          toast({
+            title: "Login failed",
+            description: values[0],
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+        }
+      } else {
         toast({
           title: "Login failed",
           description: "An error occured. Please try again",
@@ -71,7 +72,7 @@ export default function SignupCard() {
         });
       }
     }
-  };
+  }
 
   return (
     <Flex
