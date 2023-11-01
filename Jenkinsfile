@@ -91,7 +91,7 @@ pipeline {
                 //    docker ps -a
                 //    docker container prune -f
                 //    '''
-                }
+                // }
             }
         }
         // If the build has failed, send an email to notify
