@@ -193,47 +193,88 @@ if not DEBUG:
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": True, #limit loggers to only the ones defined here for more security
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
     "formatters": {
-        "verbose": {
-            "format": "{levelname} | {asctime} | {name} | {module} | {funcName} | {message}",
+        "simple": {
+            "format": "{levelname} {asctime} {message}",
             "style": "{",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        "auth": {
-            "format": "{levelname} | {asctime} | {message}",
+        "verbose": {
+            "format": "{levelname} {asctime} {name} {module} {funcName} {{'message':'{message}'}}",
             "style": "{",
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
     },
     "handlers": {
-        "file": {
+        "console": {
+            "level": "INFO",
+            "filters": ["require_debug_true"],
+            "class": "logging.StreamHandler",
+        },
+        "djangoFile": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
-            "filename": "backend/logs/django.log",
+            "filename": "backend/logs/django/django.log",
             "formatter": "verbose",
+        },
+        "djangoSecurityFile": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "backend/logs/django/security.log",
+            "formatter": "simple",
+        },
+        "djangoCsrfFile": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "backend/logs/django/csrf.log",
+            "formatter": "simple",
         },
         "adminFile": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
-            "filename": "backend/logs/admin.log",
-            "formatter": "verbose",
-        },
-        "generalFile": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": "backend/logs/general.log",
-            "formatter": "verbose",
+            "filename": "backend/logs/app/admin.log",
+            "formatter": "simple",
         },
         "authFile": {
             "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": "backend/logs/auth.log",
-            "formatter": "auth",
+            "filename": "backend/logs/app/auth.log",
+            "formatter": "simple",
+        },
+        "registerFile": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "backend/logs/app/registration.log",
+            "formatter": "simple",
+        },
+        "generalFile": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "backend/logs/app/general.log",
+            "formatter": "simple",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["file"],
+            "handlers": ["djangoFile", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.security.*": {
+            "handlers": ["djangoSecurityFile"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.security.csrf": {
+            "handlers": ["djangoCsrfFile"],
             "level": "INFO",
             "propagate": False,
         },
@@ -242,13 +283,18 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
-        "backend.api.views.general": {
-            "handlers": ["generalFile"],
+        "backend.api.views.auth": {
+            "handlers": ["authFile"],
             "level": "INFO",
             "propagate": False,
         },
-        "backend.api.views.auth": {
-            "handlers": ["authFile"],
+        "backend.api.views.register": {
+            "handlers": ["registerFile"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "backend.api.views.general": {
+            "handlers": ["generalFile"],
             "level": "INFO",
             "propagate": False,
         },

@@ -48,7 +48,7 @@ export default function SignupCard() {
   async function handleForm(form) {
     form.recaptchaValue = recaptchaValue;
     try {
-      await axios.post(API_HOST + "/register", form);
+      await axios.post(API_HOST + "/register/", form);
       router.replace("/");
     } catch (error) {
       const values = Object.values(error.response.data)
