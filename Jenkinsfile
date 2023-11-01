@@ -59,11 +59,11 @@ pipeline {
 		stage('Deploying Stage'){
 			steps {
 				echo 'Deploying'
-				script{
-					dir('/home/to_production/') {
-						git branch: 'jenkins-test', url: 'https://github.com/JiaJun8899/ict3x03-project.git'
-					}
-				}
+				// script{
+				//	dir('/home/to_production/') {
+				//		git branch: 'jenkins-test', url: 'https://github.com/JiaJun8899/ict3x03-project.git'
+				//	}
+				//}
 			} 
 		}
     }
