@@ -17,9 +17,9 @@ load_dotenv()
 class GetAllEventTest(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
-        Event.eventManager.create(eventName="test Event1", startDate="2023-10-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
-        Event.eventManager.create(eventName="test Event2", startDate="2023-10-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
+        Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "Open", noVol= 1233, eventDesc=123123)
+        Event.eventManager.create(eventName="test Event1", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "Open", noVol= 1233, eventDesc=123123)
+        Event.eventManager.create(eventName="test Event2", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "Open", noVol= 1233, eventDesc=123123)
 
     def test_all_events_Fail(self):
         url = reverse('get-all-events')
@@ -131,8 +131,8 @@ class OrganizerTest(APITestCase):
             password='testiepassword',
         )
         self.test_org = Organizer.organizerManager.create(user_id=self.test_user.id)
-        self.event = Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
-        self.eventMap = EventOrganizerMapping.eventMapperManager.create(event_id = self.event.eid, organizer_id = self.test_org.user_id)
+        self.event = Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now() + datetime.timedelta(days=2), eventImage = None, noVol= 1233, eventDesc=123123, eventStatus= "Open")
+        self.eventMap = EventOrganizerMapping.eventMapperManager.create(event_id = self.event.eid, organizer_id = self.test_org.user_id, approval = "accepted")
         self.client.login(username="test@test.com", password="testiepassword")
         session = self.client.session
         session['role'] = "organizer"
@@ -143,6 +143,11 @@ class OrganizerTest(APITestCase):
         data = {"eventName": "Test Create", "startDate": timezone.now(),"endDate": timezone.now() + datetime.timedelta(days=2),"noVol": 12,"eventDesc": "This is for test","eventImage": photo_file}
         url = reverse('get-event-org')
         response = self.client.post(url, data)
+        createdEvent = Event.eventManager.getAllRecords().filter(eventName="Test Create")
+        createdEvent.update(eventStatus = "Open")
+        createdEventMap = EventOrganizerMapping.eventMapperManager.getMapByEventUUID(createdEvent[0].eid)
+        createdEventMap.approval = "accepted"
+        createdEventMap.save()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         url = reverse('get-event-org')
         response = self.client.get(url)
