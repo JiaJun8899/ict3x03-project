@@ -14,11 +14,11 @@ pipeline {
         }
         stage('Installing dependencies on NextJS') {
             steps {
-                dir('frontend') {
-                    sh '''
-                    npm install
-                    '''
-                }
+                // dir('frontend') {
+                //    sh '''
+                //    npm install
+                //    '''
+                // }
             }
         }
         stage('Semgrep Scan') {
