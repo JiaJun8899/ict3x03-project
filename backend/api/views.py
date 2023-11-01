@@ -256,7 +256,8 @@ class SignUpEventAPIView(APIView):
         eid = request.data['eid']
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
-        if validUser != None and validEvent.eventStatus == "open" and validEvent != None:
+        print(validEvent)
+        if validUser != None and validEvent["eventStatus"] == "open" and validEvent != None:
             data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
             print(success)
