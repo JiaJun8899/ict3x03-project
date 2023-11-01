@@ -67,10 +67,10 @@ pipeline {
 			} 
 		}
     }
-    post {
+    // post {
         //Only run docker compose down when the build is successful
-        always {
-            script {
+        // always {
+            // script {
                 // Containers are running, check their status
                 // def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nexjs_frontend', returnStdout: true).trim()
                 // def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend', returnStdout: true).trim()
@@ -95,13 +95,13 @@ pipeline {
                 //    docker container prune -f
                 //    '''
                 // }
-            }
-        }
+            // }
+        // }
         // If the build has failed, send an email to notify
-        failure {
-            script {
-                emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: '2100755@sit.singaporetech.edu.sg'   
-        }
-    }
-}
+        // failure {
+        //    script {
+        //        emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: '2100755@sit.singaporetech.edu.sg'   
+        //}
+    //}
+//}
 }
