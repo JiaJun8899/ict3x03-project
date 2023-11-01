@@ -14,6 +14,7 @@ pipeline {
         }
         stage('Installing dependencies on NextJS') {
             steps {
+				echo 'Installing dependencies'
                 // dir('frontend') {
                 //    sh '''
                 //    npm install
@@ -30,9 +31,9 @@ pipeline {
         stage('Setting up container') {
             steps{
                 echo 'Setting up Container'
-                sh '''
-                docker compose up --build -d
-                '''
+            //    sh '''
+            //    docker compose up --build -d
+            //    '''
             }
         }
         stage('Check OWASP') {
@@ -49,6 +50,7 @@ pipeline {
         }
         stage('Testing Stage'){
             steps {
+				echo 'Testing stage'
             //    sh '''
             //    docker exec django_backend python manage.py test
             //    '''
@@ -56,6 +58,7 @@ pipeline {
         }
 		stage('Deploying Stage'){
 			steps {
+				echo 'Deploying'
 				script{
 					dir('/home/to_production') {
 						git branch: 'jenkins-test', url: 'https://github.com/JiaJun8899/ict3x03-project.git'
