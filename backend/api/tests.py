@@ -345,9 +345,9 @@ class LoginAPITests(APITestCase):
 class NormalUserTest(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        event1 = Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
-        event2 = Event.eventManager.create(eventName="test Event2", startDate="2023-11-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
-        event3 = Event.eventManager.create(eventName="test Event1", startDate="2023-12-13T04:34:00+08:00", endDate = "2023-10-26T04:34:00+08:00", eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
+        event1 = Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
+        event2 = Event.eventManager.create(eventName="test Event2", startDate="2023-11-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
+        event3 = Event.eventManager.create(eventName="test Event1", startDate="2023-12-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
         norm_generic = GenericUser.objects.create_user(
             username='test@normal1.com',
             email='test@normal1.com',
