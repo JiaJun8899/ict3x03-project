@@ -86,6 +86,9 @@ class EventsByOrganizationAPI(APIView):
     def post(self, request):
         """Create Event"""
         organization_id = request.session["_auth_user_id"]
+        clientIP = get_client_ip_address(request)
+        if request.data["eventImage"].size > 20 * 1024 * 1024:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         data = {
             "eventName": sanitiseString(request.data["eventName"]),
             "startDate": request.data["startDate"],
@@ -114,8 +117,11 @@ class EventsByOrganizationAPI(APIView):
         if checkValid:
             data = {}
             for key, value in request.data.items():
-                if key == "eventImage" and not isinstance(value, InMemoryUploadedFile):
-                    pass
+                if key == "eventImage":
+                    if not isinstance(value, InMemoryUploadedFile):
+                        pass
+                    elif value.size > 20 * 1024 * 1024:
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
                 else:
                     if key == "eventName" or key == "eventDesc":
                         value = sanitiseString(value)
