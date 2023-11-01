@@ -17,13 +17,10 @@ class AccountService:
                 return True, None
             else:
                 genericUserObj.delete()
-                print(organizer.errors)
         return False, genericUserSerializer.errors
 
     def createNormalUser(data, birthday):
         genericUserSerializer = RegisterUserSerializer(data=data)
-        print(genericUserSerializer.is_valid())
-        print(genericUserSerializer.errors)
         if genericUserSerializer.is_valid():
             genericUserObj = genericUserSerializer.save()
             normalUser = RegisterNormalUserSerializer(
@@ -34,8 +31,6 @@ class AccountService:
                 return True, None
             else:
                 genericUserObj.delete()
-                print(normalUser.errors)
-                #return False, normalUser.errors
         return False, genericUserSerializer.errors 
 
 

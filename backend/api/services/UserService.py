@@ -11,7 +11,6 @@ class UserService:
     @staticmethod
     def validUser(eid):
         user = NormalUser.normalUserManager.getByUUID(eid)
-        print(user)
         return user
     
     @staticmethod
@@ -29,13 +28,10 @@ class UserService:
         try:
             user = GenericUser.genericUserManager.getByUUID(eid)
             serializer = GenericUserSerializer(instance=user, data=data, partial=True)
-            # print("hi" +)
             if serializer.is_valid():
                 serializer.save()
                 return True
-            print(serializer.errors)
         except Exception as e:
-            print(e)
             return False
         
 
@@ -44,11 +40,9 @@ class UserService:
         try:
             eventSerializer = EventSignUpParticipantSerializer(data=data)
             if eventSerializer.is_valid():
-                # print("here is data " + data["participant"])
                 eventSerializer.save()
                 return True
         except Exception as e:
-            print(e)
             return False
         
     @staticmethod
@@ -57,10 +51,4 @@ class UserService:
             signedup = EventParticipant.eventParticipantManager.deleteSingleUserEventmap(data["event"],data["participant"])
             return True
         except Exception as e:
-            print(e)
             return False
-
-
-            
-
-

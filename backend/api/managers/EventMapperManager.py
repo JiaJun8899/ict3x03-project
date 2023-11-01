@@ -7,7 +7,7 @@ class EventMapperManager(GenericInfoManager):
             eventMap.approval = status
             eventMap.save()
         except Exception as e:
-            print(e)
+            return None
     
     def getMapByEventUUID(self, eid):
         try:

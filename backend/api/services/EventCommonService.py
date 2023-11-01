@@ -14,7 +14,6 @@ class EventCommonService:
             serializer = EventSerializer(events, many=True)
             return serializer.data
         except Exception as e:
-            print(e)
             return None
         
     @staticmethod
@@ -24,10 +23,4 @@ class EventCommonService:
             serializer = EventSerializer(events)
             return serializer.data
         except Exception as e:
-            print(e)
             return None
-
-
-            
-
-

@@ -38,7 +38,6 @@ def checkDataValid(data):
 class CheckValidEventOrg(APIView):
     def get(self, request, eid):
         organization_id = request.session["_auth_user_id"]
-        print(organization_id)
         checkValid = EventService.checkValid(organization_id, eid)
         if checkValid:
             return Response({"valid": True}, status=status.HTTP_200_OK)
@@ -63,7 +62,6 @@ class EventAPI(APIView):
         """Gets all the events"""
         EventService.updateEventStatus()
         allEvents = EventService.getAllEvent()
-        print(allEvents)
         return Response(allEvents, status=status.HTTP_200_OK)
 
 
@@ -109,7 +107,6 @@ class EventsByOrganizationAPI(APIView):
                         value = sanitiseString(value)
                     data[key] = value
             data["eventStatus"] = "open"
-            print(data)
             success = EventService.updateEvent(data, request.data["eid"])
             if success:
                 return Response(status=status.HTTP_200_OK)
@@ -117,7 +114,6 @@ class EventsByOrganizationAPI(APIView):
 
     def delete(self, request):
         """Delete Event and Mapping"""
-        # print(request.data)
         organization_id = request.session["_auth_user_id"]
         checkValid = EventService.checkValid(organization_id, request.data["eid"])
         if checkValid:
@@ -157,7 +153,6 @@ class RegisterUserAPIView(APIView):
         verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
         response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=verification_data)
         recaptcha_result = response.json()
-        print(recaptcha_result)
         if not recaptcha_result["success"]:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         data = {
@@ -173,7 +168,6 @@ class RegisterUserAPIView(APIView):
         if not checkDataValid(data):
             registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'message' : 'Invalid registration attempt.'}}")
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        print(data)
         if request.data["organization"]:
             success, errors = AccountService.createOrganisation(data)
         else:
@@ -189,7 +183,6 @@ class RegisterUserAPIView(APIView):
                 registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'user' : '{username}', 'accType' : 'GenericUser', 'message' : 'Account created.'}}")
             return Response(status=status.HTTP_200_OK)
         else:
-            print(errors)
             registerLogger.info(f"views.RegisterUserAPIView insert_IP_here {{'message' : '{errors}'}}")
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -211,7 +204,6 @@ class UpdateUserAPIView(APIView):
             }
             if not checkDataValid(data):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-        # print("this is emergency before ")
         success = UserService.updateUserProfile(data, id)
         emergency = EmergencyContactService.getContactById(id)
         if emergency:
@@ -224,12 +216,9 @@ class UpdateUserAPIView(APIView):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])            
         else:
-            # create a nok here pls
             with transaction.atomic():
                 newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
-                emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)
-                # print(newNok)
-                # print(emergencySuccess)        
+                emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)     
         if ((success and nokUpdateSuccess) or emergencySuccess):        
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -256,11 +245,9 @@ class SignUpEventAPIView(APIView):
         eid = request.data['eid']
         validUser = UserService.getUserById(id)
         validEvent = EventCommonService.getEventByID(request.data["eid"])
-        print(validEvent)
         if validUser != None and validEvent["eventStatus"] == "open" and validEvent != None:
             data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
-            print(success)
         if success:
             username = request.user.get_username()
             generalLogger.info(f"views.SignUpEventAPIView insert_IP_here {{'user' : '{username}', 'event' : '{eid}', 'message' : 'Signed up for event.'}}")
@@ -353,7 +340,6 @@ class GetEvent(APIView):
 class Login(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
-        print(request.__dict__)
         username = request.data.get("username")
         password = request.data.get("password")
         authService = AuthService()
