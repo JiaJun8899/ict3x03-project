@@ -87,7 +87,7 @@ class EventsByOrganizationAPI(APIView):
         """Create Event"""
         organization_id = request.session["_auth_user_id"]
         clientIP = get_client_ip_address(request)
-        if request.data["eventImage"].size > 20 * 1024 * 1024:
+        if request.data["eventImage"].size > 2 * 1024 * 1024:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         data = {
             "eventName": sanitiseString(request.data["eventName"]),
@@ -114,23 +114,24 @@ class EventsByOrganizationAPI(APIView):
         )  # Should be able to remove and just use under updateEvent
         eid = request.data["eid"]
         clientIP = get_client_ip_address(request)
+        if "eventImage" in request.data:
+            if request.data["eventImage"].size > 2 * 1024 * 1024:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
         if checkValid:
             data = {}
             for key, value in request.data.items():
-                if key == "eventImage":
-                    if not isinstance(value, InMemoryUploadedFile):
-                        pass
-                    elif value.size > 20 * 1024 * 1024:
-                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                if key == "eventImage" and not isinstance(value, InMemoryUploadedFile):
+                    pass
                 else:
                     if key == "eventName" or key == "eventDesc":
                         value = sanitiseString(value)
                     data[key] = value
-            data["eventStatus"] = "open"
             success = EventService.updateEvent(data, request.data["eid"])
             if success:
                 generalLogger.info(f"views.EventsByOrganizationAPI.put {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Updated event.'}}")
                 return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
         generalLogger.info(f"views.EventsByOrganizationAPI.put {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Failed to update event.'}}")
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -196,14 +197,13 @@ class RegisterUserAPIView(APIView):
         if not checkDataValid(data):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         if request.data["organization"]:
-            success, errors = AccountService.createOrganisation(data)
+            success, errors, user_id = AccountService.createOrganisation(data)
         else:
             birthday = datetime.strptime(
                 request.data["birthday"], "%Y-%m-%d"
             ).date()
-            success, errors = AccountService.createNormalUser(data, birthday)
+            success, errors, user_id = AccountService.createNormalUser(data, birthday)
         if success:
-            user_id = request.session["_auth_user_id"]
             if request.data["organization"]:
                 registerLogger.info(f"views.RegisterUserAPIView {clientIP} {{'user' : '{user_id}', 'accType' : 'Organizer', 'message' : 'Account created.'}}")
             else:
@@ -385,7 +385,7 @@ class Login(APIView):
             authLogger.info(f"views.Login {clientIP} {{'user' : '{user_id}', 'credentials' : 'VALID'}}") 
             return Response({"detail": "Credentials are correct"}, status=status.HTTP_200_OK)
         
-        authLogger.info(f"views.Login {clientIP} {{'user' : '{user_id}', 'credentials' : 'INVALID'}}")
+        authLogger.info(f"views.Login {clientIP} {{'user' : '{None}', 'credentials' : 'INVALID'}}")
         return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
