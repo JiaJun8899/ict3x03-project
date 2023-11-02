@@ -145,8 +145,8 @@ export default function ProfilePage() {
                     <FormLabel>First Name</FormLabel>
                     <Input
                       type="text"
-                      onChange={(e) => updateDetails("firstname", e.target.value)}
-                      value={details.firstname}
+                      onChange={(e) => updateDetails("first_name", e.target.value)}
+                      value={details.first_name}
                     />
                   </FormControl>
                 </Box>
@@ -155,8 +155,8 @@ export default function ProfilePage() {
                     <FormLabel>Last Name</FormLabel>
                     <Input
                       type="text"
-                      value={details.lastname}
-                      onChange={(e) => updateDetails("lastname", e.target.value)}
+                      value={details.last_name}
+                      onChange={(e) => updateDetails("last_name", e.target.value)}
                     />
                   </FormControl>
                 </Box>

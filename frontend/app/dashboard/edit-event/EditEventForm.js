@@ -14,12 +14,14 @@ import {
   Image,
 } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
 import { API_HOST } from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
 export default function EditEvent({ searchParams }) {
+  const router = useRouter();
   const [form, setForm] = useState({
     eventName: "",
     startDate: "",
@@ -63,14 +65,18 @@ export default function EditEvent({ searchParams }) {
     });
   }
   async function onSubmit(data) {
-    const response = await axios.put(`${API_HOST}/get-event-byorg/`, data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        "X-CSRFToken": Cookie.get("csrftoken"),
-      },
-      withCredentials: true,
-    });
-    return response.data;
+    try {
+      const response = await axios.put(`${API_HOST}/get-event-byorg/`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "X-CSRFToken": Cookie.get("csrftoken"),
+        },
+        withCredentials: true,
+      });
+      router.replace("/dashboard");
+    } catch (error) {
+      console.log(error);
+    }
   }
   return (
     <Flex
@@ -175,22 +181,20 @@ export default function EditEvent({ searchParams }) {
             </FormControl>
             <Stack spacing={10} pt={2}>
               <ButtonGroup gap="4">
-                <Link href="/dashboard" prefetch={false} replace={true}>
-                  <Button
-                    loadingText="Submitting"
-                    size="lg"
-                    bg={"blue.400"}
-                    color={"white"}
-                    _hover={{
-                      bg: "blue.500",
-                    }}
-                    onClick={() => {
-                      onSubmit(form);
-                    }}
-                  >
-                    Update Event
-                  </Button>
-                </Link>
+                <Button
+                  loadingText="Submitting"
+                  size="lg"
+                  bg={"blue.400"}
+                  color={"white"}
+                  _hover={{
+                    bg: "blue.500",
+                  }}
+                  onClick={() => {
+                    onSubmit(form);
+                  }}
+                >
+                  Update Event
+                </Button>
                 <Link href="/dashboard" prefetch={false}>
                   <Button
                     size="lg"

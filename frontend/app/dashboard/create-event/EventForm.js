@@ -17,7 +17,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { API_HOST } from "@/app/utils/utils";
-import Cookie from "js-cookie"
+import Cookie from "js-cookie";
 
 export default function SignupCard() {
   const router = useRouter();
@@ -37,20 +37,18 @@ export default function SignupCard() {
   }
 
   async function onSubmit(e) {
-    await axios
-      .post(`${API_HOST}/get-event-byorg/`, form, {
+    try {
+      const response = await axios.post(`${API_HOST}/get-event-byorg/`, form, {
         headers: {
           "Content-Type": "multipart/form-data",
           "X-CSRFToken": Cookie.get("csrftoken"),
         },
         withCredentials: true,
-      })
-      .then((res) => {
-      })
-      .catch((error) => {
-        console.log(error);
       });
-    router.replace("/dashboard");
+      router.replace("/dashboard");
+    } catch (error) {
+      console.error(error);
+    }
   }
   return (
     <Flex
