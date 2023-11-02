@@ -279,6 +279,8 @@ class SignUpEventAPIView(APIView):
         if validUser != None and validEvent["eventStatus"] == "open" and validEvent != None:
             data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST) 
         if success:
             generalLogger.info(f"views.SignUpEventAPIView {clientIP} {{'user' : '{user_id}', 'event' : '{eid}', 'message' : 'Signed up for event.'}}")
             return Response(status=status.HTTP_200_OK)
