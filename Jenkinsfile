@@ -35,18 +35,18 @@ pipeline {
                 '''
             }
         }
-        //stage('Check OWASP') {
-        //   steps {
-        //        echo 'Check OWASP Stage'
+        stage('Check OWASP') {
+           steps {
+                echo 'Check OWASP Stage'
                 // Add your OWASP Dependency-Check configuration here if needed
-        //        dependencyCheck additionalArguments: ''' 
-        //             -o './'
-        //             -s './'
-        //             -f 'ALL' 
-        //            --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-        //      dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
-        //    }
-        //}
+                dependencyCheck additionalArguments: ''' 
+                     -o './'
+                     -s './'
+                     -f 'ALL' 
+                    --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+              dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
+            }
+        }
         stage('Testing Stage') {
             steps {
                 script {
@@ -65,6 +65,7 @@ pipeline {
                         def testResult = sh(script: 'docker exec django_backend python manage.py test', returnStatus: true, returnStdout: true)
                         echo "Test Result:\n${testResult}"
                     }
+					input message: 'Code has been pulled from GitHub, please deploy', ok: 'OK'
                 }
             }
         }
