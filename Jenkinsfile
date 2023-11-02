@@ -51,7 +51,7 @@ pipeline {
             steps {
                 script {
                     // Containers are running, check their status
-                    def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nexjs_frontend', returnStdout: true).trim()
+                    def frontendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" nextjs_frontend', returnStdout: true).trim()
                     def backendContainer = sh(script: 'docker inspect -f "{{.State.Status}}" django_backend', returnStdout: true).trim()
                     def dbContainer = sh(script: 'docker inspect -f "{{.State.Status}}" backend_database', returnStdout: true).trim()
                     // Check if any container's status is not "Up"
