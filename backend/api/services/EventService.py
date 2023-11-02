@@ -29,6 +29,8 @@ class EventService:
             if mapperSerializer.is_valid():
                 mapperSerializer.save()
                 return True
+            else:
+                newEvent.delete()
         return False
 
     def getEventByOrg(organizer_id):
