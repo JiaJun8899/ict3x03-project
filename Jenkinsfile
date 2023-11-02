@@ -60,10 +60,6 @@ pipeline {
                         emailext subject: "Docker Container Status Issue",
                             body: "One or more Docker containers are not in an 'Up' state. Please investigate.",
                             to: '2100755@sit.singaporetech.edu.sg'
-                        sh '''
-                        docker compose down
-                        docker container prune -f
-                        '''
                     } else {
                         // Run backend test case if the dockers are all up
                         def testResult = sh(script: 'docker exec django_backend python manage.py test', returnStatus: true, returnStdout: true)
