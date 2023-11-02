@@ -87,16 +87,19 @@ class EventsByOrganizationAPI(APIView):
         """Create Event"""
         organization_id = request.session["_auth_user_id"]
         clientIP = get_client_ip_address(request)
-        if request.data["eventImage"].size > 2 * 1024 * 1024:
+        try:
+            if request.data["eventImage"].size > 2 * 1024 * 1024:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            data = {
+                "eventName": sanitiseString(request.data["eventName"]),
+                "startDate": request.data["startDate"],
+                "endDate": request.data["endDate"],
+                "noVol": request.data["noVol"],
+                "eventDesc": sanitiseString(request.data["eventDesc"]),
+                "eventImage": request.data["eventImage"],
+            }
+        except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        data = {
-            "eventName": sanitiseString(request.data["eventName"]),
-            "startDate": request.data["startDate"],
-            "endDate": request.data["endDate"],
-            "noVol": request.data["noVol"],
-            "eventDesc": sanitiseString(request.data["eventDesc"]),
-            "eventImage": request.data["eventImage"],
-        }
         success = EventService.createEvent(data, organization_id)
         if success:
             eventName = sanitiseString(request.data["eventName"])
@@ -114,9 +117,6 @@ class EventsByOrganizationAPI(APIView):
         )  # Should be able to remove and just use under updateEvent
         eid = request.data["eid"]
         clientIP = get_client_ip_address(request)
-        if "eventImage" in request.data:
-            if request.data["eventImage"].size > 2 * 1024 * 1024:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
         if checkValid:
             data = {}
             for key, value in request.data.items():
@@ -126,6 +126,9 @@ class EventsByOrganizationAPI(APIView):
                     if key == "eventName" or key == "eventDesc":
                         value = sanitiseString(value)
                     data[key] = value
+            if "eventImage" in data:
+                if data["eventImage"].size > 2 * 1024 * 1024:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
             success = EventService.updateEvent(data, request.data["eid"])
             if success:
                 generalLogger.info(f"views.EventsByOrganizationAPI.put {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Updated event.'}}")
@@ -223,11 +226,10 @@ class UpdateUserAPIView(APIView):
         valid = UserService.getUserById(id)
         if valid != None:
             data = {
-                "first_name": request.data["firstname"],
-                "last_name": request.data["lastname"],
+                "first_name": request.data["first_name"],
+                "last_name": request.data["last_name"],
                 "email": request.data["email"],
-                "phoneNum": request.data["phoneNum"],
-                "username": request.data["userName"],
+                "phoneNum": request.data["phoneNum"]
             }
             if not checkDataValid(data):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -277,6 +279,8 @@ class SignUpEventAPIView(APIView):
         if validUser != None and validEvent["eventStatus"] == "open" and validEvent != None:
             data = {"event": eid, "participant": id}
             success = UserService.signUpEvent(data=data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST) 
         if success:
             generalLogger.info(f"views.SignUpEventAPIView {clientIP} {{'user' : '{user_id}', 'event' : '{eid}', 'message' : 'Signed up for event.'}}")
             return Response(status=status.HTTP_200_OK)

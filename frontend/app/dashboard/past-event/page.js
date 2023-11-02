@@ -20,7 +20,7 @@ import NextLink from "next/link";
 import React, { useState, useEffect,Suspense } from "react";
 import { DateTime } from "luxon";
 import axios from "axios";
-import { API_HOST,getRole } from "@/app/utils/utils";
+import { API_HOST, getRole, API_IMAGE } from "@/app/utils/utils";
 import { notFound } from "next/navigation";
 import Cookie from "js-cookie";
 // import { Providers } from "@/app/providers";
@@ -62,7 +62,7 @@ function EventRow({ event, index }) {
         <Image
           src={
             event.eventImage
-              ? "http://localhost:8000" + event.eventImage
+              ? API_IMAGE + event.eventImage
               : "https://picsum.photos/200"
           }
         />

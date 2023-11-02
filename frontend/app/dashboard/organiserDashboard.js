@@ -24,12 +24,11 @@ import {
   useDisclosure,
 } from "../providers";
 import React from "react";
-import { DateTime } from "luxon";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_HOST} from "@/app/utils/utils";
+import { API_HOST, API_IMAGE, convertTime } from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
 async function deleteEvent(eId) {
@@ -110,13 +109,6 @@ function StackEx() {
   );
 }
 
-function convertTime(time) {
-  const convertedTime = DateTime.fromISO(time)
-    .toJSDate()
-    .toLocaleString("en-SG");
-  return convertedTime;
-}
-
 function EventRow({ event, index }) {
   return (
     <Tr>
@@ -124,7 +116,7 @@ function EventRow({ event, index }) {
         <Image
           src={
             event.eventImage
-              ? "http://localhost:8000" + event.eventImage
+              ? API_IMAGE + event.eventImage
               : "https://picsum.photos/200"
           }
         />
@@ -144,10 +136,7 @@ function EventRow({ event, index }) {
         | <DeleteModal eventData={event} />|{" "}
         <Link
           as={NextLink}
-          href={
-            "/dashboard/view-event/?event=" +
-            event.eid
-          }
+          href={"/dashboard/view-event/?event=" + event.eid}
           prefetch={false}
         >
           View Details
