@@ -21,12 +21,12 @@ pipeline {
                 }
             }
         }
-        //stage('Semgrep Scan') {
-        //    steps {
-        //        echo 'SAST Scanning'
-        //        sh 'semgrep scan'
-        //    }
-        //}
+        stage('Semgrep Scan') {
+            steps {
+                echo 'SAST Scanning'
+                sh 'semgrep scan'
+            }
+        }
         stage('Setting up container') {
             steps{
                 echo 'Setting up Container'
