@@ -40,9 +40,9 @@ OTP_EMAIL_TOKEN_VALIDITY = 300
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", os.environ.get("SECRET_KEY"))
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["backend", "silly-borg.cloud"]
+ALLOWED_HOSTS = ["backend", "localhost", "https://www.silly-borg.cloud"]
 
 # User models
 # Application definition
@@ -79,7 +79,9 @@ REST_FRAMEWORK = {
     ],
 }
 if DEBUG:
-    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append("rest_framework.renderers.BrowsableAPIRenderer")
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append(
+        "rest_framework.renderers.BrowsableAPIRenderer"
+    )
 AUTH_USER_MODEL = "api.GenericUser"
 
 MIDDLEWARE = [
@@ -123,8 +125,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": os.getenv("DB_NAME", os.environ.get("DB_NAME")),
-        "USER": os.getenv("DB_USER", os.environ.get("DB_USER")),
-        "PASSWORD": os.getenv("DB_PASSWORD", os.environ.get("DB_PASSWORD")),
+        "USER": os.getenv("DB_USER_1", os.environ.get("DB_USER_1")),
+        "PASSWORD": os.getenv("DB_PASSWORD_1", os.environ.get("DB_PASSWORD_1")),
         "HOST": os.getenv("DB_HOST", os.environ.get("DB_HOST")),
         "PORT": "3306",
     }
@@ -192,28 +194,28 @@ if not DEBUG:
 
 if not DEBUG:
     LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": True, #limit loggers to only the ones defined here for more security
-    "filters": {
-        "require_debug_false": {
-            "()": "django.utils.log.RequireDebugFalse",
+        "version": 1,
+        "disable_existing_loggers": True,  # limit loggers to only the ones defined here for more security
+        "filters": {
+            "require_debug_false": {
+                "()": "django.utils.log.RequireDebugFalse",
+            },
+            "require_debug_true": {
+                "()": "django.utils.log.RequireDebugTrue",
+            },
         },
-        "require_debug_true": {
-            "()": "django.utils.log.RequireDebugTrue",
+        "formatters": {
+            "simple": {
+                "format": "{levelname} {asctime} {message}",
+                "style": "{",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            },
+            "verbose": {
+                "format": "{levelname} {asctime} {name} {module} {funcName} {{'message':'{message}'}}",
+                "style": "{",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            },
         },
-    },
-    "formatters": {
-        "simple": {
-            "format": "{levelname} {asctime} {message}",
-            "style": "{",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-        "verbose": {
-            "format": "{levelname} {asctime} {name} {module} {funcName} {{'message':'{message}'}}",
-            "style": "{",
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-        },
-    },
     "handlers": {
         "console": {
             "level": "INFO",

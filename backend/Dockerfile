@@ -13,19 +13,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
    libmariadb-dev-compat gcc                   `: MySQL client` \
 && rm -rf /var/lib/apt/lists/*
 
-# Install pip requirements
-COPY /requirements.txt .
-RUN python -m pip install -r requirements.txt
-
 WORKDIR /app/backend
 COPY ./backend /app/backend
 
-RUN python manage.py collectstatic --no-input
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app/backend
-USER appuser
+RUN pip install pip --upgrade && \
+    pip install -r requirements.txt && \ 
+    chmod +x script/Entrypoint.sh && \
+    chmod +x script/Migrations.sh && \
+    chmod +x script/Collectstatic.sh && \
+    chmod +x script/CreateUser.sh && \
+    bash script/CreateUser.sh && \
+    bash script/collectstatic.sh && \
+    bash script/migrations.sh
 
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "backend.wsgi"]
+CMD ["script/Entrypoint.sh"]
