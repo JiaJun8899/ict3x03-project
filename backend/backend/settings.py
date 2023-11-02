@@ -40,9 +40,9 @@ OTP_EMAIL_TOKEN_VALIDITY = 300
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", os.environ.get("SECRET_KEY"))
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["backend", "localhost", "https://www.silly-borg.cloud"]
+ALLOWED_HOSTS = ["backend", "www.silly-borg.cloud", "silly-borg.cloud"]
 
 # User models
 # Application definition
@@ -125,8 +125,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": os.getenv("DB_NAME", os.environ.get("DB_NAME")),
-        "USER": os.getenv("DB_USER_1", os.environ.get("DB_USER_1")),
-        "PASSWORD": os.getenv("DB_PASSWORD_1", os.environ.get("DB_PASSWORD_1")),
+        "USER": os.getenv("DB_USER", os.environ.get("DB_USER")),
+        "PASSWORD": os.getenv("DB_PASSWORD", os.environ.get("DB_PASSWORD")),
         "HOST": os.getenv("DB_HOST", os.environ.get("DB_HOST")),
         "PORT": "3306",
     }
@@ -180,17 +180,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = ["https://silly-borg.cloud"]
+CSRF_TRUSTED_ORIGINS = ["https://silly-borg.cloud/", "https://www.silly-borg.cloud/"]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://silly-borg.cloud",
+    "https://silly-borg.cloud", "https://www.silly-borg.cloud",
 ]
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
 
 if not DEBUG:
     LOGGING = {
