@@ -74,6 +74,14 @@ pipeline {
         }
     }
     post {
+        always {
+            script {
+                sh '''
+                docker compose -f jenkins-compose.yml down
+                docker container prune -f
+                '''
+            }
+        }
         // If the build has failed, send an email to notify
         failure {
             script {
