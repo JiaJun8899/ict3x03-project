@@ -45,7 +45,7 @@ const WithdrawModal = ({ eventData, cancelSignup }) => {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Delete Event Modal</ModalHeader>
+          <ModalHeader>Withdraw from event?</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             Are you sure you want to withdraw {event.eventName}?
@@ -59,7 +59,7 @@ const WithdrawModal = ({ eventData, cancelSignup }) => {
                 onClose();
               }}
             >
-              Delete Event
+              Confirm Withdraw
             </Button>
             <Button colorScheme="blue" onClick={() => onClose()}>
               Close

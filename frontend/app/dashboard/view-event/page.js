@@ -5,18 +5,21 @@ import dynamic from "next/dynamic";
 import axios from "axios";
 import { notFound } from "next/navigation";
 import { API_HOST } from "@/app/utils/utils";
+import { useSearchParams } from "next/navigation";
 
 const EventDetails = dynamic(() => import("./EventDetail"), {
   ssr: false,
 });
 
-export default function Page({ searchParams }) {
+export default function Page() {
+    const searchParams = useSearchParams();
+    const eventID = searchParams.get("event");
   const [validEvent, setValidEvent] = useState("none");
   const [loading, setLoading] = useState(true);
   async function getValid() {
     try {
       const response = await axios.get(
-        `${API_HOST}/check-valid-organizer/${searchParams.event}`,
+        `${API_HOST}/check-valid-organizer/${eventID}`,
         {
           withCredentials: true,
         }
@@ -31,7 +34,7 @@ export default function Page({ searchParams }) {
   function CreateDetail() {
     const valid = validEvent.valid;
     if (valid) {
-      return <EventDetails searchParams={searchParams} />;
+      return <EventDetails eventID={eventID} />;
     } else {
       return notFound();
     }

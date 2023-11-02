@@ -20,7 +20,8 @@ import Link from "next/link";
 import { API_HOST, API_IMAGE } from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
-export default function EditEvent({ searchParams }) {
+export default function EditEvent({ eventID }) {
+  console.log(`${eventID} In edit`);
   const router = useRouter();
   const [form, setForm] = useState({
     eventName: "",
@@ -38,7 +39,7 @@ export default function EditEvent({ searchParams }) {
   async function getEvent() {
     try {
       const response = await axios.get(
-        `${API_HOST}/get-single-event/${searchParams.event}`,
+        `${API_HOST}/get-single-event/${eventID}`,
         {
           withCredentials: true,
         }
@@ -55,7 +56,7 @@ export default function EditEvent({ searchParams }) {
   }
   useEffect(() => {
     getEvent();
-  }, [searchParams]);
+  }, [eventID]);
 
   function updateForm(value) {
     return setForm((prev) => {

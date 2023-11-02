@@ -11,6 +11,8 @@ class AccountService:
         genericUserSerializer = RegisterUserSerializer(data=data)
         if genericUserSerializer.is_valid():
             genericUserObj = genericUserSerializer.save()
+            genericUserObj.is_active = 0
+            genericUserObj.save()
             organizer = OrganizerSerializer(data={"user": genericUserObj.id})
             if organizer.is_valid():
                 organizer.save()

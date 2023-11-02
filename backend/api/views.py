@@ -179,24 +179,27 @@ class RegisterUserAPIView(APIView):
                 RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY_TEST", os.environ.get("RECAPTCHA_KEY_TEST"))
         else:
             RECAPTCHA_KEY = os.getenv("RECAPTCHA_KEY", os.environ.get("RECAPTCHA_KEY"))
-        recaptcha_response = request.data["recaptchaValue"]
-        verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
-        response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=verification_data)
-        recaptcha_result = response.json()
-        clientIP = get_client_ip_address(request)
-        if not recaptcha_result["success"]:
-            registerLogger.warning(f"views.RegisterUserAPIView {clientIP} {{'message' : 'Invalid registration attempt.'}}")
+        try:
+            recaptcha_response = request.data["recaptchaValue"]
+            verification_data = {"secret": RECAPTCHA_KEY, "response": recaptcha_response}
+            response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=verification_data)
+            recaptcha_result = response.json()
+            clientIP = get_client_ip_address(request)
+            if not recaptcha_result["success"]:
+                registerLogger.warning(f"views.RegisterUserAPIView {clientIP} {{'message' : 'Invalid registration attempt.'}}")
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            data = {
+                "username": request.data["email"],
+                "email": request.data["email"],
+                "first_name": request.data["firstName"],
+                "last_name": request.data["lastName"],
+                "phoneNum": request.data["phoneNum"],
+                "nric": request.data["NRIC"],
+                "password": request.data["password"],
+                "password2": request.data["password2"],
+            }
+        except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        data = {
-            "username": request.data["email"],
-            "email": request.data["email"],
-            "first_name": request.data["firstName"],
-            "last_name": request.data["lastName"],
-            "phoneNum": request.data["phoneNum"],
-            "nric": request.data["NRIC"],
-            "password": request.data["password"],
-            "password2": request.data["password2"],
-        }
         if not checkDataValid(data):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         if request.data["organization"]:
@@ -427,9 +430,9 @@ class VerifyOtp(APIView):
 
 class Logout(APIView):
     def post(self,request):
-        AuthService.logout(request)
         user_id = request.session["_auth_user_id"]
         clientIP = get_client_ip_address(request)
+        AuthService.logout(request)
         authLogger.info(f"views.Logout {clientIP} {{'user' : '{user_id}', 'message' : 'Logged out.'}}")
         return Response({"detail": "LOGOUT SUCCESS"}, status=status.HTTP_200_OK)
 
