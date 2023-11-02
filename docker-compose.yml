@@ -1,4 +1,3 @@
-
 version: "3.4"
 
 networks:
@@ -31,14 +30,12 @@ services:
       context: .
       dockerfile: ./frontend/Dockerfile
     read_only: true
-    command: npm run dev
+    command: npx next start
     ports:
       - "3000"
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
     restart: unless-stopped
-    volumes:
-      - ./frontend:/app/frontend
     networks:
       - production
   backend:
@@ -48,8 +45,6 @@ services:
       dockerfile: ./backend/Dockerfile
     ports:
       - "8000"
-    volumes:
-      - ./backend:/app/backend
     env_file: ./docker.env
     command: bash -c "python manage.py migrate; if [[ $$? -ne 0 ]]; then sleep infinity; else python manage.py runserver 0.0.0.0:8000; fi"
     restart: unless-stopped
