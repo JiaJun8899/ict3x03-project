@@ -276,6 +276,7 @@ class LoginAPITests(APITestCase):
             password='test_password',
         )
 
+        cls.test_org = NormalUser.normalUserManager.create(user_id=cls.test_user.id, birthday="2001-03-12")
         cls.emailDevice = EmailDevice.objects.get_or_create(user=cls.test_user, email=cls.test_user.email,name="EMAIL")[0]
 
     def set_temp_id_in_session(self):
@@ -491,6 +492,7 @@ class ResetAPITests(APITestCase):
             nric='S1234567D',
             password='test_password',
         )
+        cls.test_org = NormalUser.normalUserManager.create(user_id=cls.test_user.id, birthday="2001-03-12")
 
     def setUp(self):
         self.url = reverse('auth-change-password')
@@ -672,6 +674,7 @@ class ResetPasswordAPITests(APITestCase):
             nric='S1234567D',
             password='test_password',
         )
+        cls.test_org = NormalUser.normalUserManager.create(user_id=cls.test_user.id, birthday="2001-03-12")
 
     def setUp(self):
         self.url = reverse('auth-reset-password')  # Replace with your URL name for Reset Password
