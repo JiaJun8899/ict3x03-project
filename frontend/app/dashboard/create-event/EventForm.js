@@ -60,10 +60,10 @@ export default function SignupCard() {
       <Stack spacing={8} mx={"auto"} py={12} px={6}>
         <Stack align={"center"}>
           <Heading fontSize={"4xl"} textAlign={"center"}>
-            Sign up
+            Create Volunteering Event
           </Heading>
           <Text fontSize={"lg"} color={"gray.600"}>
-            to enjoy all of our cool features ✌️
+            Create an exciting volunteering event for everyone! ✌️
           </Text>
         </Stack>
         <Box

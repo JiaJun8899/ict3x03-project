@@ -126,7 +126,7 @@ export default function SignupCard() {
             <HStack>
               <Box>
                 <FormControl id="nric" isRequired>
-                  <FormLabel>NRIC</FormLabel>
+                  <FormLabel>NRIC (XXXA)</FormLabel>
                   <Input
                     type="text"
                     value={form.NRIC}

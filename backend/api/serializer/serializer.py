@@ -67,6 +67,11 @@ class EventOrganizerMappingSerializer(serializers.ModelSerializer):
         model = EventOrganizerMapping
         fields = ["event", "organizer"]
 
+class AllEventOrganizerMappingSerializer(serializers.ModelSerializer):
+    event = EventSerializer()
+    class Meta:
+        model = EventOrganizerMapping
+        fields = ["event"]
 
 class EventOrganizerMappingCreate(serializers.ModelSerializer):
     class Meta:

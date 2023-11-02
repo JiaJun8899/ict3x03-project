@@ -74,7 +74,7 @@ export default function Nav({userRole}) {
         isClosable: true,
       });
     } catch (error) {
-      console.log(error);
+      console.log(error)
       toast({
         title: "Logout failed.",
         status: "error",
@@ -127,7 +127,7 @@ export default function Nav({userRole}) {
                   <br />
                   <MenuDivider />
                   <NextLink href={`/changePassword/`}>
-                    <MenuItem>Change Pssword</MenuItem>
+                    <MenuItem>Change Password</MenuItem>
                   </NextLink>
                   <NextLink href={`/profile/`}>
                     <MenuItem>Account Settings</MenuItem>

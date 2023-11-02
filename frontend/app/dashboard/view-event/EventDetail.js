@@ -148,7 +148,7 @@ function ViewParticipantModal(participantData) {
   );
 }
 
-export default function ViewEventDetails({ searchParams }) {
+export default function ViewEventDetails({ eventID }) {
   const [event, setEvent] = useState({
     eventName: "",
     startDate: "",
@@ -162,7 +162,7 @@ export default function ViewEventDetails({ searchParams }) {
   async function getEvent() {
     try {
       const response = await axios.get(
-        `${API_HOST}/get-single-event/${searchParams.event}`,
+        `${API_HOST}/get-single-event/${eventID}`,
         {
           withCredentials: true,
         }
@@ -176,7 +176,7 @@ export default function ViewEventDetails({ searchParams }) {
   async function getParticpants() {
     try {
       const response = await axios.get(
-        `${API_HOST}/view-participants/${searchParams.event}`,
+        `${API_HOST}/view-participants/${eventID}`,
         {
           withCredentials: true,
         }
@@ -190,7 +190,7 @@ export default function ViewEventDetails({ searchParams }) {
   useEffect(() => {
     getEvent();
     getParticpants();
-  }, [searchParams]);
+  }, [eventID]);
 
   return (
     <Container maxW={"7xl"}>
@@ -284,9 +284,7 @@ export default function ViewEventDetails({ searchParams }) {
                 <ButtonGroup>
                   <Button
                     onClick={() =>
-                      router.push(
-                        "/dashboard/edit-event/?event=" + searchParams.event
-                      )
+                      router.push("/dashboard/edit-event/?event=" + eventID)
                     }
                   >
                     Edit Event
