@@ -482,7 +482,9 @@ class ResetPassword(APIView):
     def post(self,request):
         email = request.data.get("email")
         auth = AuthService()
-        auth.requestOTPFroMEmail(email)
+        user = auth.getUserByEmail(email)
+        if user != None and AccountService.getUserRole(user.id):
+            auth.requestOTPFroMEmail(email)
         clientIP = get_client_ip_address(request)
         authLogger.info(f"views.ResetPassword {clientIP} {{'user' : '{email}', 'message' : 'Password reset request has been sent.'}}")
         return Response({"detail": "email should be sent"}, status=status.HTTP_200_OK)
