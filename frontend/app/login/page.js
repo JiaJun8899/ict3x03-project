@@ -193,6 +193,16 @@ export default function LoginPage() {
                   colorScheme={"blue"}
                   size={"sm"}
                   onClick={() => {
+                    router.push("/resetPassword");
+                  }}
+                >
+                    Forgot your password!?!
+                </Button>
+                <Button
+                  variant={"link"}
+                  colorScheme={"blue"}
+                  size={"sm"}
+                  onClick={() => {
                     router.push("/register");
                   }}
                 >

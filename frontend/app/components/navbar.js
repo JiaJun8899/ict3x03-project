@@ -127,6 +127,9 @@ export default function Nav({userRole}) {
                   <br />
                   <MenuDivider />
                   {/* <MenuItem>Your Servers</MenuItem> */}
+                  <NextLink href={`/changePassword/`}>
+                    <MenuItem>Account Settings</MenuItem>
+                  </NextLink>
                   <NextLink href={`/profile/`}>
                     <MenuItem>Account Settings</MenuItem>
                   </NextLink>
