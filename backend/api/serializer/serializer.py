@@ -52,6 +52,9 @@ class EventSerializer(serializers.ModelSerializer):
         if 'endDate' and 'startDate' in attrs:
             if attrs['endDate'] <= attrs['startDate']:
                 raise serializers.ValidationError({"Start Date": "Start Date cannot be more than end date"})
+        if 'noVol' in attrs:
+            if 'noVol' <= 0:
+                raise serializers.ValidationError({"Number of volunteers": "Number of volunteers cannot less than 0"})
         return attrs
 
 class EmergencyContactsSerializer(serializers.ModelSerializer):
