@@ -111,9 +111,9 @@ class RegisterTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
 class OrganizerTest(APITestCase):
-    def generate_photo_file(self):
+    def generate_photo_file(self, width=100, height=100):
         file = io.BytesIO()
-        image = Image.new('RGBA', size=(100, 100), color=(155, 0, 0))
+        image = Image.new('RGBA', size=(width, height), color=(155, 0, 0))
         image.save(file, 'png')
         file.name = 'testAPIIMAGE.png'
         file.seek(0)
@@ -159,6 +159,13 @@ class OrganizerTest(APITestCase):
         url = reverse('get-event-org')
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_event_fail_image(self):
+        photo_file = self.generate_photo_file(width=23000, height=23000)
+        data = {"eventName": "Test Create", "startDate": timezone.now(),"endDate": timezone.now() + datetime.timedelta(days=2),"noVol": 12,"eventDesc": "This is for test","eventImage": photo_file}
+        url = reverse('get-event-org')
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_edit_event(self):
         photo_file = self.generate_photo_file()
@@ -171,15 +178,24 @@ class OrganizerTest(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.data[0]['event']['eventName'], "&lt;Test Updated")
     
-    def test_edit_event(self):
+    def test_edit_event_fail_date(self):
         url = reverse('get-event-org')
         response = self.client.get(url)
         eid = response.data[0]['event']['eid']
-        data = {"eid": eid, "endDate": "2023-10-10T04:34:00+08:00"}
+        data = {"eid": eid, "eventName": "<Test Updated", "endDate": "2023-10-10T04:34:00+08:00"}
         response = self.client.put(url, data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response = self.client.get(url)
         self.assertEqual(response.data[0]['event']['eventName'], "test Event")
+    
+    def test_edit_event_fail_image(self):
+        photo_file = self.generate_photo_file(width=23000, height=23000)
+        url = reverse('get-event-org')
+        response = self.client.get(url)
+        eid = response.data[0]['event']['eid']
+        data = {"eid": eid, "eventName": "<Test Updated","eventImage": photo_file}
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_delete_event(self):
         url = reverse('get-event-org')
@@ -260,6 +276,7 @@ class LoginAPITests(APITestCase):
             password='test_password',
         )
 
+        cls.test_org = NormalUser.normalUserManager.create(user_id=cls.test_user.id, birthday="2001-03-12")
         cls.emailDevice = EmailDevice.objects.get_or_create(user=cls.test_user, email=cls.test_user.email,name="EMAIL")[0]
 
     def set_temp_id_in_session(self):
@@ -475,6 +492,7 @@ class ResetAPITests(APITestCase):
             nric='S1234567D',
             password='test_password',
         )
+        cls.test_org = NormalUser.normalUserManager.create(user_id=cls.test_user.id, birthday="2001-03-12")
 
     def setUp(self):
         self.url = reverse('auth-change-password')
@@ -656,6 +674,7 @@ class ResetPasswordAPITests(APITestCase):
             nric='S1234567D',
             password='test_password',
         )
+        cls.test_org = NormalUser.normalUserManager.create(user_id=cls.test_user.id, birthday="2001-03-12")
 
     def setUp(self):
         self.url = reverse('auth-reset-password')  # Replace with your URL name for Reset Password
@@ -730,5 +749,3 @@ class ResetPasswordAPITests(APITestCase):
         response = self.client.put(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data['detail'], 'Something went wrong')
-
-

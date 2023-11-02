@@ -36,8 +36,8 @@ class AuthService:
         isVerified = False
         if self.user:
             self.setEmailDevice()
-            isVerified = self.emailDevice.verify_token(otpToken)
-            self.emailDevice.delete()
+            if self.emailDevice and self.emailDevice.verify_is_allowed()[0]:
+                isVerified = self.emailDevice.verify_token(otpToken)
         return isVerified
 
     def LoginUser(self, request,uuid):

@@ -42,7 +42,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", os.environ.get("SECRET_KEY"))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["backend", "localhost"]
+ALLOWED_HOSTS = ["backend", "silly-borg.cloud"]
 
 # User models
 # Application definition
@@ -167,7 +167,7 @@ USE_TZ = True
 
 STATIC_ROOT = BASE_DIR / "production_static"
 STATIC_URL = "static/"
-MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), "backend/mediafiles")
+MEDIA_ROOT = BASE_DIR / "mediafiles"
 MEDIA_URL = "/media/"
 
 # Default primary key field type
@@ -178,10 +178,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = ["https://silly-borg.cloud"]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "https://silly-borg.cloud",
 ]
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True

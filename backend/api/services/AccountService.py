@@ -14,10 +14,10 @@ class AccountService:
             organizer = OrganizerSerializer(data={"user": genericUserObj.id})
             if organizer.is_valid():
                 organizer.save()
-                return True, None
+                return True, None, genericUserObj.id
             else:
                 genericUserObj.delete()
-        return False, genericUserSerializer.errors
+        return False, genericUserSerializer.errors, None
 
     def createNormalUser(data, birthday):
         genericUserSerializer = RegisterUserSerializer(data=data)
@@ -28,10 +28,10 @@ class AccountService:
             )
             if normalUser.is_valid():
                 normalUser.save()
-                return True, None
+                return True, None, genericUserObj.id
             else:
                 genericUserObj.delete()
-        return False, genericUserSerializer.errors 
+        return False, genericUserSerializer.errors, None
 
 
     def getUserRole(userId):

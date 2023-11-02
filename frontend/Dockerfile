@@ -2,15 +2,13 @@ FROM node:20.5.1-alpine
 
 WORKDIR /app/frontend
 
-COPY ./frontend/package.json ./frontend/package-lock.json ./
+COPY ./frontend .
 
 RUN npm install
 
-COPY ./frontend .
-
-RUN npm run build
+RUN npx next build
 
 EXPOSE 3000
 
-CMD [ "npm", "start" ]
+CMD [ "npx", "next", "start" ]
 
