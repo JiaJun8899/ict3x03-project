@@ -379,7 +379,7 @@ class Login(APIView):
             request, username, password
         )
         clientIP = get_client_ip_address(request)
-        if userWithCorrectCredential:
+        if userWithCorrectCredential and AccountService.getUserRole(userWithCorrectCredential.id):
             request.session["temp_id"] = str(userWithCorrectCredential.id)
             user_id = userWithCorrectCredential.id
             authLogger.info(f"views.Login {clientIP} {{'user' : '{user_id}', 'credentials' : 'VALID'}}") 
@@ -461,7 +461,7 @@ class ChangePassword(APIView):
                 return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
 
             userWithCorrectCredential = authService.authenticateUser(request, currentUser.email, currentPassword)
-            if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id,otp):
+            if userWithCorrectCredential and authService.verifyOTP(userWithCorrectCredential.id,otp) and AccountService.getUserRole(userWithCorrectCredential.id):
                 isSuccessful, errorMessages = authService.changePassword(userWithCorrectCredential, newPassword)
                 if isSuccessful:
                     authLogger.warning(f"views.ChangePassword {clientIP} {{'user' : '{user_id}', 'message' : 'Password changed successfully.'}}")
@@ -499,7 +499,7 @@ class ResetPassword(APIView):
             return Response({"detail": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
         user = auth.getUserByEmail(email)
         clientIP = get_client_ip_address(request)
-        if user:
+        if user != None and AccountService.getUserRole(user.id):
             isOTPCorrect = auth.verifyOTP(user.id,otp)
             if isOTPCorrect:
                 if auth.changePassword(user, newPassword):
