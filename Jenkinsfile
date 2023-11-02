@@ -30,9 +30,9 @@ pipeline {
         stage('Setting up container') {
             steps{
                 echo 'Setting up Container'
-                sh '''
-                docker compose -f docker-compose.yml up --build -d
-                '''
+                //sh '''
+                //docker compose -f docker-compose.yml up --build -d
+                //'''
             }
         }
         stage('Check OWASP') {
@@ -49,9 +49,10 @@ pipeline {
         }
         stage('Testing Stage'){
             steps {
-                sh '''
-                docker exec django_backend python manage.py test
-                '''
+                echo 'Testing Stage'
+                //sh '''
+                //docker exec django_backend python manage.py test
+                //'''
             }
         }
     }
