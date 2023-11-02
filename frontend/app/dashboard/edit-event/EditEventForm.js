@@ -17,7 +17,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
-import { API_HOST } from "@/app/utils/utils";
+import { API_HOST, API_IMAGE } from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
 export default function EditEvent({ searchParams }) {
@@ -32,9 +32,7 @@ export default function EditEvent({ searchParams }) {
   });
 
   const [imgPreview, setImgPreview] = useState(
-    form.eventImage
-      ? "http://localhost:8000" + form.eventImage
-      : "https://picsum.photos/200"
+    form.eventImage ? API_IMAGE + form.eventImage : "https://picsum.photos/200"
   );
 
   async function getEvent() {
@@ -49,7 +47,7 @@ export default function EditEvent({ searchParams }) {
       response.data.endDate = response.data.endDate.substring(0, 16);
       setForm(response.data);
       if (response.data.eventImage) {
-        setImgPreview("http://localhost:8000" + response.data.eventImage);
+        setImgPreview(API_IMAGE + response.data.eventImage);
       }
     } catch (error) {
       console.error("There was an fetching your profile", error);

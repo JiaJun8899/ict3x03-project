@@ -2,6 +2,7 @@
 import { DateTime } from "luxon";
 import axios from "axios";
 export const API_HOST = "https://silly-borg.cloud/api";
+export const API_IMAGE = "https://silly-borg.cloud";
 
 export function updateForm(value, setter, theUse) {
   return setter((prev) => {

@@ -36,7 +36,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { API_HOST, convertTime } from "@/app/utils/utils";
+import { API_HOST, API_IMAGE, convertTime } from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
 async function deleteEvent(eId) {
@@ -205,7 +205,7 @@ export default function ViewEventDetails({ searchParams }) {
             alt={"product image"}
             src={
               event.eventImage
-                ? "http://localhost:8000" + event.eventImage
+                ? API_IMAGE + event.eventImage
                 : "https://picsum.photos/200"
             }
             fit={"cover"}
