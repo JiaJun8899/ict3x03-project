@@ -36,6 +36,8 @@ services:
     environment:
       NODE_ENV: production
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     networks:
       - production
   backend:
@@ -43,6 +45,7 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
+    read_only: true
     ports:
       - "8000"
     volumes:
@@ -53,5 +56,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
     networks:
       - production
+
