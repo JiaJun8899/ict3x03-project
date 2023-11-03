@@ -247,13 +247,7 @@ export default function Page() {
                         End Date:
                       </Text>{" "}
                       {convertTime(event.endDate)}
-                    </ListItem>
-                    <ListItem>
-                      <Text as={"span"} fontWeight={"bold"}>
-                        Number of Volunteers Needed:
-                      </Text>{" "}
-                      {event.noVol} <Link>Volunteer List</Link>
-                    </ListItem>
+                    </ListItem>                  
                     <ListItem>
                       <Text as={"span"} fontWeight={"bold"}>
                         Event Status:
