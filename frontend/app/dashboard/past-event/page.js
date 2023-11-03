@@ -15,9 +15,10 @@ import {
   Image,
   Input,
   FormControl,
-} from "../../providers"
+  useToast,
+} from "../../providers";
 import NextLink from "next/link";
-import React, { useState, useEffect,Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { DateTime } from "luxon";
 import axios from "axios";
 import { API_HOST, getRole, API_IMAGE } from "@/app/utils/utils";
@@ -57,8 +58,8 @@ function EventRow({ event, index }) {
 }
 
 async function submitSearch(searchText, setAllEvents) {
-  try {
-    const response = await axios.post(
+  const response = await axios
+    .post(
       `${API_HOST}/search-events/`,
       { name: searchText },
       {
@@ -68,35 +69,40 @@ async function submitSearch(searchText, setAllEvents) {
           "X-CSRFToken": Cookie.get("csrftoken"),
         },
       }
-    );
-    setAllEvents(response.data);
-  } catch (error) {
-    console.log(error);
-  }
+    )
+    .then(function (response) {
+      setAllEvents(response.data);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
 }
 
 export default function Page(props) {
   const [userRole, setUserRole] = useState("none");
-  const [loading, setLoading] = useState(true);    
+  const [loading, setLoading] = useState(true);
+  const toast = useToast();
   useEffect(() => {
-    getRole(setUserRole,setLoading);
+    getRole(setUserRole, setLoading);
   }, []);
 
-  function PastEvent(){
+  function PastEvent() {
     const role = userRole.role;
-    if(role !== "Normal"){
+    if (role !== "Normal") {
       return notFound();
     }
     const [events, setEvents] = useState([]);
     async function getAllData() {
-      try {
-        const response = await axios.get(`${API_HOST}/get-past-events/`,
-        {withCredentials:true});
-        setEvents(response.data);
-        
-      } catch (error) {
-        console.log(error);
-      }
+      const response = await axios
+        .get(`${API_HOST}/get-past-events/`, {
+          withCredentials: true,
+        })
+        .then(function (response) {
+          setEvents(response.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
     }
     useEffect(() => {
       getAllData();
@@ -157,7 +163,7 @@ export default function Page(props) {
       </>
     );
   }
-  
+
   return (
     <div>
       <Suspense fallback={<p>Loading ...</p>}>
