@@ -87,8 +87,8 @@ class EventService:
         if eventSerializer.is_valid():
             eventSerializer.save()
             EventService.updateParticipants(eid)
-            return True
-        return False
+            return True, None
+        return False, eventSerializer.errors
     
     def checkPastEvent(self,eid):
         eventInstance = Event.eventManager.getByUUID(eid) 

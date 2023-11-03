@@ -138,12 +138,12 @@ class EventsByOrganizationAPI(APIView):
             if "eventImage" in data:
                 if data["eventImage"].size > 2 * 1024 * 1024:
                     return Response(status=status.HTTP_400_BAD_REQUEST)
-            success = EventService.updateEvent(data, request.data["eid"])
+            success, errors = EventService.updateEvent(data, request.data["eid"])
             if success:
                 generalLogger.info(f"views.EventsByOrganizationAPI.put {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Updated event.'}}")
                 return Response(status=status.HTTP_200_OK)
             else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         generalLogger.info(f"views.EventsByOrganizationAPI.put {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Failed to update event.'}}")
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
