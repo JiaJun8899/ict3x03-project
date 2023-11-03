@@ -109,14 +109,14 @@ class EventsByOrganizationAPI(APIView):
             }
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        success = EventService.createEvent(data, organization_id)
+        success, errors = EventService.createEvent(data, organization_id)
         if success:
             eventName = sanitiseString(request.data["eventName"])
             generalLogger.info(f"views.EventsByOrganizationAPI.post {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eventName}', 'message' : 'Created event.'}}")
             return Response(status=status.HTTP_200_OK)
         else:
             generalLogger.info(f"views.EventsByOrganizationAPI.post {clientIP} {{'organizer' : '{organization_id}', 'message' : 'Failed to create event'}}")
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
         """Update event"""

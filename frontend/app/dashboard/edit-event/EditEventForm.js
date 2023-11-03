@@ -12,16 +12,17 @@ import {
   useColorModeValue,
   ButtonGroup,
   Image,
+  useToast,
 } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
-import { API_HOST, API_IMAGE } from "@/app/utils/utils";
+import { API_HOST, API_IMAGE, updateForm } from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
 export default function EditEvent({ eventID }) {
-  console.log(`${eventID} In edit`);
+  const toast = useToast();
   const router = useRouter();
   const [form, setForm] = useState({
     eventName: "",
@@ -51,30 +52,50 @@ export default function EditEvent({ eventID }) {
         setImgPreview(API_IMAGE + response.data.eventImage);
       }
     } catch (error) {
-      console.error("There was an fetching your profile", error);
+      console.error("There was an error getting the event");
     }
   }
   useEffect(() => {
     getEvent();
   }, [eventID]);
 
-  function updateForm(value) {
-    return setForm((prev) => {
-      return { ...prev, ...value };
-    });
-  }
   async function onSubmit(data) {
     try {
-      const response = await axios.put(`${API_HOST}/get-event-byorg/`, data, {
+      await axios.put(`${API_HOST}/get-event-byorg/`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
           "X-CSRFToken": Cookie.get("csrftoken"),
         },
         withCredentials: true,
       });
+      toast({
+        title: `${form.eventName} Updated`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       router.replace("/dashboard");
     } catch (error) {
-      console.log(error);
+      if ("response" in error) {
+        const values = Object.values(error.response.data);
+        if (values[0] != "<") {
+          toast({
+            title: "Updated failed",
+            description: values[0],
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+        }
+      } else {
+        toast({
+          title: "Update failed",
+          description: "An error occured. Please try again",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     }
   }
   return (
@@ -106,7 +127,7 @@ export default function EditEvent({ eventID }) {
                     type="text"
                     value={form.eventName}
                     onChange={(e) => {
-                      updateForm({ eventName: e.target.value });
+                      updateForm({ eventName: e.target.value }, setForm);
                     }}
                   />
                 </FormControl>
@@ -119,7 +140,7 @@ export default function EditEvent({ eventID }) {
                     type="number"
                     value={form.noVol}
                     onChange={(e) => {
-                      updateForm({ noVol: e.target.value });
+                      updateForm({ noVol: e.target.value }, setForm);
                     }}
                   />
                 </FormControl>
@@ -134,7 +155,7 @@ export default function EditEvent({ eventID }) {
                     type="datetime-local"
                     value={form.startDate}
                     onChange={(e) => {
-                      updateForm({ startDate: e.target.value });
+                      updateForm({ startDate: e.target.value }, setForm);
                     }}
                   />
                 </FormControl>
@@ -148,7 +169,7 @@ export default function EditEvent({ eventID }) {
                     min={form.startDate}
                     value={form.endDate}
                     onChange={(e) => {
-                      updateForm({ endDate: e.target.value });
+                      updateForm({ endDate: e.target.value }, setForm);
                     }}
                   />
                 </FormControl>
@@ -161,7 +182,7 @@ export default function EditEvent({ eventID }) {
                 type="file"
                 accept="image/png, image/jpeg"
                 onChange={(e) => {
-                  updateForm({ eventImage: e.target.files[0] });
+                  updateForm({ eventImage: e.target.files[0] }, setForm);
                   setImgPreview(URL.createObjectURL(e.target.files[0]));
                 }}
               />
@@ -174,7 +195,7 @@ export default function EditEvent({ eventID }) {
                 type="text"
                 value={form.eventDesc}
                 onChange={(e) => {
-                  updateForm({ eventDesc: e.target.value });
+                  updateForm({ eventDesc: e.target.value }, setForm);
                 }}
               />
             </FormControl>

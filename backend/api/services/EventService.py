@@ -53,7 +53,8 @@ class EventService:
                 return True
             else:
                 newEvent.delete()
-        return False
+                return False, mapperSerializer.errors
+        return False, eventSerializer.errors
 
     def getEventByOrg(organizer_id):
         events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(organizer_id=organizer_id, event__endDate__gte=du.timezone.now()).exclude(event__eventStatus='over')
