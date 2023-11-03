@@ -28,7 +28,10 @@ class EventParticipantManager(GenericInfoManager):
     
     def deleteSingleUserEventmap(self,eid,pid):
         try:
-            userEventMap = self.getAllRecords().filter(event_id=eid, participant_id=pid).delete()
+            userEventMap = self.getAllRecords().filter(event_id=eid, participant_id=pid)
+            if userEventMap.count() == 0:
+                return False
+            userEventMap.delete()
             return True
-        except Exception:
+        except Exception as e:
             return None
