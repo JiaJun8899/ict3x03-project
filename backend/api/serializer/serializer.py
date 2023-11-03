@@ -44,6 +44,12 @@ class OrganizerSerializer(serializers.ModelSerializer):
         model = Organizer
         fields = '__all__'
 
+class OrganizerProfileSerializer(serializers.ModelSerializer):
+    user = GenericUserSerializer()
+    class Meta:
+        model = Organizer
+        fields = '__all__'
+
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event

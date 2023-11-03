@@ -236,9 +236,12 @@ class UpdateUserAPIView(APIView):
         emergencySuccess=False
         success=False
         nokUpdateSuccess=False
-
         id = UUID(request.session["_auth_user_id"]).hex
-        valid = UserService.getUserById(id)
+        role = request.session["role"]
+        if role == "Organizer":
+            valid = OrganizerAdminService.getOrgById(id)
+        else:
+            valid = UserService.getUserById(id)
         if valid != None:
             data = {
                 "first_name": request.data["first_name"],
@@ -248,7 +251,11 @@ class UpdateUserAPIView(APIView):
             }
             if not checkDataValid(data):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-        success = UserService.updateUserProfile(data, id)
+        success,userErrors = UserService.updateUserProfile(data, id)
+        if not success:
+            return Response(userErrors,status=status.HTTP_400_BAD_REQUEST)
+        if role == "Organizer" and success:
+            return Response(status=status.HTTP_200_OK)
         emergency = EmergencyContactService.getContactById(id)
         if emergency:
             nokData = {
@@ -272,15 +279,18 @@ class GetProfileDetailsAPIView(APIView):
     def get(self, request):
         data = {}
         id = UUID(request.session["_auth_user_id"]).hex
-        # this part use the session to get id
-        valid = UserService.getUserById(id)
-
-        data["profile"] = valid
-        emergency = EmergencyContactService.getContactById(id)
-        if emergency:
-            nok = NokService.getNokById(emergency["nok"])
-            data["nok"] = nok
-        return Response(data, status=status.HTTP_200_OK)
+        role = request.session["role"]
+        if role == "Organizer":
+            data["profile"] = OrganizerAdminService.getOrgById(id)
+            return Response(data, status=status.HTTP_200_OK)
+        if role =="Normal":
+            data["profile"] = UserService.getUserById(id)
+            emergency = EmergencyContactService.getContactById(id)
+            if emergency:
+                nok = NokService.getNokById(emergency["nok"])
+                data["nok"] = nok
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class SignUpEventAPIView(APIView):

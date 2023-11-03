@@ -28,7 +28,8 @@ class UserService:
             serializer = GenericUserSerializer(instance=user, data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return True
+                return True, None
+            return False, serializer.errors
         except Exception as e:
             return False
         
