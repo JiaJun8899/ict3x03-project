@@ -28,7 +28,12 @@ import {
 } from "@chakra-ui/react";
 import { Suspense } from "react";
 // Import only what's needed
-import { useSearchParams, useRouter, useParams,notFound } from "next/navigation";
+import {
+  useSearchParams,
+  useRouter,
+  useParams,
+  notFound,
+} from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_HOST, convertTime, getRole, API_IMAGE } from "@/app/utils/utils";
@@ -73,104 +78,112 @@ const WithdrawModal = ({ eventData, cancelSignup }) => {
 
 export default function Page() {
   const [userRole, setUserRole] = useState("none");
-  const [loading, setLoading] = useState(true);    
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    getRole(setUserRole,setLoading);
+    getRole(setUserRole, setLoading);
   }, []);
-  
-  function Event(){
+
+  function Event() {
     const role = userRole.role;
-    if(role !== 'Organizer' && role !== "Normal"){
+    if (role !== "Organizer" && role !== "Normal") {
       return notFound();
     }
     const toast = useToast();
-  const searchParams = useSearchParams();
-  const search = searchParams.get("eid");
-  const [event, setEvent] = useState({
-    eid: "",
-    endDate: "",
-    eventDesc: "",
-    eventImage: null,
-    eventName: "",
-    eventStatus: "",
-    noVol: 0,
-    startDate: "",
-  });
-  useEffect(() => {
-    fetchEvent();
-  }, []);
+    const searchParams = useSearchParams();
+    const search = searchParams.get("eid");
+    const [event, setEvent] = useState({
+      eid: "",
+      endDate: "",
+      eventDesc: "",
+      eventImage: null,
+      eventName: "",
+      eventStatus: "",
+      noVol: 0,
+      startDate: "",
+    });
+    useEffect(() => {
+      fetchEvent();
+    }, []);
 
-
-  async function fetchEvent() {
-    try {
-      const response = await axios.get(`${API_HOST}/get-event/${search}`,{
-        withCredentials:true
-      });
-      setEvent(response.data.data);
+    async function fetchEvent() {
+      const response = await axios
+        .get(`${API_HOST}/get-event/${search}`, {
+          withCredentials: true,
+        })
+        .then(function (response) {
+          setEvent(response.data.data);          
+        })
+        .catch(function (error) {
+          console.log(error);
+          toast({
+            title: "Unable to fetch events",
+            status: "error",
+            duration: 3000,
+            isClosable:true
+          })
+        });
       // return response
-    } catch (error) {
     }
-  }
 
-  const signup = async () => {
-    const response = await axios
-      .post(
-        `${API_HOST}/sign-up-event/`,
-        { eid: search },
-        {
+    const signup = async () => {
+      const response = await axios
+        .post(
+          `${API_HOST}/sign-up-event/`,
+          { eid: search },
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": Cookie.get("csrftoken"),
+            },
+          }
+        )
+        .then(function (response) {
+          toast({
+            title: "Signup successful.",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
+          toast({
+            title: "Signup failed.",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+        });
+    };
+    const cancelSignup = async () => {
+      const response = await axios
+        .delete(`${API_HOST}/cancel-sign-up-event/`, {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": Cookie.get("csrftoken"),
           },
-        }
-      )
-      .then(function (response) {
-        toast({
-          title: "Signup successful.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
+          data: { eid: search },
+        })
+        .then(function (response) {
+          toast({
+            title: "Withdraw successful.",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
+          toast({
+            title: "Withdraw failed.",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
         });
-      })
-      .catch(function (error) {
-        console.log(error);
-        toast({
-          title: "Signup failed.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      });
-  };
-  const cancelSignup = async () => {
-    const response = await axios
-      .delete(`${API_HOST}/cancel-sign-up-event/`, {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": Cookie.get("csrftoken"),
-        },
-        data: { eid: search },
-      })
-      .then(function (response) {
-        toast({
-          title: "Withdraw successful.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-      })
-      .catch(function (error) {
-        console.log(error);
-        toast({
-          title: "Withdraw failed.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      });
-  };
+    };
     return (
       <>
         <Container maxW={"7xl"}>
@@ -250,12 +263,6 @@ export default function Page() {
                     </ListItem>
                     <ListItem>
                       <Text as={"span"} fontWeight={"bold"}>
-                        Number of Volunteers Needed:
-                      </Text>{" "}
-                      {event.noVol} <Link>Volunteer List</Link>
-                    </ListItem>
-                    <ListItem>
-                      <Text as={"span"} fontWeight={"bold"}>
                         Event Status:
                       </Text>{" "}
                       {event.eventStatus}
@@ -276,17 +283,12 @@ export default function Page() {
       </>
     );
   }
-  
-  return(
+
+  return (
     <div>
       <Suspense fallback={<p>Loading ...</p>}>
-        {loading ? (
-          <p>Building dashboard...</p>
-        ) : (
-          <Event userRole={userRole} />
-        )}
+        {loading ? <p>Building dashboard...</p> : <Event userRole={userRole} />}
       </Suspense>
     </div>
-  )
-  
+  );
 }

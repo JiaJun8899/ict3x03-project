@@ -60,8 +60,8 @@ export default function ForgotPasswordForm() {
   };
 
   const handleRequestOtp = async () => {
-    const response = await axios.post(
-      `${API_HOST}/auth-get-OTP/`,
+    const response = await axios.put(
+      `${API_HOST}/auth-change-password/`,
       {},
       {
         headers: {

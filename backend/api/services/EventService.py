@@ -1,4 +1,4 @@
-from api.models import EventOrganizerMapping, Organizer, Event, EventParticipant, NormalUser
+from api.models import EventOrganizerMapping, Organizer, Event, EventParticipant
 from api.serializer import (
     EventOrganizerMappingSerializer,
     EventSerializer,
@@ -17,7 +17,28 @@ class EventService:
     
     def updateEventStatus():
         events = Event.eventManager.getAllRecords().filter(endDate__lt=du.timezone.now())
-        events.update(eventStatus='closed')
+        events.update(eventStatus='over')
+    
+    def checkFullEvent(eid):
+        event = Event.eventManager.getByUUID(eid)
+        if event is None:
+            return True
+        eventParticipants = EventParticipant.eventParticipantManager.getParticipantsByEventUUID(eid)
+        if eventParticipants.count() >= event.noVol and event.eventStatus != "over":
+            return False
+        return True
+
+    def updateParticipants(eid):
+        event = Event.eventManager.getByUUID(eid)
+        if event is None:
+            return
+        eventParticipants = EventParticipant.eventParticipantManager.getParticipantsByEventUUID(eid)
+        if eventParticipants.count() >= event.noVol and event.eventStatus != "over":
+            event.eventStatus='closed'
+            event.save()
+        else:
+            event.eventStatus='open'
+            event.save()
 
     def createEvent(data, organization_id):
         eventSerializer = EventSerializer(data=data)
@@ -35,7 +56,7 @@ class EventService:
         return False
 
     def getEventByOrg(organizer_id):
-        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(organizer_id=organizer_id, event__endDate__gte=du.timezone.now(), event__eventStatus='open')
+        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(organizer_id=organizer_id, event__endDate__gte=du.timezone.now()).exclude(event__eventStatus='over')
         serializer = EventOrganizerMappingSerializer(events, many=True)
         return serializer.data
 
@@ -65,6 +86,7 @@ class EventService:
         )
         if eventSerializer.is_valid():
             eventSerializer.save()
+            EventService.updateParticipants(eid)
             return True
         return False
     
@@ -92,8 +114,6 @@ class EventService:
             return False
 
     def getParticipantsByEvent(organizer_id, eid):
-        # Check if org and event are linked
-        # If have, query the participants
         eventInstance = EventOrganizerMapping.eventMapperManager.getMapByOrgEventUUID(
             organizer_id, eid
         )
@@ -124,7 +144,7 @@ class EventService:
         return serializer.data
     
     def getAllEvent():
-        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(approval="accepted", event__endDate__gte=du.timezone.now(), event__eventStatus='open')
+        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(approval="accepted", event__endDate__gte=du.timezone.now()).exclude(event__eventStatus='over')
         # events = Event.eventManager.getAllRecords().filter(eventStatus= "open")
         serializer = AllEventOrganizerMappingSerializer(events,many=True)
         return serializer.data

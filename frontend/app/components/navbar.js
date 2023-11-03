@@ -44,7 +44,6 @@ const NavLink = (props) => {
 };
 
 export default function Nav({userRole}) {
-  // const role = userRole.role;
   if(userRole === 'none'){
     return(
       <></>
@@ -88,7 +87,6 @@ export default function Nav({userRole}) {
     <>
       <Box bg={useColorModeValue("gray.100", "gray.900")} px={4}>
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
-          {/* <Box>Logo</Box> */}
           <NextLink href={`/dashboard/`}>
             <Button variant={"link"}>Dashboard</Button>
           </NextLink>
@@ -119,10 +117,6 @@ export default function Nav({userRole}) {
                       size={"2xl"}
                       src={"https://avatars.dicebear.com/api/male/username.svg"}
                     />
-                  </Center>
-                  <br />
-                  <Center>
-                    <p>Username</p>
                   </Center>
                   <br />
                   <MenuDivider />

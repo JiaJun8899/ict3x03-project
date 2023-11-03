@@ -44,6 +44,11 @@ def checkDataValid(data):
                 return False
     return True
 
+def organiserCheck(role):
+    if role == "Organizer":
+        return True
+    return False
+
 class CheckValidEventOrg(APIView):
     def get(self, request, eid):
         organization_id = request.session["_auth_user_id"]
@@ -78,6 +83,8 @@ class EventsByOrganizationAPI(APIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser)
 
     def get(self, request):
+        if not organiserCheck(request.session["role"]):
+            return Response({"error": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
         organization_id = request.session["_auth_user_id"]
         EventService.updateEventStatus()
         eventsByOrg = EventService.getEventByOrg(organization_id)
@@ -87,6 +94,8 @@ class EventsByOrganizationAPI(APIView):
         """Create Event"""
         organization_id = request.session["_auth_user_id"]
         clientIP = get_client_ip_address(request)
+        if not organiserCheck(request.session["role"]):
+            return Response({"error": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
         try:
             if request.data["eventImage"].size > 2 * 1024 * 1024:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -157,6 +166,9 @@ class EventsByOrganizationAPI(APIView):
 class EventSingleByOrganizationAPI(APIView):
     def get(self, request, event_id):
         organization_id = request.session["_auth_user_id"]
+        if not organiserCheck(request.session["role"]):
+            return Response({"error": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+        EventService.updateParticipants(event_id)
         eventsByOrg = EventService.getEventByID(organization_id, event_id)
         return Response(eventsByOrg, status=status.HTTP_200_OK)
 
