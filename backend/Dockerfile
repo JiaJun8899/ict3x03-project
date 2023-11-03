@@ -1,14 +1,10 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
 FROM python:3.10-bullseye
-
 EXPOSE 8000
-
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
-
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
    libmariadb-dev-compat gcc                   `: MySQL client` \
 && rm -rf /var/lib/apt/lists/*

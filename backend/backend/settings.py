@@ -42,7 +42,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", os.environ.get("SECRET_KEY"))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["backend", "silly-borg.cloud"]
+ALLOWED_HOSTS = ["backend", "www.silly-borg.cloud", "silly-borg.cloud"]
 
 # User models
 # Application definition
@@ -79,7 +79,9 @@ REST_FRAMEWORK = {
     ],
 }
 if DEBUG:
-    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append("rest_framework.renderers.BrowsableAPIRenderer")
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append(
+        "rest_framework.renderers.BrowsableAPIRenderer"
+    )
 AUTH_USER_MODEL = "api.GenericUser"
 
 MIDDLEWARE = [
@@ -178,42 +180,42 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = ["https://silly-borg.cloud"]
+CSRF_TRUSTED_ORIGINS = ["https://silly-borg.cloud", "https://www.silly-borg.cloud"]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://silly-borg.cloud",
+    "https://silly-borg.cloud", "https://www.silly-borg.cloud",
 ]
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
 
 if not DEBUG:
     LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": True, #limit loggers to only the ones defined here for more security
-    "filters": {
-        "require_debug_false": {
-            "()": "django.utils.log.RequireDebugFalse",
+        "version": 1,
+        "disable_existing_loggers": True,  # limit loggers to only the ones defined here for more security
+        "filters": {
+            "require_debug_false": {
+                "()": "django.utils.log.RequireDebugFalse",
+            },
+            "require_debug_true": {
+                "()": "django.utils.log.RequireDebugTrue",
+            },
         },
-        "require_debug_true": {
-            "()": "django.utils.log.RequireDebugTrue",
+        "formatters": {
+            "simple": {
+                "format": "{levelname} {asctime} {message}",
+                "style": "{",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            },
+            "verbose": {
+                "format": "{levelname} {asctime} {name} {module} {funcName} {{'message':'{message}'}}",
+                "style": "{",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            },
         },
-    },
-    "formatters": {
-        "simple": {
-            "format": "{levelname} {asctime} {message}",
-            "style": "{",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-        "verbose": {
-            "format": "{levelname} {asctime} {name} {module} {funcName} {{'message':'{message}'}}",
-            "style": "{",
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-        },
-    },
     "handlers": {
         "console": {
             "level": "INFO",

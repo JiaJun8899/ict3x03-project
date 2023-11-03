@@ -450,8 +450,8 @@ class NormalUserTest(APITestCase):
         url = reverse('profile')
         response = self.client.get(url)    
         data ={
-            "firstname": "John",
-            "lastname": "Doe",
+            "first_name": "John",
+            "last_name": "Doe",
             "email": response.data['profile']['user']["email"],
             "phoneNum": response.data['profile']['user']["phoneNum"],
             "userName": response.data['profile']['user']["username"],

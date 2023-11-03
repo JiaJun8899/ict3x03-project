@@ -58,12 +58,15 @@ pipeline {
                     if (frontendContainer != 'running' || backendContainer != 'running' || dbContainer != 'running') {
                         // At least one container is running but not "Up," send an email
                         emailext subject: "Docker Container Status Issue",
-                            body: "One or more Docker containers are not in an 'Up' state. Please investigate.",
+                            body: "One or more Docker containers are not in an 'Up' state. Please investigate. Check console output at '$BUILD_URL' to view the results.",
                             to: '2100755@sit.singaporetech.edu.sg'
                     } else {
                         // Run backend test case if the dockers are all up
                         def testResult = sh(script: 'docker exec django_backend python manage.py test', returnStatus: true, returnStdout: true)
                         echo "Test Result:\n${testResult}"
+                        emailext subject: "Commits ready to deploye",
+                            body: "Everything is up and running! Check the semgrep report and OWASP Dependency Vulnerabilities report before deploying! Check console output at '$BUILD_URL' to view the results.",
+                            to: '2100755@sit.singaporetech.edu.sg'
                     }
 					input message: 'Code has been pulled from GitHub, please deploy', ok: 'OK'
                 }

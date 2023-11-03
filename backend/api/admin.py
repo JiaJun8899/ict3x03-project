@@ -30,7 +30,7 @@ class BaseAdmin(admin.ModelAdmin):
     #LYN DO HERE
     def save_model(self, request, obj, form, change):
         if change:  # if object is being changed
-            logger.info(f'LYNN LOGS -> User {request.user.validOrganisation} changed object {obj}.')
+            logger.info(f'LYNN LOGS -> User {request.user} changed object {obj}.')
         else:  # if object is being added
             logger.info(f'LYNN LOGS -> User {request.user} added object {obj}.')
         super().save_model(request, obj, form, change)
