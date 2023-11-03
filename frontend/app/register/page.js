@@ -49,13 +49,19 @@ export default function SignupCard() {
     form.recaptchaValue = recaptchaValue;
     try {
       await axios.post(API_HOST + "/register", form);
+      toast({
+        title: "Account Created",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       router.replace("/");
     } catch (error) {
       if ("response" in error) {
         const values = Object.values(error.response.data);
         if (values[0] != "<") {
           toast({
-            title: "Login failed",
+            title: "Register failed",
             description: values[0],
             status: "error",
             duration: 3000,
@@ -64,7 +70,7 @@ export default function SignupCard() {
         }
       } else {
         toast({
-          title: "Login failed",
+          title: "Register failed",
           description: "An error occured. Please try again",
           status: "error",
           duration: 3000,
