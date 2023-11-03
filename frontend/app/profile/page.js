@@ -21,14 +21,14 @@ import Cookie from "js-cookie";
 
 export default function ProfilePage() {
   const [userRole, setUserRole] = useState("none");
-  const [loading, setLoading] = useState(true);    
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    getRole(setUserRole,setLoading);
+    getRole(setUserRole, setLoading);
   }, []);
-  
-  function EditProfile(){
+
+  function EditProfile() {
     const role = userRole.role;
-    if(role !== "Normal"){
+    if (role !== "Normal") {
       return notFound();
     }
     const [details, setDetails] = useState({
@@ -49,27 +49,18 @@ export default function ProfilePage() {
         [field]: data,
       });
     };
-  
+
     const toast = useToast();
     useEffect(() => {
       getProfile();
     }, []);
-  
+
     async function getProfile() {
-      try {
-        const response = await axios.get(`${API_HOST}/profile/`, {
+      const response = await axios
+        .get(`${API_HOST}/profile/`, {
           withCredentials: true,
-        });
-        setDetails({
-          ...details,
-          first_name: response.data["profile"]["user"]["first_name"],
-          email: response.data["profile"]["user"]["email"],
-          last_name: response.data["profile"]["user"]["last_name"],
-          phoneNum: response.data["profile"]["user"]["phoneNum"],
-          username: response.data["profile"]["user"]["username"],
-          birthday: response.data["profile"]["birthday"],
-        });
-        if (response.data["nok"]) {
+        })
+        .then(function (response) {
           setDetails({
             ...details,
             first_name: response.data["profile"]["user"]["first_name"],
@@ -78,43 +69,52 @@ export default function ProfilePage() {
             phoneNum: response.data["profile"]["user"]["phoneNum"],
             username: response.data["profile"]["user"]["username"],
             birthday: response.data["profile"]["birthday"],
-            nokName: response.data["nok"]["name"],
-            nokPhone: response.data["nok"]["phoneNum"],
-            nokRelationship: response.data["nok"]["relationship"],
           });
-        }
-      } catch (error) {
-        console.error("There was an fetching your profile", error);
-      }
+          if (response.data["nok"]) {
+            setDetails({
+              ...details,
+              first_name: response.data["profile"]["user"]["first_name"],
+              email: response.data["profile"]["user"]["email"],
+              last_name: response.data["profile"]["user"]["last_name"],
+              phoneNum: response.data["profile"]["user"]["phoneNum"],
+              username: response.data["profile"]["user"]["username"],
+              birthday: response.data["profile"]["birthday"],
+              nokName: response.data["nok"]["name"],
+              nokPhone: response.data["nok"]["phoneNum"],
+              nokRelationship: response.data["nok"]["relationship"],
+            });
+          }
+        })
+        .catch(function (error) {
+          console.error("There was an fetching your profile", error);
+        });
     }
     async function updateProfile() {
-      try {
-        const response = await axios.put(
-          `${API_HOST}/update-user-details/`,
-          details,
-          {
-            withCredentials: true,
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": Cookie.get("csrftoken"),
-            },
-          }
-        );
-        toast({
-          title: "Profile updated successful.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
+      const response = await axios
+        .put(`${API_HOST}/update-user-details/`, details, {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": Cookie.get("csrftoken"),
+          },
+        })
+        .then(function (response) {
+          toast({
+            title: "Profile updated successful.",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
+          toast({
+            title: "Profile update failed.",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
         });
-      } catch (error) {
-        console.log(error);
-        toast({
-          title: "Profile update failed.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      }
     }
     return (
       <Flex
@@ -145,7 +145,9 @@ export default function ProfilePage() {
                     <FormLabel>First Name</FormLabel>
                     <Input
                       type="text"
-                      onChange={(e) => updateDetails("first_name", e.target.value)}
+                      onChange={(e) =>
+                        updateDetails("first_name", e.target.value)
+                      }
                       value={details.first_name}
                     />
                   </FormControl>
@@ -156,7 +158,9 @@ export default function ProfilePage() {
                     <Input
                       type="text"
                       value={details.last_name}
-                      onChange={(e) => updateDetails("last_name", e.target.value)}
+                      onChange={(e) =>
+                        updateDetails("last_name", e.target.value)
+                      }
                     />
                   </FormControl>
                 </Box>
@@ -168,7 +172,9 @@ export default function ProfilePage() {
                     <Input
                       type="tel"
                       value={details.phoneNum}
-                      onChange={(e) => updateDetails("phoneNum", e.target.value)}
+                      onChange={(e) =>
+                        updateDetails("phoneNum", e.target.value)
+                      }
                     />
                   </FormControl>
                 </Box>
@@ -192,7 +198,9 @@ export default function ProfilePage() {
                     <Input
                       type="date"
                       value={details.birthday}
-                      onChange={(e) => updateDetails("birthday", e.target.value)}
+                      onChange={(e) =>
+                        updateDetails("birthday", e.target.value)
+                      }
                     />
                   </FormControl>
                 </Stack>
@@ -223,7 +231,7 @@ export default function ProfilePage() {
                       </FormControl>
                     </Box>
                   </HStack>
-  
+
                   <HStack>
                     <Box>
                       <FormControl id="phoneNum">
@@ -258,7 +266,7 @@ export default function ProfilePage() {
       </Flex>
     );
   }
-  return(
+  return (
     <div>
       <Suspense fallback={<p>Loading ...</p>}>
         {loading ? (
@@ -268,6 +276,5 @@ export default function ProfilePage() {
         )}
       </Suspense>
     </div>
-  )
-
+  );
 }
