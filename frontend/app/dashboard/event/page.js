@@ -31,7 +31,7 @@ import { Suspense } from "react";
 import { useSearchParams, useRouter, useParams,notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_HOST, convertTime,getRole} from "@/app/utils/utils";
+import { API_HOST, convertTime, getRole, API_IMAGE } from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
 const WithdrawModal = ({ eventData, cancelSignup }) => {
@@ -45,7 +45,7 @@ const WithdrawModal = ({ eventData, cancelSignup }) => {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Delete Event Modal</ModalHeader>
+          <ModalHeader>Withdraw from event?</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             Are you sure you want to withdraw {event.eventName}?
@@ -59,7 +59,7 @@ const WithdrawModal = ({ eventData, cancelSignup }) => {
                 onClose();
               }}
             >
-              Delete Event
+              Confirm Withdraw
             </Button>
             <Button colorScheme="blue" onClick={() => onClose()}>
               Close
@@ -185,7 +185,7 @@ export default function Page() {
                 alt={"product image"}
                 src={
                   event.eventImage
-                    ? "http://localhost:8000" + event.eventImage
+                    ? API_IMAGE + event.eventImage
                     : "https://picsum.photos/200"
                 }
                 fit={"cover"}
@@ -204,7 +204,7 @@ export default function Page() {
                   {event.eventName}
                 </Heading>
               </Box>
-  
+
               <Stack
                 spacing={{ base: 4, sm: 6 }}
                 direction={"column"}
@@ -234,7 +234,7 @@ export default function Page() {
                   >
                     Event Details
                   </Text>
-  
+
                   <List spacing={2}>
                     <ListItem>
                       <Text as={"span"} fontWeight={"bold"}>

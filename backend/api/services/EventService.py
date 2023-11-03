@@ -4,6 +4,7 @@ from api.serializer import (
     EventSerializer,
     EventOrganizerMappingCreate,
     EventParticipantSerializer,
+    AllEventOrganizerMappingSerializer
 )
 import os
 from datetime import datetime, timezone
@@ -29,10 +30,12 @@ class EventService:
             if mapperSerializer.is_valid():
                 mapperSerializer.save()
                 return True
+            else:
+                newEvent.delete()
         return False
 
     def getEventByOrg(organizer_id):
-        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(organizer_id=organizer_id, approval="accepted",event__endDate__gte=du.timezone.now(), event__eventStatus='open')
+        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(organizer_id=organizer_id, event__endDate__gte=du.timezone.now(), event__eventStatus='open')
         serializer = EventOrganizerMappingSerializer(events, many=True)
         return serializer.data
 
@@ -121,6 +124,7 @@ class EventService:
         return serializer.data
     
     def getAllEvent():
-        events = Event.eventManager.getAllRecords().filter(eventStatus= "open")
-        serializer = EventSerializer(events,many=True)
+        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(approval="accepted", event__endDate__gte=du.timezone.now(), event__eventStatus='open')
+        # events = Event.eventManager.getAllRecords().filter(eventStatus= "open")
+        serializer = AllEventOrganizerMappingSerializer(events,many=True)
         return serializer.data
