@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import Cookie from "js-cookie";
 import axios from "axios";
-import { API_HOST} from "@/app/utils/utils";
+import { API_HOST } from "@/app/utils/utils";
 
 export default function LoginPage() {
   const [otp, setOtp] = useState("");
@@ -28,7 +28,7 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_HOST}/auth-login/`,
         { username: email, password: password },
         {
@@ -39,10 +39,7 @@ export default function LoginPage() {
           withCredentials: true,
         }
       );
-
-      if (response.status === 200) {
-        const otpResponse = await handleRequestOtp();
-      }
+      const otpResponse = await handleRequestOtp();
     } catch (error) {
       toast({
         title: "Login failed.",
@@ -63,7 +60,7 @@ export default function LoginPage() {
 
   const handleRequestOtp = async () => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_HOST}/auth-get-OTP/`,
         {},
         {
@@ -74,17 +71,14 @@ export default function LoginPage() {
           withCredentials: true,
         }
       );
-
-      if (response.status === 200) {
-        setOtpSent(true);
-        toast({
-          title: "OTP Sent.",
-          description: "Check your email for the OTP!",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-      }
+      setOtpSent(true);
+      toast({
+        title: "OTP Sent.",
+        description: "Check your email for the OTP!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
     } catch (error) {
       toast({
         title: "OTP Sent.",
@@ -98,7 +92,7 @@ export default function LoginPage() {
 
   const verifyOTP = async () => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_HOST}/auth-verify-OTP/`,
         { OTP: otp },
         {
@@ -109,20 +103,17 @@ export default function LoginPage() {
           withCredentials: true,
         }
       );
-
-      if (response.status === 200) {
-        setOtpSent(true);
-        toast({
-          title: "OTP Verification.",
-          description: "LOGIN COMPLETE",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-        router.push("/dashboard"); // Redirect to dashboard
-      }
+      setOtpSent(true);
+      toast({
+        title: "OTP Verification.",
+        description: "LOGIN COMPLETE",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      router.push("/dashboard"); // Redirect to dashboard
     } catch (error) {
-      console.log(error);
+      console.error("Error Verifying OTP");
       toast({
         title: "OTP Verification.",
         description: "OTP WRONG",
@@ -196,7 +187,7 @@ export default function LoginPage() {
                     router.push("/resetPassword");
                   }}
                 >
-                    Forgot your password!?!
+                  Forgot your password!?!
                 </Button>
                 <Button
                   variant={"link"}
