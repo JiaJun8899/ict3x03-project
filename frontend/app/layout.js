@@ -2,12 +2,9 @@
 import { Providers } from "./providers";
 import { Suspense } from "react";
 import Nav from "./components/navbar";
-import { usePathname } from "next/navigation";
-import axios from "axios";
-import { API_HOST, getRole } from "@/app/utils/utils";
+import { getRole } from "@/app/utils/utils";
 import { useEffect, useState } from "react";
 export default function RootLayout({ children }) {
-  const pathname = usePathname();
   const [userRole, setUserRole] = useState("none");
   const [loading, setLoading] = useState(true);
 

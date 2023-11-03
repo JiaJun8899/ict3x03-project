@@ -50,10 +50,11 @@ class EventService:
             )
             if mapperSerializer.is_valid():
                 mapperSerializer.save()
-                return True
+                return True, None
             else:
                 newEvent.delete()
-        return False
+                return False, mapperSerializer.errors
+        return False, eventSerializer.errors
 
     def getEventByOrg(organizer_id):
         events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(organizer_id=organizer_id, event__endDate__gte=du.timezone.now()).exclude(event__eventStatus='over')
@@ -87,8 +88,8 @@ class EventService:
         if eventSerializer.is_valid():
             eventSerializer.save()
             EventService.updateParticipants(eid)
-            return True
-        return False
+            return True, None
+        return False, eventSerializer.errors
     
     def checkPastEvent(self,eid):
         eventInstance = Event.eventManager.getByUUID(eid) 

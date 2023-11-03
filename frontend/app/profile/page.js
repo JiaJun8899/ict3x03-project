@@ -28,7 +28,7 @@ export default function ProfilePage() {
 
   function EditProfile() {
     const role = userRole.role;
-    if (role !== "Normal") {
+    if (role !== "Normal" || role !== "Organizer") {
       return notFound();
     }
     const [details, setDetails] = useState({
@@ -41,7 +41,6 @@ export default function ProfilePage() {
       nokName: "",
       nokPhone: "",
       nokRelationship: "",
-      birthday: "",
     });
     const updateDetails = (field, data) => {
       setDetails({
@@ -56,11 +55,20 @@ export default function ProfilePage() {
     }, []);
 
     async function getProfile() {
-      const response = await axios
-        .get(`${API_HOST}/profile/`, {
+      try {
+        const response = await axios.get(`${API_HOST}/profile/`, {
           withCredentials: true,
-        })
-        .then(function (response) {
+        });
+        console.log(response.data)
+        setDetails({
+          ...details,
+          first_name: response.data["profile"]["user"]["first_name"],
+          email: response.data["profile"]["user"]["email"],
+          last_name: response.data["profile"]["user"]["last_name"],
+          phoneNum: response.data["profile"]["user"]["phoneNum"],
+          username: response.data["profile"]["user"]["username"],
+        });
+        if (response.data["nok"]) {
           setDetails({
             ...details,
             first_name: response.data["profile"]["user"]["first_name"],
@@ -68,53 +76,58 @@ export default function ProfilePage() {
             last_name: response.data["profile"]["user"]["last_name"],
             phoneNum: response.data["profile"]["user"]["phoneNum"],
             username: response.data["profile"]["user"]["username"],
-            birthday: response.data["profile"]["birthday"],
+            nokName: response.data["nok"]["name"],
+            nokPhone: response.data["nok"]["phoneNum"],
+            nokRelationship: response.data["nok"]["relationship"],
           });
-          if (response.data["nok"]) {
-            setDetails({
-              ...details,
-              first_name: response.data["profile"]["user"]["first_name"],
-              email: response.data["profile"]["user"]["email"],
-              last_name: response.data["profile"]["user"]["last_name"],
-              phoneNum: response.data["profile"]["user"]["phoneNum"],
-              username: response.data["profile"]["user"]["username"],
-              birthday: response.data["profile"]["birthday"],
-              nokName: response.data["nok"]["name"],
-              nokPhone: response.data["nok"]["phoneNum"],
-              nokRelationship: response.data["nok"]["relationship"],
-            });
-          }
-        })
-        .catch(function (error) {
-          console.error("There was an fetching your profile", error);
+        }
+      } catch (error) {
+        console.log(error)
+        toast({
+          title: "Failed to get Profile",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
         });
+      }
     }
     async function updateProfile() {
-      const response = await axios
-        .put(`${API_HOST}/update-user-details/`, details, {
+      try {
+        await axios.put(`${API_HOST}/update-user-details/`, details, {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": Cookie.get("csrftoken"),
           },
-        })
-        .then(function (response) {
+        });
+        toast({
+          title: "Profile updated successful.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      } catch (error) {
+        if ("response" in error) {
+          const values = Object.values(error.response.data);
+          if (values[0] != "<") {
+            toast({
+              title: "Update failed",
+              description: values[0],
+              status: "error",
+              duration: 3000,
+              isClosable: true,
+            });
+          }
+        } else {
           toast({
-            title: "Profile updated successful.",
-            status: "success",
-            duration: 3000,
-            isClosable: true,
-          });
-        })
-        .catch(function (error) {
-          console.log(error);
-          toast({
-            title: "Profile update failed.",
+            title: "Update failed",
+            description: "An error occured. Please try again",
             status: "error",
             duration: 3000,
             isClosable: true,
           });
-        });
+        }
+      }
     }
     return (
       <Flex
@@ -187,79 +200,64 @@ export default function ProfilePage() {
                   onChange={(e) => updateDetails("email", e.target.value)}
                 />
               </FormControl>
-              <Stack spacing={10} pt={2}>
-                <Stack
-                  direction={{ base: "column", sm: "row" }}
-                  align={"start"}
-                  justify={"space-between"}
-                >
-                  <FormControl id="email">
-                    <FormLabel>Birthday</FormLabel>
-                    <Input
-                      type="date"
-                      value={details.birthday}
-                      onChange={(e) =>
-                        updateDetails("birthday", e.target.value)
-                      }
-                    />
-                  </FormControl>
+              {role === "Normal" ? (
+                <Stack spacing={10} pt={2}>
+                  <Stack>
+                    <HStack>
+                      <Box>
+                        <FormControl id="nokName">
+                          <FormLabel>NOK</FormLabel>
+                          <Input
+                            type="text"
+                            value={details.nokName}
+                            onChange={(e) =>
+                              updateDetails("nokName", e.target.value)
+                            }
+                          />
+                        </FormControl>
+                      </Box>
+                      <Box>
+                        <FormControl id="relationship">
+                          <FormLabel>Relationship</FormLabel>
+                          <Input
+                            type="text"
+                            value={details.nokRelationship}
+                            onChange={(e) =>
+                              updateDetails("nokRelationship", e.target.value)
+                            }
+                          />
+                        </FormControl>
+                      </Box>
+                    </HStack>
+                    <HStack>
+                      <Box>
+                        <FormControl id="phoneNum">
+                          <FormLabel>Phone Number</FormLabel>
+                          <Input
+                            type="tel"
+                            value={details.nokPhone}
+                            onChange={(e) =>
+                              updateDetails("nokPhone", e.target.value)
+                            }
+                          />
+                        </FormControl>
+                      </Box>
+                    </HStack>
+                  </Stack>
                 </Stack>
-                <Stack>
-                  <HStack>
-                    <Box>
-                      <FormControl id="nokName">
-                        <FormLabel>NOK</FormLabel>
-                        <Input
-                          type="text"
-                          value={details.nokName}
-                          onChange={(e) =>
-                            updateDetails("nokName", e.target.value)
-                          }
-                        />
-                      </FormControl>
-                    </Box>
-                    <Box>
-                      <FormControl id="relationship">
-                        <FormLabel>Relationship</FormLabel>
-                        <Input
-                          type="text"
-                          value={details.nokRelationship}
-                          onChange={(e) =>
-                            updateDetails("nokRelationship", e.target.value)
-                          }
-                        />
-                      </FormControl>
-                    </Box>
-                  </HStack>
-
-                  <HStack>
-                    <Box>
-                      <FormControl id="phoneNum">
-                        <FormLabel>Phone Number</FormLabel>
-                        <Input
-                          type="tel"
-                          value={details.nokPhone}
-                          onChange={(e) =>
-                            updateDetails("nokPhone", e.target.value)
-                          }
-                        />
-                      </FormControl>
-                    </Box>
-                  </HStack>
-                </Stack>
-                <Button
-                  onClick={updateProfile}
-                  loadingText="Submitting"
-                  size="lg"
-                  bg={"blue.400"}
-                  color={"white"}
-                  _hover={{
-                    bg: "blue.500",
-                  }}
-                >
-                  Update Profile
-                </Button>
-              </Stack>
+              ) : null}
+              <Button
+                onClick={updateProfile}
+                loadingText="Submitting"
+                size="lg"
+                bg={"blue.400"}
+                color={"white"}
+                _hover={{
+                  bg: "blue.500",
+                }}
+              >
+                Update Profile
+              </Button>
             </Stack>
           </Box>
         </Stack>

@@ -43,11 +43,9 @@ const NavLink = (props) => {
   );
 };
 
-export default function Nav({userRole}) {
-  if(userRole === 'none'){
-    return(
-      <></>
-    )
+export default function Nav({ userRole }) {
+  if (userRole === "none") {
+    return <></>;
   }
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -55,7 +53,7 @@ export default function Nav({userRole}) {
 
   async function logout() {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${API_HOST}/auth-logout/`,
         {},
         {
@@ -73,7 +71,6 @@ export default function Nav({userRole}) {
         isClosable: true,
       });
     } catch (error) {
-      console.log(error)
       toast({
         title: "Logout failed.",
         status: "error",

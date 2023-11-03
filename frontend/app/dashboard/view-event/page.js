@@ -12,8 +12,8 @@ const EventDetails = dynamic(() => import("./EventDetail"), {
 });
 
 export default function Page() {
-    const searchParams = useSearchParams();
-    const eventID = searchParams.get("event");
+  const searchParams = useSearchParams();
+  const eventID = searchParams.get("event");
   const [validEvent, setValidEvent] = useState("none");
   const [loading, setLoading] = useState(true);
   async function getValid() {
@@ -26,7 +26,7 @@ export default function Page() {
       );
       setValidEvent(response.data);
     } catch (error) {
-      console.error("There was an fetching your profile", error);
+      console.error("There was an fetching your auth");
     } finally {
       setLoading(false);
     }
