@@ -8,28 +8,20 @@ import {
   Td,
   TableContainer,
   Stack,
-  Text,
   Button,
-  Box,
   Heading,
   Image,
   Input,
   FormControl,
+  useToast,
 } from "../providers";
 import NextLink from "next/link";
 import React, { useState, useEffect } from "react";
-import { DateTime } from "luxon";
 import axios from "axios";
-import { API_HOST, API_IMAGE } from "@/app/utils/utils";
+import { API_HOST, API_IMAGE, convertTime } from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
 function EventRow({ event, index }) {
-  const startDate = DateTime.fromISO(event.startDate)
-    .toJSDate()
-    .toLocaleString("en-SG");
-  const endDate = DateTime.fromISO(event.endDate)
-    .toJSDate()
-    .toLocaleString("en-SG");
   return (
     <Tr>
       <Td>
@@ -41,10 +33,9 @@ function EventRow({ event, index }) {
           }
         />
       </Td>
-      {/* <Td>{event.organizer}</Td> */}
       <Td>{event.eventName}</Td>
-      <Td>{startDate}</Td>
-      <Td>{endDate}</Td>
+      <Td>{convertTime(event.startDate)}</Td>
+      <Td>{convertTime(event.endDate)}</Td>
       <Td>{event.eventStatus}</Td>
       <Td>
         <NextLink href={`dashboard/event?eid=${event.eid}`}>
@@ -55,35 +46,45 @@ function EventRow({ event, index }) {
   );
 }
 
-async function submitSearch(searchText, setAllEvents) {
-  try {
-    const response = await axios.post(
-      `${API_HOST}/search-events/`,
-      { name: searchText },
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": Cookie.get("csrftoken"),
-        },
-      }
-    );
-    setAllEvents(response.data);
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 export default function RegularDashboard() {
   const [events, setEvents] = useState([]);
+  const toast = useToast();
   async function getAllData() {
     try {
-      const response = await axios.get(`${API_HOST}/get-all-events/`,{
-        withCredentials:true
+      const response = await axios.get(`${API_HOST}/get-all-events/`, {
+        withCredentials: true,
       });
       setEvents(response.data);
     } catch (error) {
-      console.log(error);
+      toast({
+        title: "Failed to get events.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }
+  async function submitSearch(searchText, setAllEvents) {
+    try {
+      await axios.post(
+        `${API_HOST}/search-events/`,
+        { name: searchText },
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": Cookie.get("csrftoken"),
+          },
+        }
+      );
+      setAllEvents(response.data);
+    } catch (error) {
+      toast({
+        title: "Searching failed.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   }
   useEffect(() => {
@@ -113,13 +114,12 @@ export default function RegularDashboard() {
           </Button>
         </FormControl>
       </Stack>
-      <Stack m={8}
-      direction={"row"}>
+      <Stack m={8} direction={"row"}>
         <NextLink href={`/dashboard/upcoming-event/`}>
-        <Button variant={"link"}>Upcoming Events</Button>
+          <Button variant={"link"}>Upcoming Events</Button>
         </NextLink>
         <NextLink href={`/dashboard/past-event/`}>
-        <Button variant={"link"}>Past Events</Button>
+          <Button variant={"link"}>Past Events</Button>
         </NextLink>
       </Stack>
       <Stack>
@@ -131,7 +131,6 @@ export default function RegularDashboard() {
             <Thead>
               <Tr>
                 <Th>Image</Th>
-                {/* <Th>Organiser</Th> */}
                 <Th>Event Name</Th>
                 <Th>Start Date</Th>
                 <Th>End Date</Th>
