@@ -36,7 +36,7 @@ services:
       - ./jenkins/jenkins_home:/var/jenkins_home
       - ./docker.env:/home/docker.env
     environment:
-     - JENKINS_OPTS=--prefix=/jenkins --httpsPort=8443
+     - JENKINS_OPTS=--prefix=/jenkins --httpsPort=8443 --httpsKeyStore=/var/jenkins_home/certs/jenkins.jks --httpsKeyStorePassword=whatp@ssw0rd 
     security_opt:
       - no-new-privileges:true
     networks:
