@@ -10,8 +10,6 @@ services:
     container_name: backend_database
     env_file: ./docker.env
     restart: always
-    volumes:
-      - ./backend/database:/var/lib/mysql
     ports:
       - "3306"
     healthcheck:
