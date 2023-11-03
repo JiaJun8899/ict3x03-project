@@ -50,7 +50,7 @@ class EventService:
             )
             if mapperSerializer.is_valid():
                 mapperSerializer.save()
-                return True
+                return True, None
             else:
                 newEvent.delete()
                 return False, mapperSerializer.errors
