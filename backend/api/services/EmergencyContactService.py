@@ -24,6 +24,6 @@ class EmergencyContactService:
                 nok_id= nok_id
             )
             serializer = EmergencyContactsSerializer(contact)
-            return True
+            return True, None
         except Exception as e:
             return False

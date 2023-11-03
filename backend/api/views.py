@@ -108,7 +108,7 @@ class EventsByOrganizationAPI(APIView):
                 "eventImage": request.data["eventImage"],
             }
         except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({'errors':"Some Fields are Missing"}, status=status.HTTP_400_BAD_REQUEST)
         success, errors = EventService.createEvent(data, organization_id)
         if success:
             eventName = sanitiseString(request.data["eventName"])
@@ -116,6 +116,7 @@ class EventsByOrganizationAPI(APIView):
             return Response(status=status.HTTP_200_OK)
         else:
             generalLogger.info(f"views.EventsByOrganizationAPI.post {clientIP} {{'organizer' : '{organization_id}', 'message' : 'Failed to create event'}}")
+            print(errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
@@ -256,22 +257,24 @@ class UpdateUserAPIView(APIView):
             return Response(userErrors,status=status.HTTP_400_BAD_REQUEST)
         if role == "Organizer" and success:
             return Response(status=status.HTTP_200_OK)
-        emergency = EmergencyContactService.getContactById(id)
-        if emergency:
-            nokData = {
+        if success:
+            emergency = EmergencyContactService.getContactById(id)
+            if emergency:
+                nokData = {
                 "name": request.data["nokName"],
                 "relationship": request.data["nokRelationship"],
                 "phoneNum": request.data["nokPhone"],
-            }
-            if not checkDataValid(nokData):
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])            
-        else:
-            with transaction.atomic():
-                newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
-                emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)     
-        if ((success and nokUpdateSuccess) or emergencySuccess):        
-            return Response(status=status.HTTP_200_OK)
+                }
+                if not checkDataValid(nokData):
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                nokUpdateSuccess, errors = NokService.updateNok(nokData, emergency["nok"])            
+            else:
+                with transaction.atomic():
+                    newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
+                    emergencySuccess, errors = EmergencyContactService.createNewContact(newNok["id"],id)     
+            if ((success and nokUpdateSuccess) or emergencySuccess):        
+                return Response(status=status.HTTP_200_OK)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -28,9 +28,9 @@ export default function ProfilePage() {
 
   function EditProfile() {
     const role = userRole.role;
-    // if (role !== "Normal") {
-    //   return notFound();
-    // }
+    if (role !== "Normal" || role !== "Organizer") {
+      return notFound();
+    }
     const [details, setDetails] = useState({
       first_name: "",
       email: "",
@@ -41,7 +41,6 @@ export default function ProfilePage() {
       nokName: "",
       nokPhone: "",
       nokRelationship: "",
-      birthday: "",
     });
     const updateDetails = (field, data) => {
       setDetails({
@@ -68,7 +67,6 @@ export default function ProfilePage() {
           last_name: response.data["profile"]["user"]["last_name"],
           phoneNum: response.data["profile"]["user"]["phoneNum"],
           username: response.data["profile"]["user"]["username"],
-          birthday: response.data["profile"]["birthday"],
         });
         if (response.data["nok"]) {
           setDetails({
@@ -78,7 +76,6 @@ export default function ProfilePage() {
             last_name: response.data["profile"]["user"]["last_name"],
             phoneNum: response.data["profile"]["user"]["phoneNum"],
             username: response.data["profile"]["user"]["username"],
-            birthday: response.data["profile"]["birthday"],
             nokName: response.data["nok"]["name"],
             nokPhone: response.data["nok"]["phoneNum"],
             nokRelationship: response.data["nok"]["relationship"],
@@ -203,24 +200,8 @@ export default function ProfilePage() {
                   onChange={(e) => updateDetails("email", e.target.value)}
                 />
               </FormControl>
-              {role === "organizer" ? (
+              {role === "Normal" ? (
                 <Stack spacing={10} pt={2}>
-                  <Stack
-                    direction={{ base: "column", sm: "row" }}
-                    align={"start"}
-                    justify={"space-between"}
-                  >
-                    <FormControl id="birthday">
-                      <FormLabel>Birthday</FormLabel>
-                      <Input
-                        type="date"
-                        value={details.birthday}
-                        onChange={(e) =>
-                          updateDetails("birthday", e.target.value)
-                        }
-                      />
-                    </FormControl>
-                  </Stack>
                   <Stack>
                     <HStack>
                       <Box>
