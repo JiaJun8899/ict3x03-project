@@ -36,6 +36,8 @@ services:
     environment:
       NODE_ENV: production
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     networks:
       - production
   backend:
@@ -43,15 +45,19 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
+    read_only: true
     ports:
       - "8000"
     volumes:
-      - ./backend:/app/backend
+      - ./backend/backend/logs:/app/backend/backend/logs
+      - ./backend/mediafiles:/app/backend/mediafiles
     env_file: ./docker.env
     command: bash -c "python manage.py migrate; if [[ $$? -ne 0 ]]; then sleep infinity; else python manage.py runserver 0.0.0.0:8000; fi"
     restart: unless-stopped
     depends_on:
       database:
         condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
     networks:
       - production
