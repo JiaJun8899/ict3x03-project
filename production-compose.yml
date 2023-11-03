@@ -7,6 +7,9 @@ networks:
 services:
   database:
     image: mariadb
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     container_name: backend_database_prod
     env_file: ./docker.env
     restart: always
@@ -51,7 +54,7 @@ services:
     volumes:
       - ./backend:/app/backend
     env_file: ./docker.env
-    command: bash -c "python manage.py migrate; if [[ $$? -ne 0 ]]; then sleep infinity; else python manage.py runserver 0.0.0.0:8000; fi"
+    command: python manage.py runserver
     restart: unless-stopped
     depends_on:
       database:
