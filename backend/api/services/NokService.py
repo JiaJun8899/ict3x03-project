@@ -40,6 +40,7 @@ class NokService:
             serializer = NOKSerializer(instance=user, data=data)
             if serializer.is_valid():
                 serializer.save()
-                return True
+                return True, None
+            return False, serializer.errors
         except Exception as e:
             return False

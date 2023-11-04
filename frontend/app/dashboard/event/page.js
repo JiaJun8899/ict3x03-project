@@ -13,7 +13,6 @@ import {
   useColorModeValue,
   List,
   ListItem,
-  Link,
   Button,
   ButtonGroup,
   Modal,
@@ -28,12 +27,7 @@ import {
 } from "@chakra-ui/react";
 import { Suspense } from "react";
 // Import only what's needed
-import {
-  useSearchParams,
-  useRouter,
-  useParams,
-  notFound,
-} from "next/navigation";
+import { useSearchParams, notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_HOST, convertTime, getRole, API_IMAGE } from "@/app/utils/utils";
@@ -53,7 +47,7 @@ const WithdrawModal = ({ eventData, cancelSignup }) => {
           <ModalHeader>Withdraw from event?</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            Are you sure you want to withdraw {event.eventName}?
+            Are you sure you want to withdraw from {event.eventName}?
           </ModalBody>
           <ModalFooter>
             <Button
@@ -106,28 +100,24 @@ export default function Page() {
     }, []);
 
     async function fetchEvent() {
-      const response = await axios
-        .get(`${API_HOST}/get-event/${search}`, {
+      try {
+        const response = await axios.get(`${API_HOST}/get-event/${search}`, {
           withCredentials: true,
-        })
-        .then(function (response) {
-          setEvent(response.data.data);          
-        })
-        .catch(function (error) {
-          console.log(error);
-          toast({
-            title: "Unable to fetch events",
-            status: "error",
-            duration: 3000,
-            isClosable:true
-          })
         });
-      // return response
+        setEvent(response.data.data);
+      } catch (error) {
+        toast({
+          title: "Unable to fetch events",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     }
 
     const signup = async () => {
-      const response = await axios
-        .post(
+      try {
+        await axios.post(
           `${API_HOST}/sign-up-event/`,
           { eid: search },
           {
@@ -137,52 +127,46 @@ export default function Page() {
               "X-CSRFToken": Cookie.get("csrftoken"),
             },
           }
-        )
-        .then(function (response) {
-          toast({
-            title: "Signup successful.",
-            status: "success",
-            duration: 3000,
-            isClosable: true,
-          });
-        })
-        .catch(function (error) {
-          console.log(error);
-          toast({
-            title: "Signup failed.",
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-          });
+        );
+        toast({
+          title: "Signup successful.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
         });
+      } catch (error) {
+        toast({
+          title: "Signup failed.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     };
     const cancelSignup = async () => {
-      const response = await axios
-        .delete(`${API_HOST}/cancel-sign-up-event/`, {
+      try {
+        await axios.delete(`${API_HOST}/cancel-sign-up-event/`, {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": Cookie.get("csrftoken"),
           },
           data: { eid: search },
-        })
-        .then(function (response) {
-          toast({
-            title: "Withdraw successful.",
-            status: "success",
-            duration: 3000,
-            isClosable: true,
-          });
-        })
-        .catch(function (error) {
-          console.log(error);
-          toast({
-            title: "Withdraw failed.",
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-          });
         });
+        toast({
+          title: "Withdraw successful.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      } catch (error) {
+        toast({
+          title: "Withdraw failed.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     };
     return (
       <>

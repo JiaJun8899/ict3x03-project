@@ -1,6 +1,7 @@
 "use client";
 import { DateTime } from "luxon";
 import axios from "axios";
+
 export const API_HOST = "https://silly-borg.cloud/api";
 export const API_IMAGE = "https://silly-borg.cloud";
 
@@ -24,7 +25,7 @@ export async function getRole(setUserRole, setLoading) {
     });
     setUserRole(response.data);
   } catch (error) {
-    console.error("There was an fetching your role");
+    console.error("Error getting your Role")
   } finally {
     setLoading(false);
   }

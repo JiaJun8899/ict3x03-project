@@ -17,9 +17,23 @@ load_dotenv()
 class GetAllEventTest(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "Open", noVol= 1233, eventDesc=123123)
-        Event.eventManager.create(eventName="test Event1", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "Open", noVol= 1233, eventDesc=123123)
-        Event.eventManager.create(eventName="test Event2", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "Open", noVol= 1233, eventDesc=123123)
+        self.test_user = GenericUser.objects.create_user(
+            username='test@test.com',
+            email='test@test.com',
+            first_name='test',
+            last_name='test',
+            phoneNum='91234567',
+            nric='567H',
+            password='testiepassword',
+        )
+        self.test_org = Organizer.organizerManager.create(user_id=self.test_user.id)
+        self.event = Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now() + datetime.timedelta(days=2), eventImage = None, noVol= 1233, eventDesc=123123, eventStatus= "Open")
+        self.eventMap = EventOrganizerMapping.eventMapperManager.create(event_id = self.event.eid, organizer_id = self.test_org.user_id, approval = "accepted")
+        self.event1 = Event.eventManager.create(eventName="test Event1", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now() + datetime.timedelta(days=2), eventImage = None, noVol= 1233, eventDesc=123123, eventStatus= "Open")
+        self.eventMap1 = EventOrganizerMapping.eventMapperManager.create(event_id = self.event1.eid, organizer_id = self.test_org.user_id, approval = "accepted")
+        self.event2 = Event.eventManager.create(eventName="test Event2", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now() + datetime.timedelta(days=2), eventImage = None, noVol= 1233, eventDesc=123123, eventStatus= "Open")
+        self.eventMap = EventOrganizerMapping.eventMapperManager.create(event_id = self.event2.eid, organizer_id = self.test_org.user_id, approval = "accepted")
+
 
     def test_all_events_Fail(self):
         url = reverse('get-all-events')
@@ -28,12 +42,12 @@ class GetAllEventTest(APITestCase):
 
     def test_all_event(self):
         norm_generic = GenericUser.objects.create_user(
-            username='test@test.com',
-            email='test@test.com',
+            username='test@norm.com',
+            email='test@norm.com',
             first_name='test',
             last_name='test',
             phoneNum='91234567',
-            nric='S1234567H',
+            nric='567H',
             password='testiepassword',
         )
         self.test_org = NormalUser.normalUserManager.create(user_id=norm_generic.id, birthday="2001-03-12")
@@ -56,7 +70,7 @@ class RegisterTest(APITestCase):
             first_name='test',
             last_name='test',
             phoneNum='91234567',
-            nric='S1234567H',
+            nric='567H',
             password='testiepassword',
         )
         Organizer.organizerManager.create(user_id=org_generic.id)
@@ -66,7 +80,7 @@ class RegisterTest(APITestCase):
             first_name='test',
             last_name='test',
             phoneNum='91234567',
-            nric='S1234567H',
+            nric='567H',
             password='testiepassword',
         )
         NormalUser.normalUserManager.create(user_id=norm_generic.id, birthday="2001-03-12")
@@ -109,7 +123,7 @@ class RegisterTest(APITestCase):
         url = reverse('register')
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    
+
 class OrganizerTest(APITestCase):
     def generate_photo_file(self, width=100, height=100):
         file = io.BytesIO()
@@ -127,7 +141,7 @@ class OrganizerTest(APITestCase):
             first_name='test',
             last_name='test',
             phoneNum='91234567',
-            nric='S1234567H',
+            nric='567H',
             password='testiepassword',
         )
         self.test_org = Organizer.organizerManager.create(user_id=self.test_user.id)
@@ -135,7 +149,7 @@ class OrganizerTest(APITestCase):
         self.eventMap = EventOrganizerMapping.eventMapperManager.create(event_id = self.event.eid, organizer_id = self.test_org.user_id, approval = "accepted")
         self.client.login(username="test@test.com", password="testiepassword")
         session = self.client.session
-        session['role'] = "organizer"
+        session['role'] = "Organizer"
         session.save()
     
     def test_create_event(self):
@@ -272,7 +286,7 @@ class LoginAPITests(APITestCase):
             first_name='John',
             last_name='Doe',
             phoneNum='91234567',
-            nric='S1234567D',
+            nric='567D',
             password='test_password',
         )
 
@@ -362,30 +376,43 @@ class LoginAPITests(APITestCase):
 class NormalUserTest(APITestCase):
     def setUp(self):
         self.client = APIClient()
-        event1 = Event.eventManager.create(eventName="test Event", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
-        event2 = Event.eventManager.create(eventName="test Event2", startDate="2023-11-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
-        event3 = Event.eventManager.create(eventName="test Event1", startDate="2023-12-13T04:34:00+08:00", endDate = timezone.now()+ datetime.timedelta(days=2), eventImage = None, eventStatus= "open", noVol= 1233, eventDesc=123123)
+        self.test_user = GenericUser.objects.create_user(
+            username='test@test.com',
+            email='test@test.com',
+            first_name='test',
+            last_name='test',
+            phoneNum='91234567',
+            nric='567H',
+            password='testiepassword',
+        )
+        self.test_org = Organizer.organizerManager.create(user_id=self.test_user.id)
+        self.event = Event.eventManager.create(eventName="test Event", startDate=timezone.now() + datetime.timedelta(days=1), endDate = timezone.now() + datetime.timedelta(days=2), eventImage = None, noVol= 1233, eventDesc=123123, eventStatus= "open")
+        self.eventMap = EventOrganizerMapping.eventMapperManager.create(event_id = self.event.eid, organizer_id = self.test_org.user_id, approval = "accepted")
+        self.event1 = Event.eventManager.create(eventName="test Event1", startDate="2023-10-13T04:34:00+08:00", endDate = timezone.now() + datetime.timedelta(days=2), eventImage = None, noVol= 1233, eventDesc=123123, eventStatus= "open")
+        self.eventMap1 = EventOrganizerMapping.eventMapperManager.create(event_id = self.event1.eid, organizer_id = self.test_org.user_id, approval = "accepted")
+        self.event2 = Event.eventManager.create(eventName="test Event2", startDate=timezone.now() + datetime.timedelta(days=1), endDate = timezone.now() + datetime.timedelta(days=3), eventImage = None, noVol= 1233, eventDesc=123123, eventStatus= "open")
+        self.eventMap = EventOrganizerMapping.eventMapperManager.create(event_id = self.event2.eid, organizer_id = self.test_org.user_id, approval = "accepted")
         norm_generic = GenericUser.objects.create_user(
             username='test@normal1.com',
             email='test@normal1.com',
             first_name='test1',
             last_name='test1',
             phoneNum='91234568',
-            nric='S1234568H',
+            nric='568H',
             password='testiepassword',
         )
         norm_user =  NormalUser.normalUserManager.create(user_id=norm_generic.id, birthday="2001-03-12")
-        signup1 = EventParticipant.eventParticipantManager.create(event=event1, participant=norm_user)
-        signup2 = EventParticipant.eventParticipantManager.create(event=event2,participant=norm_user)
+        signup1 = EventParticipant.eventParticipantManager.create(event=self.event1, participant=norm_user)
+        signup2 = EventParticipant.eventParticipantManager.create(event=self.event2,participant=norm_user)
         
         self.client.login(username="test@normal1.com", password="testiepassword")
         session = self.client.session
-        session['role'] = "normal"
+        session['role'] = "Normal"
         session.save()
     
     def test_get_profile(self):
         url = reverse('profile')
-        response = self.client.get(url)    
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['profile']['user']['username'],"test@normal1.com")
         self.assertEqual(response.data['profile']['birthday'],"2001-03-12")
@@ -410,15 +437,12 @@ class NormalUserTest(APITestCase):
         self.assertEqual(len(response.data),1)
 
     def test_signup_event(self):
-        event = Event.eventManager.filter(eventName="test Event1")
         url = reverse("event-sign-up")
         data = {
-            'eid' :event.first().eid,
+            'eid' :self.event.eid,
         }
-        response = self.client.post(url,data=data,format='json')
+        response = self.client.post(url,data=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # response2 = self.client.post(url,data=data,format='json')
-        # self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
         url = reverse('get-upcoming-events')
         response = self.client.get(url)
         self.assertEqual(len(response.data),2)
@@ -460,17 +484,12 @@ class NormalUserTest(APITestCase):
             "nokPhone":nok.phoneNum                
         }
         url = reverse('update-user-details')
-        response = self.client.put(url,data=data,format='json')    
+        response = self.client.put(url,data=data,format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         url = reverse('profile')
         response = self.client.get(url)
         self.assertEqual(response.data['nok']['name'],"bro")
         self.assertEqual(response.data['profile']['user']["first_name"],"John")
-        # url = reverse('update-user-details')
-        # response = self.client.put(url,data=data,format='json')    
-        # self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # url = reverse('profile')
-        # response = self.client.get(url)
         
     def test_verify_logout_auth_User(self):
         url = reverse('auth-verify-OTP')
@@ -478,7 +497,7 @@ class NormalUserTest(APITestCase):
         response = self.client.post(url, {})
         self.assertNotIn('temp_id', self.client.session)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response.data['detail'], 'Something went wrong')  # Replace with your actual error message
+        self.assertEqual(response.data['detail'], 'Something went wrong')
 
 class ResetAPITests(APITestCase):
     @classmethod
@@ -489,7 +508,7 @@ class ResetAPITests(APITestCase):
             first_name='JohnJohn',
             last_name='Doe',
             phoneNum='91234567',
-            nric='S1234567D',
+            nric='567D',
             password='test_password',
         )
         cls.test_org = NormalUser.normalUserManager.create(user_id=cls.test_user.id, birthday="2001-03-12")
@@ -671,7 +690,7 @@ class ResetPasswordAPITests(APITestCase):
             first_name='JohnJohn',
             last_name='Doe',
             phoneNum='91234567',
-            nric='S1234567D',
+            nric='567D',
             password='test_password',
         )
         cls.test_org = NormalUser.normalUserManager.create(user_id=cls.test_user.id, birthday="2001-03-12")

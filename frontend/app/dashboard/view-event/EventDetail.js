@@ -40,17 +40,20 @@ import { API_HOST, API_IMAGE, convertTime } from "@/app/utils/utils";
 import Cookie from "js-cookie";
 
 async function deleteEvent(eId) {
-  const response = await axios.delete(API_HOST + "/get-event-byorg/", {
-    data: {
-      eid: eId,
-    },
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": Cookie.get("csrftoken"),
-    },
-    withCredentials: true,
-  });
-  return response.data;
+  try {
+    await axios.delete(API_HOST + "/get-event-byorg/", {
+      data: {
+        eid: eId,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": Cookie.get("csrftoken"),
+      },
+      withCredentials: true,
+    });
+  } catch (error) {
+    console.error("There was an issue deleting the event")
+  }
 }
 function DeleteModal(eventData) {
   const { isOpen, onOpen, onClose } = useDisclosure();

@@ -108,15 +108,16 @@ class EventsByOrganizationAPI(APIView):
                 "eventImage": request.data["eventImage"],
             }
         except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        success = EventService.createEvent(data, organization_id)
+            return Response({'errors':"Some Fields are Missing"}, status=status.HTTP_400_BAD_REQUEST)
+        success, errors = EventService.createEvent(data, organization_id)
         if success:
             eventName = sanitiseString(request.data["eventName"])
             generalLogger.info(f"views.EventsByOrganizationAPI.post {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eventName}', 'message' : 'Created event.'}}")
             return Response(status=status.HTTP_200_OK)
         else:
             generalLogger.info(f"views.EventsByOrganizationAPI.post {clientIP} {{'organizer' : '{organization_id}', 'message' : 'Failed to create event'}}")
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            print(errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
         """Update event"""
@@ -138,12 +139,12 @@ class EventsByOrganizationAPI(APIView):
             if "eventImage" in data:
                 if data["eventImage"].size > 2 * 1024 * 1024:
                     return Response(status=status.HTTP_400_BAD_REQUEST)
-            success = EventService.updateEvent(data, request.data["eid"])
+            success, errors = EventService.updateEvent(data, request.data["eid"])
             if success:
                 generalLogger.info(f"views.EventsByOrganizationAPI.put {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Updated event.'}}")
                 return Response(status=status.HTTP_200_OK)
             else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         generalLogger.info(f"views.EventsByOrganizationAPI.put {clientIP} {{'organizer' : '{organization_id}', 'event' : '{eid}', 'message' : 'Failed to update event.'}}")
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -236,9 +237,12 @@ class UpdateUserAPIView(APIView):
         emergencySuccess=False
         success=False
         nokUpdateSuccess=False
-
         id = UUID(request.session["_auth_user_id"]).hex
-        valid = UserService.getUserById(id)
+        role = request.session["role"]
+        if role == "Organizer":
+            valid = OrganizerAdminService.getOrgById(id)
+        else:
+            valid = UserService.getUserById(id)
         if valid != None:
             data = {
                 "first_name": request.data["first_name"],
@@ -248,23 +252,29 @@ class UpdateUserAPIView(APIView):
             }
             if not checkDataValid(data):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-        success = UserService.updateUserProfile(data, id)
-        emergency = EmergencyContactService.getContactById(id)
-        if emergency:
-            nokData = {
+        success,userErrors = UserService.updateUserProfile(data, id)
+        if not success:
+            return Response(userErrors,status=status.HTTP_400_BAD_REQUEST)
+        if role == "Organizer" and success:
+            return Response(status=status.HTTP_200_OK)
+        if success:
+            emergency = EmergencyContactService.getContactById(id)
+            if emergency:
+                nokData = {
                 "name": request.data["nokName"],
                 "relationship": request.data["nokRelationship"],
                 "phoneNum": request.data["nokPhone"],
-            }
-            if not checkDataValid(nokData):
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            nokUpdateSuccess = NokService.updateNok(nokData, emergency["nok"])            
-        else:
-            with transaction.atomic():
-                newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
-                emergencySuccess = EmergencyContactService.createNewContact(newNok["id"],id)     
-        if ((success and nokUpdateSuccess) or emergencySuccess):        
-            return Response(status=status.HTTP_200_OK)
+                }
+                if not checkDataValid(nokData):
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                nokUpdateSuccess, errors = NokService.updateNok(nokData, emergency["nok"])            
+            else:
+                with transaction.atomic():
+                    newNok = NokService.createNok(request.data["nokName"],request.data["nokRelationship"],request.data["nokPhone"])
+                    emergencySuccess, errors = EmergencyContactService.createNewContact(newNok["id"],id)     
+            if ((success and nokUpdateSuccess) or emergencySuccess):        
+                return Response(status=status.HTTP_200_OK)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -272,15 +282,18 @@ class GetProfileDetailsAPIView(APIView):
     def get(self, request):
         data = {}
         id = UUID(request.session["_auth_user_id"]).hex
-        # this part use the session to get id
-        valid = UserService.getUserById(id)
-
-        data["profile"] = valid
-        emergency = EmergencyContactService.getContactById(id)
-        if emergency:
-            nok = NokService.getNokById(emergency["nok"])
-            data["nok"] = nok
-        return Response(data, status=status.HTTP_200_OK)
+        role = request.session["role"]
+        if role == "Organizer":
+            data["profile"] = OrganizerAdminService.getOrgById(id)
+            return Response(data, status=status.HTTP_200_OK)
+        if role =="Normal":
+            data["profile"] = UserService.getUserById(id)
+            emergency = EmergencyContactService.getContactById(id)
+            if emergency:
+                nok = NokService.getNokById(emergency["nok"])
+                data["nok"] = nok
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class SignUpEventAPIView(APIView):
@@ -428,9 +441,9 @@ class VerifyOtp(APIView):
         uuid = request.session.get("temp_id", None)
         clientIP = get_client_ip_address(request)
         if uuid != None:
-            del request.session['temp_id']
             isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
             if isVerifiedUser :
+                del request.session['temp_id']
                 loginUser = self.authService.LoginUser(request,uuid)
                 if loginUser :
                     request.session["role"] = AccountService.getUserRole(loginUser.id)
