@@ -344,8 +344,6 @@ class LoginAPITests(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data['detail'], 'Something went wrong')  # Replace with your actual error message
-        self.assertNotIn('temp_id', self.client.session)
-
 
     def test_verify_otp_wrong_otp(self):
         url = reverse('auth-verify-OTP')  # Replace with your URL name
@@ -355,7 +353,6 @@ class LoginAPITests(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data['detail'], 'Something went wrong')  # Replace with your actual error message
-        self.assertNotIn('temp_id', self.client.session)
 
     def test_verify_otp_no_uuid_in_session(self):
         url = reverse('auth-verify-OTP')

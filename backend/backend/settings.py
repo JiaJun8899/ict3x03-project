@@ -40,7 +40,7 @@ OTP_EMAIL_TOKEN_VALIDITY = 300
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", os.environ.get("SECRET_KEY"))
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["backend", "www.silly-borg.cloud", "silly-borg.cloud"]
 
@@ -195,7 +195,7 @@ if not DEBUG:
 if not DEBUG:
     LOGGING = {
         "version": 1,
-        "disable_existing_loggers": True,  # limit loggers to only the ones defined here for more security
+        "disable_existing_loggers": False, 
         "filters": {
             "require_debug_false": {
                 "()": "django.utils.log.RequireDebugFalse",
