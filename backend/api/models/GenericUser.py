@@ -23,7 +23,7 @@ class GenericUser(AbstractUser):
         blank=False
         )
     phoneNum = models.CharField(max_length=8, null=False,blank=False,validators=[MinLengthValidator(8), phoneNumRegex])
-    nric = models.CharField(max_length=9, null=False, blank=False,validators=[nricRegex, MinLengthValidator(4)])
+    nric = models.CharField(max_length=4, null=False, blank=False,validators=[nricRegex, MinLengthValidator(4)])
     genericUserManager = GenericUserManager()
     class Meta:
         app_label = "api"

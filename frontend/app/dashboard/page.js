@@ -23,7 +23,7 @@ export default function Page() {
       });
       setUserRole(response.data);
     } catch (error) {
-      console.error("There was an fetching your profile", error);
+      console.error("There is an issue checking your auth");
     } finally {
       setLoading(false);
     }

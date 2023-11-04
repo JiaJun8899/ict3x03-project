@@ -26,11 +26,17 @@ export default function ForgotPasswordForm() {
   const handleSubmitRequest = async () => {
     // Validate whether newPassword and confirmPassword are the same, or any other validations
     if (newPassword !== confirmPassword) {
-      // Show some toast or error message
+      toast({
+        title: "Failed to change password",
+        description: "Password is not the same",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
       return;
     }
     try {
-      const response = await axios.put(
+      await axios.put(
         `${API_HOST}/auth-change-password/`,
         {
           OTP: otp,
@@ -46,6 +52,12 @@ export default function ForgotPasswordForm() {
           withCredentials: true,
         }
       );
+      toast({
+        title: "Password Changed",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       // Handle success - Maybe redirect to login or show a success message
       router.push("/login");
     } catch (error) {
@@ -60,23 +72,30 @@ export default function ForgotPasswordForm() {
   };
 
   const handleRequestOtp = async () => {
-    const response = await axios.post(
-      `${API_HOST}/auth-get-OTP/`,
-      {},
-      {
-        headers: {
-          "X-CSRFToken": Cookie.get("csrftoken"),
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      }
-    );
-
-    if (response.status === 200) {
+    try {
+      await axios.put(
+        `${API_HOST}/auth-change-password/`,
+        {},
+        {
+          headers: {
+            "X-CSRFToken": Cookie.get("csrftoken"),
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
       toast({
         title: "OTP Sent.",
         description: "Check your email for the OTP!",
         status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to send OTP",
+        description: "Something went wrong!",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });

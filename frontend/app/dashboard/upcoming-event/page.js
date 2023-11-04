@@ -15,22 +15,15 @@ import {
   Image,
   Input,
   FormControl,
-} from "../../providers"
+} from "../../providers";
 import NextLink from "next/link";
-import React, { useState, useEffect,Suspense } from "react";
-import { DateTime } from "luxon";
+import React, { useState, useEffect, Suspense } from "react";
 import axios from "axios";
-import { API_HOST, getRole, API_IMAGE } from "@/app/utils/utils";
+import { API_HOST, getRole, API_IMAGE, convertTime } from "@/app/utils/utils";
 import { notFound } from "next/navigation";
 import Cookie from "js-cookie";
 
 function EventRow({ event, index }) {
-  const startDate = DateTime.fromISO(event.startDate)
-    .toJSDate()
-    .toLocaleString("en-SG");
-  const endDate = DateTime.fromISO(event.endDate)
-    .toJSDate()
-    .toLocaleString("en-SG");
   return (
     <Tr>
       <Td>
@@ -43,8 +36,8 @@ function EventRow({ event, index }) {
         />
       </Td>
       <Td>{event.eventName}</Td>
-      <Td>{startDate}</Td>
-      <Td>{endDate}</Td>
+      <Td>{convertTime(event.startDate)}</Td>
+      <Td>{convertTime(event.endDate)}</Td>
       <Td>{event.eventStatus}</Td>
       <Td>
         <NextLink href={`/dashboard/event?eid=${event.eid}`}>
@@ -57,7 +50,7 @@ function EventRow({ event, index }) {
 
 async function submitSearch(searchText, setAllEvents) {
   try {
-    const response = await axios.post(
+    await axios.post(
       `${API_HOST}/search-events/`,
       { name: searchText },
       {
@@ -69,35 +62,45 @@ async function submitSearch(searchText, setAllEvents) {
       }
     );
     setAllEvents(response.data);
-    (response.data);
   } catch (error) {
-    console.log(error);
+    toast({
+      title: "Searching failed.",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+    });
   }
 }
 
 export default function Page(props) {
   const [userRole, setUserRole] = useState("none");
-  const [loading, setLoading] = useState(true);    
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    getRole(setUserRole,setLoading);
+    getRole(setUserRole, setLoading);
   }, []);
 
-  function UpcomingEvent(){
+  function UpcomingEvent() {
     const role = userRole.role;
-    if(role !== "Normal"){
+    if (role !== "Normal") {
       return notFound();
     }
     const [events, setEvents] = useState([]);
     async function getAllData() {
       try {
-        const response = await axios.get(`${API_HOST}/get-upcoming-events/`,
-        {withCredentials:true});
+        const response = await axios.get(`${API_HOST}/get-upcoming-events/`, {
+          withCredentials: true,
+        });
         setEvents(response.data);
-        
       } catch (error) {
-        console.log(error);
+        toast({
+          title: "Failed to get upcoming events",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       }
     }
+
     useEffect(() => {
       getAllData();
     }, []);
@@ -142,7 +145,6 @@ export default function Page(props) {
               <Thead>
                 <Tr>
                   <Th>Image</Th>
-                  {/* <Th>Organiser</Th> */}
                   <Th>Event Name</Th>
                   <Th>Start Date</Th>
                   <Th>End Date</Th>
@@ -157,7 +159,7 @@ export default function Page(props) {
       </>
     );
   }
-  
+
   return (
     <div>
       <Suspense fallback={<p>Loading ...</p>}>

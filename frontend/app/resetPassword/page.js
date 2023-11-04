@@ -52,11 +52,7 @@ export default function ForgotPasswordForm() {
           withCredentials: true,
         }
       );
-
-      if (response.status === 200) {
-        // Handle success - Maybe redirect to login or show a success message
-        router.push("/login");
-      }
+      router.push("/login");
     } catch (error) {
       toast({
         title: "Failed to change password",
@@ -69,25 +65,32 @@ export default function ForgotPasswordForm() {
   };
 
   const handleRequestOtp = async () => {
-    const response = await axios.post(
-      `${API_HOST}/auth-reset-password/`,
-      {
-        email: email,
-      },
-      {
-        headers: {
-          "X-CSRFToken": Cookie.get("csrftoken"),
-          "Content-Type": "application/json",
+    try {
+      await axios.post(
+        `${API_HOST}/auth-reset-password/`,
+        {
+          email: email,
         },
-        withCredentials: true,
-      }
-    );
-
-    if (response.status === 200) {
+        {
+          headers: {
+            "X-CSRFToken": Cookie.get("csrftoken"),
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
       toast({
         title: "OTP Sent.",
         description: "Check your email for the OTP!",
         status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to send OTP",
+        description: "Something went wrong!",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -103,8 +106,6 @@ export default function ForgotPasswordForm() {
         <Text fontSize={{ base: "sm", sm: "md" }}>
           You'll get an email with a reset link
         </Text>
-
-        {/* OTP input field */}
         <Flex alignItems="center">
           <FormControl id="email">
             <Input
@@ -127,8 +128,6 @@ export default function ForgotPasswordForm() {
             onChange={(e) => setOtp(e.target.value)}
           />
         </FormControl>
-
-        {/* New Password input field */}
         <FormControl id="new-password">
           <Input
             type="password"
@@ -137,8 +136,6 @@ export default function ForgotPasswordForm() {
             onChange={(e) => setNewPassword(e.target.value)}
           />
         </FormControl>
-
-        {/* Confirm New Password input field */}
         <FormControl id="confirm-password">
           <Input
             type="password"
@@ -147,8 +144,6 @@ export default function ForgotPasswordForm() {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </FormControl>
-
-        {/* Buttons */}
         <Stack spacing={4}>
           <Button
             bg={"green.400"}
