@@ -21,6 +21,9 @@ WORKDIR /app/backend
 COPY ./backend /app/backend
 COPY ./requirements.txt /app/backend
 
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app/backend
+USER appuser
+
 # Install Python dependencies
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
@@ -42,7 +45,4 @@ RUN chmod +x script/Entrypoint.sh && \
 # Run initialisation scripts
 RUN bash script/CollectStatic.sh
 
-# RUN bash script/Migrations.sh
-
-# Run the application
-
+# RUN bash script/Mi
