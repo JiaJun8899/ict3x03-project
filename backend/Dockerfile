@@ -30,11 +30,6 @@ RUN chmod +x script/Entrypoint.sh && \
     chmod +x script/Migrations.sh && \
     chmod +x script/CollectStatic.sh
 
-# Run initialisation scripts
-RUN bash script/CollectStatic.sh
-
-RUN bash script/Migrations.sh
-
 # Install Python dependencies
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
