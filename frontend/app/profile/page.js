@@ -28,7 +28,9 @@ export default function ProfilePage() {
 
   function EditProfile() {
     const role = userRole.role;
-    if (role !== "Normal" || role !== "Organizer") {
+    if (role === "Normal" || role === "Organizer") {
+      // pass
+    } else {
       return notFound();
     }
     const [details, setDetails] = useState({
@@ -59,7 +61,7 @@ export default function ProfilePage() {
         const response = await axios.get(`${API_HOST}/profile/`, {
           withCredentials: true,
         });
-        console.log(response.data)
+        console.log(response.data);
         setDetails({
           ...details,
           first_name: response.data["profile"]["user"]["first_name"],
@@ -82,7 +84,7 @@ export default function ProfilePage() {
           });
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
         toast({
           title: "Failed to get Profile",
           status: "error",
