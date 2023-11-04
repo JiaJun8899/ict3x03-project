@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django_otp.plugins.otp_email.models import EmailDevice
 from requests.api import delete
 from api.models import Admin, Organizer,NormalUser,GenericUser,Event,EventOrganizerMapping,EventParticipant
 from django.contrib.auth.models import Group
@@ -50,6 +51,12 @@ class OrganizerAdmin(BaseAdmin):
     def has_change_permission(self, request, obj=None):
         return True
 
+    def save_model(self, request, obj, form, change):
+        if hasattr(obj, 'user') and isinstance(obj.user, GenericUser):
+            obj.user.is_active = obj.validOrganisation 
+            obj.user.save()
+        super().save_model(request, obj, form, change)
+
 @admin.register(NormalUser)
 class GenericUserAdmin(BaseAdmin):
     exclude = ["password"]
@@ -72,5 +79,5 @@ class EventOrganizerMappingAdmin(BaseAdmin):
 
     def has_change_permission(self, request, obj=None):
         return True
-""" admin.site.unregister """
+admin.site.unregister(EmailDevice)
 admin.site.unregister(Group)

@@ -18,8 +18,8 @@ services:
       - ./nginx/certs:/etc/nginx/certs
       - ./nginx/config:/etc/nginx/config
       - ./nginx/.htpasswd:/etc/nginx/.htpasswd
-      - ./nginx/logs/production.access.log:/var/logs/nginx/production.access.log
-      - ./nginx/logs/production.error.log:/var/logs/nginx/production.error.log
+      - ./nginx/logs/production.access.log:/var/log/nginx/production.access.log
+      - ./nginx/logs/production.error.log:/var/log/nginx/production.error.log
       - ./nginx/logs/jenkins.access.log:/var/log/nginx/jenkins.access.log
       - ./nginx/logs/jenkins.error.log:/var/log/nginx/jenkins.error.log
     depends_on:
@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    user: "nginx:nginx"
+#    user: "nginx:nginx"
     networks:
       - production
       - jenkins_network
