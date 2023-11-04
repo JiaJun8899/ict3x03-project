@@ -53,6 +53,10 @@ pipeline {
                             to: '2100755@sit.singaporetech.edu.sg'
                     } else {
                         // Run backend test case if the dockers are all up
+						sh '''
+							python manage.py makemigrations api 
+							python manage.py migrate --fake-initial
+						'''
                         def testResult = sh(script: 'docker exec django_backend python manage.py test', returnStatus: true, returnStdout: true)
                         echo "Test Result:\n${testResult}"
                         emailext subject: "Commits ready to deploye",
