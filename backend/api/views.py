@@ -441,9 +441,9 @@ class VerifyOtp(APIView):
         uuid = request.session.get("temp_id", None)
         clientIP = get_client_ip_address(request)
         if uuid != None:
-            del request.session['temp_id']
             isVerifiedUser = self.authService.verifyOTP(uuid = uuid ,otpToken = otp)
             if isVerifiedUser :
+                del request.session['temp_id']
                 loginUser = self.authService.LoginUser(request,uuid)
                 if loginUser :
                     request.session["role"] = AccountService.getUserRole(loginUser.id)
