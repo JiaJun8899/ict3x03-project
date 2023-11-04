@@ -55,7 +55,7 @@ services:
       - ./backend/backend/logs:/app/backend/backend/logs
       - ./backend/mediafiles:/app/backend/mediafiles
     env_file: ./docker.env
-    command: python manage.py runserver
+    command: python manage.py runserver 0.0.0.0:8000
     restart: unless-stopped
     depends_on:
       database:
