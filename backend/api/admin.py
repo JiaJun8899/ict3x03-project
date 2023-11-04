@@ -11,11 +11,10 @@ from api.models import Admin, Organizer, NormalUser, GenericUser, Event, EventOr
 from django.contrib.auth.models import Group
 from django_otp.admin import OTPAdminSite
 import logging
+from api.views import get_client_ip_address
+from django.contrib.admin.models import LogEntry
 
 admin.site.__class__ = OTPAdminSite
-
-#LYN CHANGE THIS
-logger = logging.getLogger('django')
 
 class BaseAdmin(admin.ModelAdmin):
     # Deny add permission by default
@@ -30,16 +29,10 @@ class BaseAdmin(admin.ModelAdmin):
 
     #LYN DO HERE
     def save_model(self, request, obj, form, change):
-        if change:  # if object is being changed
-            logger.info(f'LYNN LOGS -> User {request.user} changed object {obj}.')
-        else:  # if object is being added
-            logger.info(f'LYNN LOGS -> User {request.user} added object {obj}.')
         super().save_model(request, obj, form, change)
 
     #LYN DO HERE FIGURE OUT WHAT IS CHANGED
     def delete_model(self, request, obj):
-        logger.info(f'LYNN LOGS -> User {request.user} deleted object {obj}.')
-        logger.info(f'User {request.user} deleted object {obj}.')
         super().delete_model(request, obj)
 
 @admin.register(Organizer)
@@ -81,3 +74,37 @@ class EventOrganizerMappingAdmin(BaseAdmin):
         return True
 admin.site.unregister(EmailDevice)
 admin.site.unregister(Group)
+
+@admin.register(LogEntry)
+class LogEntryAdmin(admin.ModelAdmin):
+    # to have a date-based drilldown navigation in the admin page
+    date_hierarchy = 'action_time'
+
+    # to filter the resultes by users, content types and action flags
+    list_filter = [
+        'user',
+        'content_type',
+        'action_flag'
+    ]
+
+    # when searching the user will be able to search in both object_repr and change_message
+    search_fields = [
+        'object_repr',
+        'change_message'
+    ]
+
+    list_display = [
+        'action_time',
+        'user',
+        'content_type',
+        'action_flag',
+    ]
+
+    def has_add_permission(self, request):
+        return False
+    def has_change_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
