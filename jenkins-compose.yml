@@ -7,9 +7,14 @@ networks:
 services:
   database:
     image: mariadb
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     container_name: backend_database
     env_file: ./docker.env
     restart: always
+    volumes:
+      - ./backend/database:/var/lib/mysql
     ports:
       - "3306"
     healthcheck:
@@ -45,8 +50,11 @@ services:
       dockerfile: ./backend/Dockerfile
     ports:
       - "8000"
+    volumes:
+      - ./backend/backend/logs:/app/backend/backend/logs
+      - ./backend/mediafiles:/app/backend/mediafiles
     env_file: ./docker.env
-    command: bash -c "python manage.py migrate; if [[ $$? -ne 0 ]]; then sleep infinity; else python manage.py runserver 0.0.0.0:8000; fi"
+    command: python manage.py runserver 0.0.0.0:8000
     restart: unless-stopped
     depends_on:
       database:
@@ -55,3 +63,4 @@ services:
       - no-new-privileges:true
     networks:
       - production
+
