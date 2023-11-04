@@ -12,15 +12,6 @@ pipeline {
                 '''
             }
         }
-        stage('Installing dependencies on NextJS') {
-            steps {
-                dir('frontend') {
-                    sh '''
-                    npm install
-                    '''
-                }
-            }
-        }
         stage('Semgrep Scan') {
             steps {
                 echo 'SAST Scanning'
@@ -68,7 +59,6 @@ pipeline {
                             body: "Everything is up and running! Check the semgrep report and OWASP Dependency Vulnerabilities report before deploying! Check console output at '$BUILD_URL' to view the results.",
                             to: '2100755@sit.singaporetech.edu.sg'
                     }
-					input message: 'Code has been pulled from GitHub, please deploy', ok: 'OK'
                 }
             }
         }
