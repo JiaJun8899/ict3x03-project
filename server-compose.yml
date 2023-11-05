@@ -17,7 +17,6 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/certs:/etc/nginx/certs
       - ./nginx/config:/etc/nginx/config
-      - ./nginx/.htpasswd:/etc/nginx/.htpasswd
       - ./nginx/logs/production.access.log:/var/log/nginx/production.access.log
       - ./nginx/logs/production.error.log:/var/log/nginx/production.error.log
       - ./nginx/logs/jenkins.access.log:/var/log/nginx/jenkins.access.log
