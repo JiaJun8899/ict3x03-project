@@ -53,6 +53,7 @@ services:
     volumes:
       - ./backend/backend/logs:/app/backend/backend/logs
       - ./backend/mediafiles:/app/backend/mediafiles
+      - ./backend/production_static:/app/backend/production_static
     env_file: ./docker.env
     command: python manage.py runserver 0.0.0.0:8000
     restart: unless-stopped
