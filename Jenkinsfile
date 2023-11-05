@@ -56,11 +56,10 @@ pipeline {
 						sh '''
 							python manage.py makemigrations api 
 							python manage.py migrate --fake-initial
+							docker exec django_backend python manage.py test
 						'''
-                        def testResult = sh(script: 'docker exec django_backend python manage.py test', returnStatus: true, returnStdout: true)
-                        echo "Test Result:\n${testResult}"
-                        emailext subject: "Commits ready to deploye",
-                            body: "Everything is up and running! Check the semgrep report and OWASP Dependency Vulnerabilities report before deploying! Check console output at '$BUILD_URL' to view the results.",
+                        emailext subject: "Tests Completed",
+                            body: "Tests have been completed. Check console output at '$BUILD_URL' to view the results.",
                             to: '2100755@sit.singaporetech.edu.sg'
                     }
                 }
