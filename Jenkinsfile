@@ -54,8 +54,8 @@ pipeline {
                     } else {
                         // Run backend test case if the dockers are all up
 						sh '''
-							python manage.py makemigrations api 
-							python manage.py migrate --fake-initial
+							docker exec django_backend python manage.py makemigrations api 
+							docker exec django_backend python manage.py migrate --fake-initial
 							docker exec django_backend python manage.py test
 						'''
                         emailext subject: "Tests Completed",
