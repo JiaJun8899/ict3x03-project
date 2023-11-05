@@ -22,6 +22,8 @@ pipeline {
             steps{
                 echo 'Setting up Container'
                 sh '''
+				rm -rf backend/database
+				rm -rf backend/api/migrations
                 docker compose -f jenkins-compose.yml up --build -d
                 '''
             }
