@@ -34,7 +34,7 @@ services:
     container_name: database-backup
     env_file: ./docker.env
     environment:
-      MYSQL_CONTAINER_NAME: backend_database
+      MYSQL_CONTAINER_NAME: backend_database_prod
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./backend/database_backup:/var/backups
