@@ -21,8 +21,8 @@ WORKDIR /app/backend
 COPY ./backend /app/backend
 COPY ./requirements.txt /app/backend
 
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app/backend
-USER appuser
+# RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app/backend
+# USER appuser
 
 # Install Python dependencies
 RUN pip install --upgrade pip && \
