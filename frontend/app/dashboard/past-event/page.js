@@ -47,38 +47,37 @@ function EventRow({ event, index }) {
   );
 }
 
-async function submitSearch(searchText, setAllEvents) {
-  try {
-    await axios.post(
-      `${API_HOST}/search-events/`,
-      { name: searchText },
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": Cookie.get("csrftoken"),
-        },
-      }
-    );
-    setAllEvents(response.data);
-  } catch (error) {
-    toast({
-      title: "Searching failed.",
-      status: "error",
-      duration: 3000,
-      isClosable: true,
-    });
-  }
-}
-
-export default function Page(props) {
+export default function Page() {
   const [userRole, setUserRole] = useState("none");
   const [loading, setLoading] = useState(true);
   const toast = useToast();
   useEffect(() => {
     getRole(setUserRole, setLoading);
   }, []);
-
+  async function submitSearch(searchText, setAllEvents) {
+    try {
+      const response = await axios.post(
+        `${API_HOST}/search-events/`,
+        { name: searchText },
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": Cookie.get("csrftoken"),
+          },
+        }
+      );
+      setAllEvents(response.data);
+    } catch (error) {
+      console.log(error)
+      toast({
+        title: "Searching failed.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }
   function PastEvent() {
     const role = userRole.role;
     if (role !== "Normal") {
@@ -106,7 +105,11 @@ export default function Page(props) {
     const [searchText, setSearchText] = useState("");
     function CreateEventRow() {
       return events.map((event, index) => {
-        return <EventRow event={event} key={index} />;
+        if (event.event) {
+          return <EventRow event={event.event} key={index} />;
+        } else {
+          return <EventRow event={event} key={index} />;
+        }
       });
     }
     return (

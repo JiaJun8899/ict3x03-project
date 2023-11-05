@@ -27,6 +27,21 @@ services:
       - no-new-privileges:true
     networks:
       - production
+  periodic-backup:
+    build:
+      context: .
+      dockerfile: ./periodic-backup/Dockerfile
+    container_name: database-backup
+    env_file: ./docker.env
+    environment:
+      MYSQL_CONTAINER_NAME: backend_database_prod
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./backend/database_backup:/var/backups
+    command: crond -f -d 8
+    restart: always
+    networks:
+      - production
   frontend:
     container_name: nextjs_frontend_prod
     build:
