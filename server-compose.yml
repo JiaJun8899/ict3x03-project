@@ -22,12 +22,13 @@ services:
       - ./nginx/logs/production.error.log:/var/log/nginx/production.error.log
       - ./nginx/logs/jenkins.access.log:/var/log/nginx/jenkins.access.log
       - ./nginx/logs/jenkins.error.log:/var/log/nginx/jenkins.error.log
+      - ./backend/mediafiles:/app/backend/mediafiles
+      - ./backend/production_static:/app/backend/production_static
     depends_on:
       - backend
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-#    user: "nginx:nginx"
     networks:
       - production
       - jenkins_network
