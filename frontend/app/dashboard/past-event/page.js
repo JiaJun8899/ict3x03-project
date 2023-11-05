@@ -71,7 +71,7 @@ async function submitSearch(searchText, setAllEvents) {
   }
 }
 
-export default function Page(props) {
+export default function Page() {
   const [userRole, setUserRole] = useState("none");
   const [loading, setLoading] = useState(true);
   const toast = useToast();
@@ -106,7 +106,11 @@ export default function Page(props) {
     const [searchText, setSearchText] = useState("");
     function CreateEventRow() {
       return events.map((event, index) => {
-        return <EventRow event={event} key={index} />;
+        if (event.event) {
+          return <EventRow event={event.event} key={index} />;
+        } else {
+          return <EventRow event={event} key={index} />;
+        }
       });
     }
     return (

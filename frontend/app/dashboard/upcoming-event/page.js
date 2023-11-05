@@ -8,13 +8,12 @@ import {
   Td,
   TableContainer,
   Stack,
-  Text,
   Button,
-  Box,
   Heading,
   Image,
   Input,
   FormControl,
+  useToast,
 } from "../../providers";
 import NextLink from "next/link";
 import React, { useState, useEffect, Suspense } from "react";
@@ -50,7 +49,7 @@ function EventRow({ event, index }) {
 
 async function submitSearch(searchText, setAllEvents) {
   try {
-    await axios.post(
+    const response = await axios.post(
       `${API_HOST}/search-events/`,
       { name: searchText },
       {
@@ -73,6 +72,7 @@ async function submitSearch(searchText, setAllEvents) {
 }
 
 export default function Page(props) {
+  const toast = useToast();
   const [userRole, setUserRole] = useState("none");
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -107,7 +107,11 @@ export default function Page(props) {
     const [searchText, setSearchText] = useState("");
     function CreateEventRow() {
       return events.map((event, index) => {
-        return <EventRow event={event} key={index} />;
+        if (event.event) {
+          return <EventRow event={event.event} key={index} />;
+        } else {
+          return <EventRow event={event} key={index} />;
+        }
       });
     }
     return (

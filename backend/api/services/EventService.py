@@ -125,8 +125,8 @@ class EventService:
         return serializer.data
 
     def searchEvent(name):
-        events = Event.eventManager.searchEvent(name).filter(eventStatus="open")
-        serializer = EventSerializer(events, many=True)
+        events = EventOrganizerMapping.eventMapperManager.getAllRecords().filter(approval='accepted',event__eventName__contains=name, event__endDate__gte=du.timezone.now()).exclude(event__eventStatus='over')
+        serializer = EventOrganizerMappingSerializer(events, many=True)
         return serializer.data
 
     def getEventByID(organizer_id, eid):

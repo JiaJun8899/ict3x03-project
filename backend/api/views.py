@@ -344,20 +344,6 @@ class SearchEvents(APIView):
             generalLogger.info(f"views.SearchEvents {clientIP} {{'user' : '{user_id}', 'message' : '{search}'}}")
             return Response(events, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-    
-class GetPastEvents(APIView):
-    def post(self, request):
-        events = EventService.searchEvent(request.data["name"])
-        if events != None:
-            return Response(events, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-        
-class GetUpcomingEvents(APIView):
-    def post(self, request):
-        events = EventService.searchEvent(request.data["name"])
-        if events != None:
-            return Response(events, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class GetPastEventsByParticipant(APIView):
     def get(self, request):

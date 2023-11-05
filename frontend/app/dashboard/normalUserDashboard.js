@@ -66,7 +66,7 @@ export default function RegularDashboard() {
   }
   async function submitSearch(searchText, setAllEvents) {
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API_HOST}/search-events/`,
         { name: searchText },
         {
@@ -77,7 +77,7 @@ export default function RegularDashboard() {
           },
         }
       );
-      setAllEvents(response.data);
+      setEvents(response.data);
     } catch (error) {
       toast({
         title: "Searching failed.",
@@ -91,11 +91,17 @@ export default function RegularDashboard() {
     getAllData();
   }, []);
   const [searchText, setSearchText] = useState("");
+
   function CreateEventRow() {
     return events.map((event, index) => {
-      return <EventRow event={event.event} key={index} />;
+      if (event.event) {
+        return <EventRow event={event.event} key={index} />;
+      } else {
+        return <EventRow event={event} key={index} />;
+      }
     });
   }
+
   return (
     <>
       <Stack m={8} direction="row">
