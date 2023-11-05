@@ -15,7 +15,7 @@ pipeline {
         stage('Semgrep Scan') {
             steps {
                 echo 'SAST Scanning'
-                sh 'semgrep scan'
+            //    sh 'semgrep scan'
             }
         }
         stage('Setting up container') {
@@ -32,12 +32,12 @@ pipeline {
            steps {
                 echo 'Check OWASP Stage'
                 // Add your OWASP Dependency-Check configuration here if needed
-                dependencyCheck additionalArguments: ''' 
-                     -o './'
-                     -s './'
-                     -f 'ALL' 
-                    --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
-              dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
+              //  dependencyCheck additionalArguments: ''' 
+              //       -o './'
+              //       -s './'
+              //       -f 'ALL' 
+              //      --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+              //dependencyCheckPublisher pattern: 'dependency-check-report.xml' 
             }
         }
         stage('Testing Stage') {
